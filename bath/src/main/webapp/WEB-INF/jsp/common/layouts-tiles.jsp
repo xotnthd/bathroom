@@ -11,7 +11,7 @@
 <head>
 	<meta charset="utf-8">
 	<style type="text/css"></style>
-	<title>Insert title here</title>
+	<title>목욕탕</title>
 </head>
 <body>
 	<div class="wrap">

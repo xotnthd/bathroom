@@ -1,55 +1,82 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-메인인걸~~
-<%-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<%@ include file="/WEB-INF/jsp/common/include-header.jspf" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>  
 </head>
-<body>
-<form id="frm">
-    <table class="board_view">
-        <colgroup>
-            <col width="15%">
-            <col width="*"/>
-        </colgroup>
-        <caption>게시글 작성</caption>
-        <tbody>
-            <tr>
-                <th scope="row">제목</th>
-                <td><input type="text" id="TITLE" name="TITLE" class="wdp_90"></input></td>
-            </tr>
-            <tr>
-                <td colspan="2" class="view_text">
-                    <textarea rows="20" cols="100" title="내용" id="CONTENTS" name="CONTENTS"></textarea>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-     
-    <a href="#this" class="btn" id="write" >작성하기</a>
-    <a href="#this" class="btn" id="list" >목록으로</a>
-</form>
-     
-<%@ include file="/WEB-INF/jsp/common/include-form.jspf" %>
+
+
+<%-- <link rel="stylesheet" type="text/css" href="<c:url value='/css/main/main.css'/>" /> --%>
+<link rel="stylesheet" type="text/css" href="<c:url value='/css/bbs/board.css'/>" />
+
 <script type="text/javascript">
-    $(document).ready(function(){
-    	$("#list").on("click", function(e){
-            e.preventDefault();
-            fn_openBoardList();
-        });  
-    });
+function regBoard(){
     
-    function fn_openBoardList(){
-        var comSubmit = new ComSubmit();
-        comSubmit.setUrl("<c:url value='/sample/openSampleList.do' />");
-        comSubmit.submit();
-    }
-    
-    function fn_insertBoard(){
-        var comSubmit = new ComSubmit("frm");
-        comSubmit.setUrl("<c:url value='/sample/insertBoard.do' />");
-        comSubmit.submit();
-    }
+    var f = document.form1;
+    f.action = "<c:url value='/bbs/boardWrite.do' />"
+    f.method = "post";
+    f.submit();  
+	
+}
 </script>
+<body>
+<form name="form1" id="form1" >
+<input type="hidden" id="p_bbs_id" name="p_bbs_id"  value=""/>
+<!-- 등록버튼 시작 -->
+<div class="box">
+	<div class="b_left">
+	
+		<div class="boardcss_list_add_button_table">
+			<div class="boardcss_list_add_button">
+				<button type="button" class="add_button" onclick="regBoard()">등록</button>
+				<ul></ul>
+			</div>
+		</div>
+		<!-- 등록버튼 종료 -->
+		
+		<!-- 테이블 시작 -->
+		<div class="boardcss_list_table">
+			<table class="list_table">
+				<caption>공지사항</caption>
+				<colgroup>
+					<col width="15%" />
+					<col width="45%" />
+					<col width="20%" />
+					<col width="20%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th>번호</th>
+						<th>제목</th>
+						<th>이름</th>
+						<th>등록일자</th>
+					</tr>
+				</thead>
+				<tbody>
+				<c:choose>
+					<c:when test="${fn:length(noticeList) > 0}">
+					<c:forEach items="${list }" var="row">
+						<tr>
+							<td>${row.SEQ }</td>
+							<td>${row.TITLE }</td>
+							<td>${row.CRUSER }</td>
+							<td>${row.CRDT }</td>
+						</tr>
+					</c:forEach>
+					</c:when>
+					<c:otherwise>
+						<tr>
+							<td colspan="4">데이터가 없습니다.</td>
+						</tr>
+					</c:otherwise>
+				</c:choose>
+				</tbody>
+			</table>
+		</div>
+	</div>
+<!-- 테이블 종료 -->
+</div>
+</form>
 </body>
-</html> --%>
+</html>

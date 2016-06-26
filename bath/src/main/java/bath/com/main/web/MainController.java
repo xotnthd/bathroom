@@ -26,16 +26,18 @@ public class MainController {
 	public ModelAndView main(CommandMap commandMap) throws Exception{
 		ModelAndView mv = new ModelAndView("/main/main");
 		
-		if(commandMap.isEmpty() == false){
-	        Iterator<Entry<String,Object>> iterator = commandMap.getMap().entrySet().iterator();
-	        Entry<String,Object> entry = null;
-	        while(iterator.hasNext()){
-	            entry = iterator.next();
-	            log.debug("key : "+entry.getKey()+", value : "+entry.getValue());
-	        }
-	    }
+		commandMap.put("p_bbs_id", "1"); //공지사항
+		System.out.println(commandMap.get("p_bbs_id"));
+		List<Map<String,Object>> noticeList = mainService.selectBoardList(commandMap.getMap());
+		mv.addObject("noticeList", noticeList);
+		
 		return mv;
 	}
 	
-	
+	@RequestMapping(value="/maintest.do")
+	public ModelAndView main_test(CommandMap commandMap) throws Exception{
+		ModelAndView mv = new ModelAndView("/main/main");
+		
+		return mv;
+	}
 }
