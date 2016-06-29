@@ -5,13 +5,13 @@
      <select id="selectBoardList" parameterType="hashmap" resultType="hashmap">
         <![CDATA[
             SELECT BBS_ID
-						,TITLE 
-						,CONTENTS
-						,USE_YN
-						,DATE_FORMAT(CRDT,'%Y%m%d')
-						,CRUSER
+					,TITLE 
+					,CONTENTS
+					,USE_YN
+					,DATE_FORMAT(CRDT,'%Y%m%d')
+					,CRUSER
 			FROM TB_BBS
-			WHERE BBS_ID  = #{p_bbs_id}
+			WHERE BBS_ID = #{p_bbs_id}
 			ORDER BY BBS_ID
         ]]>
     </select>
