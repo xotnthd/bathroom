@@ -25,7 +25,7 @@ function regBoard(){
 <input type="hidden" id="p_bbs_id" name="p_bbs_id"  value=""/>
 <!-- 등록버튼 시작 -->
 <div class="box">
-	<div class="b_left">
+<!-- 	<div class="b_left"> -->
 	
 		<div class="boardcss_list_add_button_table">
 			<div class="boardcss_list_add_button">
@@ -74,7 +74,7 @@ function regBoard(){
 				</tbody>
 			</table>
 		</div>
-	</div>
+<!-- 	</div> -->
 <!-- 테이블 종료 -->
 </div>
 </form>

@@ -6,11 +6,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.jcraft.jsch.Session;
 
 import bath.com.common.CommandMap;
 import bath.com.main.service.MainService;
@@ -23,10 +28,16 @@ public class MainController {
 	private MainService mainService;
 	
 	@RequestMapping(value="/main.do")
-	public ModelAndView main(CommandMap commandMap) throws Exception{
+	public ModelAndView main(CommandMap commandMap,HttpServletRequest request, HttpServletResponse response,HttpSession session) throws Exception{
 		ModelAndView mv = new ModelAndView("/main/main");
 		
-		commandMap.put("p_bbs_id", "1"); //°øÁö»çÇ×
+//		request.getSession();
+		String v_usrid = (String)session.getAttribute("p_usrid");
+		
+		System.out.println(v_usrid);
+		
+		
+		commandMap.put("p_bbs_id", "1"); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		System.out.println(commandMap.get("p_bbs_id"));
 		List<Map<String,Object>> noticeList = mainService.selectBoardList(commandMap.getMap());
 		mv.addObject("noticeList", noticeList);

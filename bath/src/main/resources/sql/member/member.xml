@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="member">
+	<insert id="insertJoinUser" parameterType="hashmap" useGeneratedKeys="true" keyProperty="p_file_seq">
+		<selectKey keyProperty="p_file_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(USERSEQ),1) + 1 FROM TB_COM_USER_MASTER 
+		</selectKey>
+	     <![CDATA[
+ 	        INSERT INTO TB_COM_USER_MASTER 
+ 	        ( 
+ 	            USERID,
+ 	            PWD,  
+ 	            NAME,  
+ 	            AUTH,  
+ 	            GENDER,
+ 	            AUTH,  
+ 	            CRDT
+ 	        ) 
+ 	        VALUES 
+ 	        ( 
+ 	            #{p_accedid},  
+ 	            #{p_pw},  
+ 	            #{p_usernm},  
+ 	            'P',  
+ 	            #{p_gender},
+ 	            'P'
+ 	            DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+ 	        ) 
+ 	    ]]> 
+	</insert>
+	
+	<insert id="insertFile" parameterType="hashmap">
+    <![CDATA[
+        INSERT INTO TB_COM_FILE
+        (
+            UPLOAD_SEQ,
+            ORIGINAL_FILE_NAME,
+            STORED_FILE_NAME,
+            FILE_SIZE,
+            CRUSER
+        )
+        VALUES
+        (
+            #{p_file_seq},
+            #{ORIGINAL_FILE_NAME},
+            #{STORED_FILE_NAME},
+            #{FILE_SIZE},
+            'Admin'
+        )
+    ]]>
+	</insert>
+	
+</mapper>

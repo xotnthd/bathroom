@@ -23,16 +23,13 @@
 		})
 	});
 	
-	function move_page(val){
+	
+	function fn_getMenu(){
 		var f = document.headerform;
-		url = '';
-// 		alert(val);
-		if("M" == val){
-			
-			 url = "<c:url value='/main.do' />";
-		}else{
-			 url = "<c:url value='/bbs/boardWrite.do' />";
-		}
+		var url = '';
+		alert(url);
+		url = "<c:url value='/bbs/boardList.do' />";
+		
 		f.action = url;
 		f.submit();
 	}
@@ -77,13 +74,13 @@
 	<div class="m_wrap">
 		<nav>
 			<div class="logo">
-				<h1><a href="javascript:void(0);" onclick="move_page('M');">목욕탕</a></h1>
+				<h1><a href="javascript:void(0);" onclick="fn_getMenu('<c:url value="/main.do" />','');">목욕탕</a></h1>
 			</div>
 			<ul>
 				<li>
-					<a href="javascript:void(0);" onclick="move_page('H');">HOME</a>
+					<a href="javascript:void(0);" onclick="fn_getMenu('<c:url value='/bbs/boardWrite.do' />','');">HOME</a>
 					<ul>
-						<li><a href="#">subMenu1</a></li>
+						<li><a href="#">기본정보</a></li>
 						<li><a href="#">subMenu2</a></li>
 						<li><a href="#">subMenu3</a></li>
 					</ul>
@@ -91,13 +88,13 @@
 				<li>
 					<a href="#">남탕</a>
 					<ul>
-						<li><a href="#">subMenu1</a></li>
+						<li><a href="#" onclick='fn_getMenu();'>기본게시판</a></li>
 						<li><a href="#">subMenu2</a></li>
 						<li><a href="#">subMenu3</a></li>
 					</ul>
 				</li>
 				<li>
-					<a href="#">공통게시판</a>
+					<a href="#">혼탕</a>
 					<ul>
 						<li><a href="#">subMenu1</a></li>
 						<li><a href="#">subMenu2</a></li>

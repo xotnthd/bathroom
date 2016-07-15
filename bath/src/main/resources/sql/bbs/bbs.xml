@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="bbs">
+	<select id="selectBoardList" parameterType="hashmap" resultType="hashmap">
+        <![CDATA[
+           SELECT A.BBS_ID
+				,B.SEQ
+				,B.TITLE
+				,B.CONTENTS
+				,B.USE_YN
+				,DATE_FORMAT(B.CRDT,'%Y.%m.%d') CRDT
+				,B.CRUSER
+			FROM TB_BBS_MASTER A,TB_BBS B
+			WHERE A.BBS_ID = B.BBS_ID
+			AND B.USE_YN = 'Y'
+			ORDER BY B.SEQ DESC
+        ]]>
+    </select>
+	
+	<insert id="insertbbsWrite" parameterType="hashmap" useGeneratedKeys="true" keyProperty="p_file_seq">
+		<selectKey keyProperty="p_file_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(SEQ)+1,1) FROM TB_BBS_FILE
+		</selectKey>
+		<![CDATA[
+		INSERT INTO TB_BBS
+		(
+			BBS_ID
+			,TITLE
+			,CONTENTS
+			,FILEID
+			,USE_YN
+			,CRDT
+			,CRUSER
+		)VALUES(
+			#{p_bbs_id}
+			,#{p_title}
+			,#{p_contents}
+			,#{p_file_seq}
+			,'Y'
+			,DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+			,'admin'
+		)
+		]]> 
+	</insert>
+	
+	<insert id="insertBbsFile" parameterType="hashmap">
+    	<![CDATA[
+        INSERT INTO TB_BBS_FILE
+        (
+            BBS_ID,
+            BBS_SEQ,
+            ORIGINAL_FILE_NAME,
+            STORED_FILE_NAME,
+            FILE_SIZE,
+            DEL_YN,
+            CRDT,
+            CRUSER
+            
+        )
+        VALUES
+        (
+            #{p_bbs_id},
+            #{p_file_seq},
+            #{ORIGINAL_FILE_NAME},
+            #{STORED_FILE_NAME},
+            #{FILE_SIZE},
+            'Y',
+            DATE_FORMAT(NOW(),'%Y%m%d%h%i%s'),
+            'admin'
+        )
+    	]]>
+	</insert>
+</mapper>

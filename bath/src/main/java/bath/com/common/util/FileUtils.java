@@ -30,7 +30,7 @@ public class FileUtils {
         List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
         Map<String, Object> listMap = null; 
          
-        String boardIdx = (String)map.get("IDX");
+        String p_file_seq = (String)map.get("p_file_seq");
          
         File file = new File(filePath);
         if(file.exists() == false){
@@ -48,7 +48,7 @@ public class FileUtils {
                 multipartFile.transferTo(file);
                  
                 listMap = new HashMap<String,Object>();
-                listMap.put("BOARD_IDX", boardIdx);
+                listMap.put("p_seq", p_file_seq);
                 listMap.put("ORIGINAL_FILE_NAME", originalFileName);
                 listMap.put("STORED_FILE_NAME", storedFileName);
                 listMap.put("FILE_SIZE", multipartFile.getSize());
