@@ -37,10 +37,10 @@ public class MainController {
 		System.out.println(v_usrid);
 		
 		
-		commandMap.put("p_bbs_id", "1"); //��������
-		System.out.println(commandMap.get("p_bbs_id"));
-		List<Map<String,Object>> noticeList = mainService.selectBoardList(commandMap.getMap());
-		mv.addObject("noticeList", noticeList);
+//		commandMap.put("p_bbs_id", "1"); //��������
+//		System.out.println(commandMap.get("p_bbs_id"));
+//		List<Map<String,Object>> noticeList = mainService.selectBoardList(commandMap.getMap());
+//		mv.addObject("noticeList", noticeList);
 		
 		return mv;
 	}

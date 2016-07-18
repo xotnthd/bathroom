@@ -24,11 +24,17 @@
 	});
 	
 	
-	function fn_getMenu(){
+	function fn_getMenu(val,etc){
 		var f = document.headerform;
 		var url = '';
-		alert(url);
-		url = "<c:url value='/bbs/boardList.do' />";
+		alert(val);
+		if(val == "H"){
+			url = "<c:url value='/main.do' />";
+		}else if(val =="B"){
+			url = "<c:url value='/bbs/boardList.do' />";
+		}else if(val == 'A'){
+			url = "<c:url value='/usr/member/usrList.do' />";
+		}
 		
 		f.action = url;
 		f.submit();
@@ -57,14 +63,6 @@
 	<form id="headerform" name="headerform" method="post">
 		
 	</form>
-	<!-- <div id="header_menu">
-		<ul>
-			<li><a>menu1</a></li>
-			<li><a>menu2</a></li>
-			<li><a>menu3</a></li>
-			<li><a>menu4</a></li>
-		</ul>
-	</div> -->
 	<div class="m_login">
 		<div>
 			<button type="button" onclick="login();">로그인</button>
@@ -74,21 +72,21 @@
 	<div class="m_wrap">
 		<nav>
 			<div class="logo">
-				<h1><a href="javascript:void(0);" onclick="fn_getMenu('<c:url value="/main.do" />','');">목욕탕</a></h1>
+				<h1><a href="javascript:void(0);" onclick="fn_getMenu('H');">목욕탕</a></h1>
 			</div>
 			<ul>
 				<li>
-					<a href="javascript:void(0);" onclick="fn_getMenu('<c:url value='/bbs/boardWrite.do' />','');">HOME</a>
+					<a href="javascript:void(0);" onclick="fn_getMenu('H');">HOME</a>
 					<ul>
-						<li><a href="#">기본정보</a></li>
-						<li><a href="#">subMenu2</a></li>
+						<li><a href="javascript:void(0);" onclick="fn_getMenu('H');">기본정보</a></li>
+						<li><a href="javascript:void(0);" onclick="fn_getMenu('A');">유저목록</a></li>
 						<li><a href="#">subMenu3</a></li>
 					</ul>
 				</li>
 				<li>
 					<a href="#">남탕</a>
 					<ul>
-						<li><a href="#" onclick='fn_getMenu();'>기본게시판</a></li>
+						<li><a href="javascript:void(0);" onclick="fn_getMenu('B');">기본게시판</a></li>
 						<li><a href="#">subMenu2</a></li>
 						<li><a href="#">subMenu3</a></li>
 					</ul>

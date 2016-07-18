@@ -46,6 +46,15 @@ Logger log = Logger.getLogger(this.getClass());
 		
 		return mv;
 	}
+
+	@RequestMapping(value="/usr/member/usrList.do")
+	public ModelAndView usrList(CommandMap commandMap,HttpServletRequest request) throws Exception{
+		ModelAndView mv = new ModelAndView("/member/usrList");
+		
+//		memberService.insertJoinUser(commandMap.getMap(), request);
+		
+		return mv;
+	}
 	
 	//ajax 예제
 	@RequestMapping(value="/usr/member/duplicateIdCheck.do")
