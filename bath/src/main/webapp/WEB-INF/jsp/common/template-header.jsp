@@ -100,7 +100,7 @@
 					</ul>
 				</li>
 				<li>
-					<a href="#">여성게시판</a>
+					<a href="#">여탕</a>
 					<ul>
 						<li><a href="#">subMenu1</a></li>
 						<li><a href="#">subMenu2</a></li>
