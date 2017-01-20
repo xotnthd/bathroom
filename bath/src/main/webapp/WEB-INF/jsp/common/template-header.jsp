@@ -27,7 +27,7 @@
 	function fn_getMenu(val,etc){
 		var f = document.headerform;
 		var url = '';
-		alert(val);
+// 		alert(val);
 		if(val == "H"){
 			url = "<c:url value='/main.do' />";
 		}else if(val =="B"){
