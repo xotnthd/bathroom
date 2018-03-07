@@ -55,7 +55,7 @@
 </script>
 <head>
 	<meta charset="utf-8">
-	<link rel="stylesheet" type="text/css" href="<c:url value='/css/layout/layout.css'/>" />
+	<link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/layout/layout.css'/>" />
 	<style type="text/css"></style>
 	<title>목욕탕</title>
 </head>

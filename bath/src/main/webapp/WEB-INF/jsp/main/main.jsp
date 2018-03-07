@@ -5,8 +5,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>  
 </head>
-<%-- <link rel="stylesheet" type="text/css" href="<c:url value='/css/main/main.css'/>" /> --%>
-<%-- <link rel="stylesheet" type="text/css" href="<c:url value='/css/bbs/board.css'/>" /> --%>
+<%-- <link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/main/main.css'/>" /> --%>
+<%-- <link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/bbs/board.css'/>" /> --%>
 <style>
 #contentsWrapper {
 	float: left;
@@ -32,8 +32,8 @@
 <input type="hidden" id="p_bbs_id" name="p_bbs_id"  value=""/>
 <!-- 등록버튼 시작 -->
 <div id="contentsWrapper">
-	<div class="content">asdf</div>
-	<div class="content">asdf</div>
+	<div class="content">이거말일세</div>
+	<div class="content">한글이 나오니?</div>
 </div>
 <div id="sidebar">asdf</div>
 </form>

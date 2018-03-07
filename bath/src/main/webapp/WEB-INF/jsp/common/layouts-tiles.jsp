@@ -6,7 +6,7 @@
 //스크립틀릿 영역
 %>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="<c:url value='/css/layout/layout.css'/>" />
+<link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/layout/layout.css'/>" />
 <html>
 <head>
 	<meta charset="utf-8">
