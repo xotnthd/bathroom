@@ -12,6 +12,7 @@ session.setAttribute("p_usrid", "admin");
 <title>목욕탕</title>
 </head>
 <body>
+	
 	<jsp:forward page="/main.do"/>
 </body>
 </html>

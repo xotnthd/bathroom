@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<%@ include file="/WEB-INF/jsp/common/include-header.jspf" %>
+<%@ include file="/WEB-INF/jsp/front/common/include-header.jspf" %>
 </head>
 <body>
     <h2>게시판 목록</h2>
@@ -47,7 +47,7 @@
     <br/>
     <a href="#this" class="btn" id="write">글쓰기</a>
      
-    <%@ include file="/WEB-INF/jsp/common/include-form.jspf" %>
+    <%@ include file="/WEB-INF/jsp/front/common/include-form.jspf" %>
     <script type="text/javascript">
         $(document).ready(function(){
             $("#write").on("click", function(e){ //글쓰기 버튼

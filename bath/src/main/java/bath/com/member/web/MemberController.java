@@ -26,14 +26,14 @@ Logger log = Logger.getLogger(this.getClass());
 
 	@RequestMapping(value="/usr/member/login.do")
 	public ModelAndView login(CommandMap commandMap) throws Exception{
-		ModelAndView mv = new ModelAndView("/member/login");
+		ModelAndView mv = new ModelAndView("/front/member/login");
 		
 		return mv;
 	}
 
 	@RequestMapping(value="/usr/member/join.do")
 	public ModelAndView join(CommandMap commandMap) throws Exception{
-		ModelAndView mv = new ModelAndView("/member/join");
+		ModelAndView mv = new ModelAndView("/front/member/join");
 		
 		return mv;
 	}
@@ -49,7 +49,7 @@ Logger log = Logger.getLogger(this.getClass());
 
 	@RequestMapping(value="/usr/member/usrList.do")
 	public ModelAndView usrList(CommandMap commandMap,HttpServletRequest request) throws Exception{
-		ModelAndView mv = new ModelAndView("/member/usrList");
+		ModelAndView mv = new ModelAndView("/front/member/usrList");
 		
 //		memberService.insertJoinUser(commandMap.getMap(), request);
 		

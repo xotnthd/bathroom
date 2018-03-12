@@ -25,7 +25,7 @@ public class BbsController {
 	
 	@RequestMapping(value="/bbs/boardList.do")
 	public ModelAndView boardList(CommandMap commandMap,HttpServletRequest request, HttpServletResponse response,HttpSession session) throws Exception{
-		ModelAndView mv = new ModelAndView("/bbs/bbsList");
+		ModelAndView mv = new ModelAndView("/front/bbs/bbsList");
 		
 		List<Map<String,Object>> list = bbsService.selectBoardList(commandMap.getMap());
 		mv.addObject("list", list);
@@ -35,7 +35,7 @@ public class BbsController {
 	
 	@RequestMapping(value="/bbs/boardWriteForm.do")
 	public ModelAndView boardWriteForm(CommandMap commandMap,HttpServletRequest request, HttpServletResponse response,HttpSession session) throws Exception{
-		ModelAndView mv = new ModelAndView("/bbs/bbsWriteForm");
+		ModelAndView mv = new ModelAndView("/front/bbs/bbsWriteForm");
 		
 		return mv;
 	}

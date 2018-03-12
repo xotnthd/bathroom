@@ -29,7 +29,7 @@ public class MainController {
 	
 	@RequestMapping(value="/main.do")
 	public ModelAndView main(CommandMap commandMap,HttpServletRequest request, HttpServletResponse response,HttpSession session) throws Exception{
-		ModelAndView mv = new ModelAndView("/main/main");
+		ModelAndView mv = new ModelAndView("front/main/main");
 		
 //		request.getSession();
 		String v_usrid = (String)session.getAttribute("p_usrid");
@@ -47,7 +47,7 @@ public class MainController {
 	
 	@RequestMapping(value="/maintest.do")
 	public ModelAndView main_test(CommandMap commandMap) throws Exception{
-		ModelAndView mv = new ModelAndView("/main/main");
+		ModelAndView mv = new ModelAndView("front/main/main");
 		
 		return mv;
 	}

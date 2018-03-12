@@ -3,12 +3,14 @@
 		"-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" 
 		"http://tiles.apache.org/dtds/tiles-config_2_1.dtd" >
 <tiles-definitions>
-	<definition name="layouts-tiles" template="/WEB-INF/jsp/common/layouts-tiles.jsp">
-		<put-attribute name="header" value="/WEB-INF/jsp/common/template-header.jsp"/>
-		<put-attribute name="left" value="/WEB-INF/jsp/common/template-left.jsp"/>
+
+	<!-- 사용자 전용 타일즈 -->
+	<definition name="layouts-tiles" template="/WEB-INF/jsp/front/common/layouts-tiles.jsp">
+		<put-attribute name="left" value="/WEB-INF/jsp/front/common/template-left.jsp"/>
+		<put-attribute name="header" value="/WEB-INF/jsp/front/common/template-header.jsp"/>
 		<put-attribute name="body" value=""/>
-		<put-attribute name="right" value="/WEB-INF/jsp/common/template-right.jsp"/>
-		<put-attribute name="footer" value="/WEB-INF/jsp/common/template-footer.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/jsp/front/common/template-footer.jsp"/>
+		<put-attribute name="right" value="/WEB-INF/jsp/front/common/template-right.jsp"/>
 	</definition>
 	
 	<definition name="*" extends="layouts-tiles">
@@ -20,4 +22,25 @@
 	<definition name="*/*/*" extends="layouts-tiles">
 		<put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp"/>
 	</definition>
+	
+	<!-- 관리자 용 타일즈  -->
+	<definition name="admin-tiles" template="/WEB-INF/jsp/admin/common/layouts-tiles.jsp">
+        <put-attribute name="header" value="/WEB-INF/jsp/admin/common/template-header.jsp"/>  
+        <put-attribute name="body" value=""/>
+        <put-attribute name="footer" value="/WEB-INF/jsp/admin/common/template-footer.jsp"/>  
+    </definition>
+	
+	<definition name="admin/*" extends="admin-tiles">
+		<put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp"/>
+	</definition>
+	<definition name="*/admin" extends="admin-tiles">
+		<put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp"/>
+	</definition>
+	<definition name="*/admin/*" extends="admin-tiles">
+		<put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp"/>
+	</definition>
+	<definition name="*/admin/*/*" extends="admin-tiles">
+		<put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp"/>
+	</definition>
+	
 </tiles-definitions>

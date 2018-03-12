@@ -6,22 +6,20 @@
 //스크립틀릿 영역
 %>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/layout/layout.css'/>" />
+<link rel="stylesheet" type="text/css" href="<c:url value='/resources/admin/css/layout/layout.css'/>" />
 <html>
 <head>
 	<meta charset="utf-8">
 	<style type="text/css"></style>
-	<title>목욕탕</title>
+	<title>목욕탕 - 관리자</title>
 </head>
 <body>
 	<div class="wrap">
-		<div class="header"><tiles:insertAttribute name="header"/></div>
-		<div class="middle">
-			<div class="left"><tiles:insertAttribute name="left"/></div>
-			<div class="body"><tiles:insertAttribute name="body"/></div>
-			<div class="right"><tiles:insertAttribute name="right"/></div>
-		</div>
-		<div class="footer"><tiles:insertAttribute name="footer"/></div>
-	</div>
+      <div class="frm_wrap">
+        <div class="header"><tiles:insertAttribute name="header"/></div>
+		<div class="center"><tiles:insertAttribute name="body"/></div>
+        <div class="footer"><tiles:insertAttribute name="footer"/></div>
+      </div> 
+    </div>
 </body>
 </html>

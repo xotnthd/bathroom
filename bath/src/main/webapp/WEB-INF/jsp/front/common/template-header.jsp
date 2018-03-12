@@ -80,7 +80,7 @@
 					<ul>
 						<li><a href="javascript:void(0);" onclick="fn_getMenu('H');">기본정보</a></li>
 						<li><a href="javascript:void(0);" onclick="fn_getMenu('A');">유저목록</a></li>
-						<li><a href="#">subMenu3</a></li>
+						<li><a href="/admin/bbs/adminBoardList.do">subMenu3</a></li>
 					</ul>
 				</li>
 				<li>
