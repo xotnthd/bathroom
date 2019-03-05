@@ -70,7 +70,7 @@ public class TestController {
 
 	@RequestMapping(value="/sample/openBoardWrite.do")
 	public ModelAndView openBoardWrite(CommandMap commandMap) throws Exception{
-	    ModelAndView mv = new ModelAndView("/test/boardWrite");
+	    ModelAndView mv = new ModelAndView("front/test/boardWrite");
 	     
 	    return mv;
 	}

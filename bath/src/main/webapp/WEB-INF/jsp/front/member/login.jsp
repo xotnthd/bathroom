@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>목욕탕</title>
+<title>제안시스템</title>
 </head>
 <body>
 	

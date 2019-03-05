@@ -11,17 +11,17 @@
 <head>
 	<meta charset="utf-8">
 	<style type="text/css"></style>
-	<title>목욕탕</title>
+	<title>제안시스템</title>
 </head>
 <body>
 	<div class="wrap">
-		<div class="left"><tiles:insertAttribute name="left"/></div>
+		<%-- <div class="left"><tiles:insertAttribute name="left"/></div> --%>
 		<div class="middle">
 			<div class="header"><tiles:insertAttribute name="header"/></div>
 			<div class="body"><tiles:insertAttribute name="body"/></div>
-			<div class="footer"><tiles:insertAttribute name="footer"/></div>
+			<%-- <div class="footer"><tiles:insertAttribute name="footer"/></div> --%>
 		</div>
-		<div class="right"><tiles:insertAttribute name="right"/></div>
+		<%-- <div class="right"><tiles:insertAttribute name="right"/></div> --%>
 	</div>
 </body>
 </html>

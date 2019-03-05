@@ -6,11 +6,11 @@
 
 	<!-- 사용자 전용 타일즈 -->
 	<definition name="layouts-tiles" template="/WEB-INF/jsp/front/common/layouts-tiles.jsp">
-		<put-attribute name="left" value="/WEB-INF/jsp/front/common/template-left.jsp"/>
+		<!-- <put-attribute name="left" value="/WEB-INF/jsp/front/common/template-left.jsp"/> -->
 		<put-attribute name="header" value="/WEB-INF/jsp/front/common/template-header.jsp"/>
 		<put-attribute name="body" value=""/>
-		<put-attribute name="footer" value="/WEB-INF/jsp/front/common/template-footer.jsp"/>
-		<put-attribute name="right" value="/WEB-INF/jsp/front/common/template-right.jsp"/>
+		<!-- <put-attribute name="footer" value="/WEB-INF/jsp/front/common/template-footer.jsp"/> -->
+		<!-- <put-attribute name="right" value="/WEB-INF/jsp/front/common/template-right.jsp"/> -->
 	</definition>
 	
 	<definition name="*" extends="layouts-tiles">

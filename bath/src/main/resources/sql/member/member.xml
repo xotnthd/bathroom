@@ -28,27 +28,515 @@
  	            DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
  	        ) 
  	    ]]> 
+ 	    
 	</insert>
 	
 	<insert id="insertFile" parameterType="hashmap">
+		<selectKey keyProperty="p_file_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(FILE_SEQ)+1,1) FROM TB_FILE
+		</selectKey>
     <![CDATA[
-        INSERT INTO TB_COM_FILE
+        INSERT INTO TB_FILE
         (
-            UPLOAD_SEQ,
-            ORIGINAL_FILE_NAME,
-            STORED_FILE_NAME,
-            FILE_SIZE,
-            CRUSER
+            FILE_SEQ
+            , ORDER_SEQ
+            , ORIGINAL_FILE_NM
+            , STORED_FILE_NM
+            , FILE_SIZE
+            , DEL_YN
+            , SDATE
         )
         VALUES
         (
-            #{p_file_seq},
-            #{ORIGINAL_FILE_NAME},
-            #{STORED_FILE_NAME},
-            #{FILE_SIZE},
-            'Admin'
+            #{p_file_seq}
+            , #{p_order_seq}
+            , #{p_original_file_nm}
+            , #{p_stored_file_name}
+            , #{p_file_size}
+            , 'N'
+            , DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
         )
     ]]>
 	</insert>
+	
+	<insert id="insertSuggestionTempWrite" parameterType="hashmap">
+		<selectKey keyProperty="p_order_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(ORDER_SEQ)+1,1) FROM TB_ORDERING
+		</selectKey>
+	     <![CDATA[
+ 	        INSERT INTO TB_ORDERING (
+				ORDER_SEQ        
+				, ORDER_CATE       
+				, PRODUCT_CATE     
+				, ORDER_FLOW       
+				, PRODUCT_GUBUN    
+				, PRODUCT_CHA      
+				, PRODUCT_TRADEMARK
+				, COMP_NM          
+				, COMP_NM_ENG      
+				, COMP_NM_CHN      
+				, EMAILING         
+				, PHONE_NO         
+				, FAX_NO           
+				, ADDR_KO          
+				, ADDR_ENG         
+				, ADDR_CHN
+				, ADDR_KO2          
+				, ADDR_ENG2         
+				, ADDR_CHN2          
+				, PRODUCT_NM       
+				, PRODUCT_NM_ENG   
+				, PRODUCT_NM_CHN   
+				, PRODUCT_NATION   
+				, GAGONG_YN        
+				, FILE_ONE         
+				, FILE_TWO         
+				, PAKAGE_TEXT      
+				, SDATE     
+				, MDATE       
+			)VALUES (
+				#{p_order_seq}
+				, #{p_order_cate}
+				, #{p_product_cate}
+				, #{p_order_flow}
+				, #{p_product_gubun}
+				, #{p_product_cha}
+				, #{p_product_trademark}
+				, #{p_comp_nm}
+				, #{p_comp_nm_eng}
+				, #{p_comp_nm_chn}
+				, #{p_emailing}
+				, #{p_phone_no}
+				, #{p_fax_no}
+				, #{p_addr_ko}
+				, #{p_addr_eng}
+				, #{p_addr_chn}
+				, #{p_addr_ko2}
+				, #{p_addr_eng2}
+				, #{p_addr_chn2}
+				, #{p_product_nm}
+				, #{p_product_nm_eng}
+				, #{p_product_nm_chn}
+				, #{p_product_nation}
+				, #{p_gagong_yn}
+				, #{file_one}
+				, #{file_two}
+				, #{p_pakage_text}
+				, DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+				, DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+			)
+ 	    ]]> 
+ 	    
+	</insert>
+	
+	<insert id="insertBaseInfo" parameterType="hashmap">
+		<selectKey keyProperty="p_base_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(BASE_SEQ)+1,1) FROM TB_BASEINFO
+		</selectKey>
+    <![CDATA[
+        INSERT INTO TB_BASEINFO
+        (
+            BASE_SEQ
+			, ORDER_SEQ
+			, PRODUCT_NM
+			, PRODUCT_NM_ENG
+			, PRODUCT_NM_CHN
+			, PRODUCT_LOT
+			, PRODUCT_SDATE
+			, PRODUCT_EDATE
+			, PRODUCT_SMELL
+			, BRAND_NM
+			, BRAND_NM_ENG
+			, BRAND_NM_CHN
+			, BRAND_LOT
+			, BRAND_SDATE
+			, BRAND_EDATE
+			, BRAND_SMELL
+			, SDATE
+        )
+        VALUES
+        (
+            #{p_base_seq}
+            , #{p_order_seq}
+            , #{p_base_product_nm}
+            , #{p_base_product_nm_eng}
+            , #{p_base_product_nm_chn}
+            , #{p_base_product_lot}
+            , #{p_base_product_sdate}
+            , #{p_base_product_edate}
+            , #{p_base_product_smell}
+            , #{p_base_brand_nm}
+            , #{p_base_brand_nm_eng}
+            , #{p_base_brand_nm_chn}
+            , #{p_base_brand_lot}
+            , #{p_base_brand_sdate}
+            , #{p_base_brand_edate}
+            , #{p_base_brand_smell}
+            , DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+        )
+    ]]>
+	</insert>
+
+	<insert id="insertMakeInfo" parameterType="hashmap">
+		<selectKey keyProperty="p_make_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(MAKE_SEQ)+1,1) FROM TB_MAKEINFO
+		</selectKey>
+    <![CDATA[
+        INSERT INTO TB_MAKEINFO
+        (
+            MAKE_SEQ
+			, ORDER_SEQ
+			, COMPANY_NM
+			, COMPANY_ADDR
+			, COMPANY_NM_ENG
+			, COMPANY_ADDR_ENG
+			, COMPANY_NM_CHN
+			, COMPANY_ADDR_CHN
+			, SDATE
+        )
+        VALUES
+        (
+            #{p_make_seq}
+            , #{p_order_seq}
+            , #{p_company_nm}
+            , #{p_company_addr}
+            , #{p_company_nm_eng}
+            , #{p_company_addr_eng}
+            , #{p_company_nm_chn}
+            , #{p_company_addr_chn}
+            , DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+        )
+    ]]>
+	</insert>
+	
+	<select id="selectSuggestionList" parameterType="hashmap" resultType="hashmap">
+        <![CDATA[
+           SELECT A.ORDER_SEQ
+				, A.ORDER_FLOW
+				, B.ORDER_FLOW_NM
+				, A.ORDER_CATE
+				, A.PRODUCT_CATE
+				, C.PRODUCT_CATE_NM
+				, A.PRODUCT_NM
+				, DATE_FORMAT(A.SDATE,'%Y-%m-%d') AS SDATE
+			FROM TB_ORDERING A 
+			INNER JOIN TB_ORDERFLOW B 
+			ON A.ORDER_FLOW = B.ORDER_FLOW
+			INNER JOIN TB_PRODUCTCATE C 
+			ON A.PRODUCT_CATE = C.PRODUCT_CATE
+			WHERE 1=1 
+        ]]>
+        	<if test="p_order_flow != null and p_order_flow != ''">
+				AND A.ORDER_FLOW = #{p_order_flow}
+        	</if>
+    </select>
+	
+	<insert id="insertSuggestionHistoryWrite" parameterType="hashmap">
+		<selectKey keyProperty="p_history_seq" resultType="string" order="BEFORE">
+			SELECT IFNULL(MAX(HISTORY_SEQ)+1,1) FROM TB_ORDERING_HISTORY
+		</selectKey>
+    <![CDATA[
+        INSERT INTO TB_ORDERING_HISTORY
+        (
+            HISTORY_SEQ
+			, ORDER_SEQ
+			, ORDER_FLOW
+			, ORDER_CATE
+			, PRODUCT_CATE
+			, PRODUCT_NM
+			, SDATE
+        )
+        VALUES
+        (
+            #{p_history_seq}
+            , #{p_order_seq}
+            , #{p_order_flow}
+            , #{p_order_cate}
+            , #{p_product_cate}
+            , #{p_product_nm}
+            , DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+        )
+    ]]>
+	</insert>
+	
+	<select id="selectSuggestionDetail" parameterType="hashmap" resultType="hashmap">
+	    <![CDATA[
+	        SELECT A.ORDER_SEQ
+				, A.ORDER_ID
+				, A.ORDER_CATE
+				, A.PRODUCT_CATE
+				, C.PRODUCT_CATE_NM
+				, A.ORDER_FLOW
+				, B.ORDER_FLOW_NM
+				, A.PRODUCT_GUBUN
+				, A.PRODUCT_CHA
+				, A.PRODUCT_TRADEMARK
+				, A.COMP_NM
+				, A.COMP_NM_ENG
+				, A.COMP_NM_CHN
+				, A.EMAILING
+				, A.PHONE_NO
+				, A.FAX_NO
+				, A.ADDR_KO
+				, A.ADDR_ENG
+				, A.ADDR_CHN
+				, A.ADDR_KO2
+				, A.ADDR_ENG2
+				, A.ADDR_CHN2
+				, A.PRODUCT_NM
+				, A.PRODUCT_NM_ENG
+				, A.PRODUCT_NM_CHN
+				, A.PRODUCT_NATION
+				, A.GAGONG_YN
+				, A.PAKAGE_TEXT
+				, DATE_FORMAT(A.SDATE,'%Y-%m-%d')
+			FROM TB_ORDERING A
+			INNER JOIN TB_ORDERFLOW B 
+			ON A.ORDER_FLOW = B.ORDER_FLOW
+			INNER JOIN TB_PRODUCTCATE C 
+			ON A.PRODUCT_CATE = C.PRODUCT_CATE
+			WHERE 1 = 1
+			AND ORDER_SEQ = #{p_order_seq}
+		]]>
+	</select>
+	
+	<select id="selectSuggestionFileList" parameterType="hashmap" resultType="hashmap">
+	    <![CDATA[
+	        SELECT FILE_SEQ
+	        		, STORED_FILE_NM 
+	        		, ORIGINAL_FILE_NM
+	        		, FILE_SIZE
+	        		, DEL_YN
+	        		, DATE_FORMAT(SDATE,'%Y-%m-%d')
+			FROM TB_FILE
+			WHERE 1 = 1
+			AND ORDER_SEQ = #{p_order_seq}
+			ORDER BY FILE_SEQ ASC
+	    ]]>
+	</select>
+
+	<select id="selectSuggestionBaseList" parameterType="hashmap" resultType="hashmap">
+	    <![CDATA[
+	        SELECT BASE_SEQ
+				,ORDER_SEQ
+				, PRODUCT_NM
+				, PRODUCT_NM_ENG
+				, PRODUCT_NM_CHN
+				, BRAND_NM
+				, BRAND_NM_ENG
+				, BRAND_NM_CHN
+				, PRODUCT_LOT
+				, BRAND_LOT
+				, PRODUCT_SDATE
+				, BRAND_SDATE
+				, PRODUCT_EDATE
+				, BRAND_EDATE
+				, PRODUCT_SMELL
+				, BRAND_SMELL
+				, SDATE
+			FROM TB_BASEINFO
+			WHERE 1 = 1
+			AND ORDER_SEQ = #{p_order_seq}
+			ORDER BY BASE_SEQ ASC
+	    ]]>
+	</select>
+
+	<select id="selectSuggestionMakeList" parameterType="hashmap" resultType="hashmap">
+	    <![CDATA[
+	        SELECT MAKE_SEQ
+				, ORDER_SEQ
+				, COMPANY_NM
+				, COMPANY_NM_ENG
+				, COMPANY_NM_CHN
+				, COMPANY_ADDR
+				, COMPANY_ADDR_ENG
+				, COMPANY_ADDR_CHN
+				, SDATE
+			FROM TB_MAKEINFO
+			WHERE 1 = 1 
+			AND ORDER_SEQ = #{p_order_seq}
+			ORDER BY MAKE_SEQ ASC
+	    ]]>
+	</select>
+
+	<select id="selectSuggestionHistoryList" parameterType="hashmap" resultType="hashmap">
+	    <![CDATA[
+	        SELECT A.HISTORY_SEQ
+	        		, A.ORDER_SEQ
+	        		, A.ORDER_FLOW
+	        		, B.ORDER_FLOW_NM
+	        		, A.ORDER_CATE
+	        		, A.PRODUCT_CATE
+	        		, C.PRODUCT_CATE_NM
+	        		, A.PRODUCT_NM
+	        		, DATE_FORMAT(A.SDATE,'%Y-%m-%d') AS SDATE
+			FROM TB_ORDERING_HISTORY A
+			INNER JOIN TB_ORDERFLOW B 
+			ON A.ORDER_FLOW = B.ORDER_FLOW
+			INNER JOIN TB_PRODUCTCATE C 
+			ON A.PRODUCT_CATE = C.PRODUCT_CATE
+			WHERE 1 = 1 
+			AND ORDER_SEQ = #{p_order_seq}
+			ORDER BY HISTORY_SEQ DESC
+	    ]]>
+	</select>
+	
+	<update id="updateSuggestionTempWrite" parameterType="hashmap">
+	    <![CDATA[
+	        UPDATE TB_ORDERING
+	        SET COMP_NM = #{p_comp_nm }
+				, COMP_NM_ENG = #{p_comp_nm_eng }
+				, COMP_NM_CHN = #{p_comp_nm_chn }
+				, EMAILING = #{p_emailing }
+				, PHONE_NO = #{p_phone_no }
+				, FAX_NO = #{p_fax_no }
+				, ADDR_KO = #{p_addr_ko }
+				, ADDR_ENG = #{p_addr_eng }
+				, ADDR_CHN = #{p_addr_chn }
+				, ADDR_KO2 = #{p_addr_ko2 }
+				, ADDR_ENG2 = #{p_addr_eng2 }
+				, ADDR_CHN2 = #{p_addr_chn2 }
+				, PRODUCT_NM = #{p_product_nm }
+				, PRODUCT_NM_ENG = #{p_product_nm_eng }
+				, PRODUCT_NM_CHN = #{p_product_nm_chn }
+				, PRODUCT_NATION = #{p_product_nation }
+				, GAGONG_YN = #{p_gagong_yn }
+				, PAKAGE_TEXT = #{p_pakage_text }
+				, MDATE = DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+
+	<update id="updateSuggestionFailTempWrite" parameterType="hashmap">
+	    <![CDATA[
+	        UPDATE TB_ORDERING
+	        SET COMP_NM = #{p_comp_nm }
+	        	, ORDER_FLOW = 'C'
+	        	, FAIL_YN = 'Y'
+				, COMP_NM_ENG = #{p_comp_nm_eng }
+				, COMP_NM_CHN = #{p_comp_nm_chn }
+				, EMAILING = #{p_emailing }
+				, PHONE_NO = #{p_phone_no }
+				, FAX_NO = #{p_fax_no }
+				, ADDR_KO = #{p_addr_ko }
+				, ADDR_ENG = #{p_addr_eng }
+				, ADDR_CHN = #{p_addr_chn }
+				, ADDR_KO2 = #{p_addr_ko2 }
+				, ADDR_ENG2 = #{p_addr_eng2 }
+				, ADDR_CHN2 = #{p_addr_chn2 }
+				, PRODUCT_NM = #{p_product_nm }
+				, PRODUCT_NM_ENG = #{p_product_nm_eng }
+				, PRODUCT_NM_CHN = #{p_product_nm_chn }
+				, PRODUCT_NATION = #{p_product_nation }
+				, GAGONG_YN = #{p_gagong_yn }
+				, PAKAGE_TEXT = #{p_pakage_text }
+				, MDATE = DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+	
+	<update id="deleteSuggestionBaseInfo" parameterType="hashmap">
+	    <![CDATA[
+	        DELETE FROM TB_BASEINFO
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+	
+	<update id="deleteSuggestionMakeInfo" parameterType="hashmap">
+	    <![CDATA[
+	        DELETE FROM TB_MAKEINFO
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+
+	<update id="deleteFileList" parameterType="hashmap">
+	    <![CDATA[
+	        DELETE FROM TB_FILE
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+
+	<update id="updateSuggestionStep" parameterType="hashmap">
+	    <![CDATA[
+	        UPDATE TB_ORDERING
+	        SET ORDER_FLOW = #{p_order_flow_next }
+	        	, MDATE = DATE_FORMAT(NOW(),'%Y%m%d%h%i%s')
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+
+	<update id="updateSuggestionValue" parameterType="hashmap">
+	    <![CDATA[
+	        UPDATE TB_ORDERING
+	        SET FAIL_YN = 'Y'
+	        WHERE ORDER_SEQ = #{p_order_seq}
+	    ]]>
+	</update>
+	
+	<select id="selectSuggestionInfoList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT A.ORDER_SEQ
+				, A.ORDER_ID
+				, A.ORDER_CATE
+				, A.PRODUCT_CATE
+				, A.ORDER_FLOW
+				, A.PRODUCT_GUBUN
+				, A.PRODUCT_CHA
+				, A.PRODUCT_TRADEMARK
+				, A.COMP_NM
+				, A.COMP_NM_ENG
+				, A.COMP_NM_CHN
+				, A.EMAILING
+				, A.PHONE_NO
+				, A.FAX_NO
+				, A.ADDR_KO
+				, A.ADDR_ENG
+				, A.ADDR_CHN
+				, A.ADDR_KO2
+				, A.ADDR_ENG2
+				, A.ADDR_CHN2
+				, A.PRODUCT_NM
+				, A.PRODUCT_NM_ENG
+				, A.PRODUCT_NM_CHN
+				, A.PRODUCT_NATION
+				, A.GAGONG_YN
+				, A.PAKAGE_TEXT
+				, A.FAIL_YN
+				, A.SDATE
+				, A.MDATE
+			FROM TB_ORDERING A
+			WHERE DATE_FORMAT(NOW(),'%Y%m%d%h%i%s') > DATE_FORMAT(DATE_ADD(DATE_FORMAT(A.MDATE,'%Y%m%d%h%i%s'), INTERVAL 1 MINUTE),'%Y%m%d%h%i%s')
+			AND A.ORDER_FLOW NOT IN('E','F','D')
+		]]>
+	</select>
+	
+	<insert id="insertSuggentionReturnInfo" parameterType="hashmap">
+    <![CDATA[
+        INSERT INTO TB_RETURN_ORDER
+        (
+            RETURN_SEQ
+            , ORDER_SEQ
+        )
+        VALUES
+        (
+            #{p_return_seq}
+            , #{p_order_seq}
+        )
+    ]]>
+	</insert>
+	
+	<select id="selectSuggestionFailList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT A.ORDER_SEQ
+				, C.RETURN_POSITION
+				, C.RETURN_COMMENT
+			FROM TB_ORDERING A
+			LEFT OUTER JOIN TB_RETURN_ORDER B 
+			ON A.ORDER_SEQ = B.ORDER_SEQ
+			INNER JOIN TB_RETURN_INFO C
+			ON B.RETURN_SEQ = C.RETURN_SEQ
+			WHERE A.ORDER_SEQ = #{p_order_seq}
+		]]>
+	</select>
 	
 </mapper>

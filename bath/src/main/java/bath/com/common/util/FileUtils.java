@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
  
 @Component("fileUtils")
 public class FileUtils {
-    private static final String filePath = "E:\\bath\\context\\upload\\";
+    private static final String filePath = "D:\\bath\\context\\upload\\";
      
     public List<Map<String,Object>> parseInsertFileInfo(Map<String,Object> map, HttpServletRequest request) throws Exception{
         MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
@@ -29,8 +29,8 @@ public class FileUtils {
          
         List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
         Map<String, Object> listMap = null; 
-         
-        String p_file_seq = (String)map.get("p_file_seq");
+        
+        String p_order_seq = (String)map.get("p_order_seq");
          
         File file = new File(filePath);
         if(file.exists() == false){
@@ -48,10 +48,10 @@ public class FileUtils {
                 multipartFile.transferTo(file);
                  
                 listMap = new HashMap<String,Object>();
-                listMap.put("p_seq", p_file_seq);
-                listMap.put("ORIGINAL_FILE_NAME", originalFileName);
-                listMap.put("STORED_FILE_NAME", storedFileName);
-                listMap.put("FILE_SIZE", multipartFile.getSize());
+                listMap.put("p_order_seq", p_order_seq);
+                listMap.put("p_original_file_nm", originalFileName);
+                listMap.put("p_stored_file_name", storedFileName);
+                listMap.put("p_file_size", multipartFile.getSize());
                 list.add(listMap);
             }
         }

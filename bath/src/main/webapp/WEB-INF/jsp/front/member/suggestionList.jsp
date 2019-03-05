@@ -1,12 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>  
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>제안시스템</title>
 </head>
-<link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/main/main.css'/>" />
-<%-- <link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/bbs/board.css'/>" /> --%>
 <script type="text/javascript">
 $(document).ready(function(){
 	var f = document.form1;
@@ -31,13 +33,24 @@ $(document).ready(function(){
 	
 });
 
-function fn_goOrderList(val){
+function fn_tempWriteForm(){
+	var f = document.form1;
+	f.action = "<c:url value='/usr/member/suggestionTempWrite.do' />";
+	f.submit();
+}
+
+function fn_suggestion(val){
 	var f = document.form1;
 	
-	if(val != ''){
-		f.p_order_flow.value = val;
+	if(val == '0'){
+		f.p_order_cate.value="A";
+	}else if(val == '1'){
+		f.p_order_cate.value="B";
+	}else if(val == '2'){
+		f.p_order_cate.value="C";
+		
 	}
-	f.action ="<c:url value='/usr/member/suggestionList.do' />";
+	f.action = "<c:url value='/usr/member/suggestionNoti.do' />";
 	f.submit();
 }
 
@@ -54,11 +67,23 @@ function fn_goDetail(seq,flow){
 	}
 	f.submit();
 }
+
+function fn_goOrderList(val){
+	var f = document.form1;
+	
+	if(val != ''){
+		f.p_order_flow.value = val;
+	}else {
+		f.p_order_flow.value = "";
+	}
+	f.action ="<c:url value='/usr/member/suggestionList.do' />";
+	f.submit();
+}
 </script>
 <body>
-<form name="form1" id="form1" >
-<input type="hidden" id="p_order_seq" name="p_order_seq"  value=""/>
-<input type="hidden" id="p_order_flow" name="p_order_flow" value="" />
+<form id="form1" name="form1" method="post" enctype="multipart/form-data">
+<input type="hidden" name="p_order_seq" id="p_order_seq" value="">
+<input type="hidden" name="p_order_flow" id="p_order_flow" value="${map.p_order_flow }"/> 
 <c:choose>
     <c:when test="${fn:length(countList) > 0}">
         <c:forEach items="${countList }" var="row">
@@ -129,96 +154,43 @@ function fn_goDetail(seq,flow){
 </div>
 <div>
 	<div>
-		<div style="border: 1px solid ; padding: 10px; width: 100%;height:24%"">이미지 영역</div>
-		
-		<div style="border: 1px solid ; float: left; padding: 10px; width: 20%;height:64%">
-		<h2>검토요청중</h2>
-			<table>
-				<tbody>
-					<c:choose>
-		                <c:when test="${fn:length(aList) > 0}">
-		                    <c:forEach items="${aList }" var="row">
-		                        <tr>
-		                            <td><a href="javascript:void(0);" onclick="fn_goDetail('${row.ORDER_SEQ }','${row.ORDER_FLOW }')">${row.PRODUCT_NM }</a></td>
-		                        </tr>
-		                    </c:forEach>
-		                </c:when>
-		                <c:otherwise>
-		                    <tr>
-		                        <td>조회된 결과가 없습니다.</td>
-		                    </tr>
-		                </c:otherwise>
-		            </c:choose>
-				</tbody>
-			</table>
-			<div onclick="fn_goOrderList('A')">더보기</div>
-		</div>
-		<div style="border: 1px solid ; float: left; padding: 10px; width: 20%;height:64%">
-		<h2>검토중</h2>
-			<table>
-				<tbody>
-					<c:choose>
-		                <c:when test="${fn:length(bList) > 0}">
-		                    <c:forEach items="${bList }" var="row">
-		                        <tr>
-		                            <td><a href="javascript:void(0);" onclick="fn_goDetail('${row.ORDER_SEQ }','${row.ORDER_FLOW }')">${row.PRODUCT_NM }</a></td>
-		                        </tr>
-		                    </c:forEach>
-		                </c:when>
-		                <c:otherwise>
-		                    <tr>
-		                        <td >조회된 결과가 없습니다.</td>
-		                    </tr>
-		                </c:otherwise>
-		            </c:choose>
-				</tbody>
-			</table>
-			<div onclick="fn_goOrderList('C')">더보기</div>
-		</div>
-		<div style="border: 1px solid ; float: left; padding: 10px; width: 20%;height:64%">
-		<h2>접수중</h2>
-			<table>
-				<tbody>
-					<c:choose>
-		                <c:when test="${fn:length(cList) > 0}">
-		                    <c:forEach items="${cList }" var="row">
-		                        <tr>
-		                            <td><a href="javascript:void(0);" onclick="fn_goDetail('${row.ORDER_SEQ }','${row.ORDER_FLOW }')">${row.PRODUCT_NM }</a></td>
-		                        </tr>
-		                    </c:forEach>
-		                </c:when>
-		                <c:otherwise>
-		                    <tr>
-		                        <td >조회된 결과가 없습니다.</td>
-		                    </tr>
-		                </c:otherwise>
-		            </c:choose>
-				</tbody>
-			</table>
-			<div onclick="fn_goOrderList('B')">더보기</div>
-		</div>
-		<div style="border: 1px solid ; float: left; padding: 10px; width: 20%;height:64%">
-		<h2>반려</h2>
-			<table>
-				<tbody>
-					<c:choose>
-		                <c:when test="${fn:length(fList) > 0}">
-		                    <c:forEach items="${fList }" var="row">
-		                        <tr>
-		                            <td><a href="javascript:void(0);" onclick="fn_goDetail('${row.ORDER_SEQ }','${row.ORDER_FLOW }')">${row.PRODUCT_NM }</a></td>
-		                        </tr>
-		                    </c:forEach>
-		                </c:when>
-		                <c:otherwise>
-		                    <tr>
-		                        <td >조회된 결과가 없습니다.</td>
-		                    </tr>
-		                </c:otherwise>
-		            </c:choose>
-				</tbody>
-			</table>
-			<div onclick="fn_goOrderList('F')">더보기</div>
-		</div>
+		<table width="1650" style="border:solid 1px;">
+			<thead>
+				<th>상태</th>
+				<th>접수구분</th>
+				<th>제품카테고리</th>
+				<th>제품명</th>
+				<th>작성자</th>
+				<th>작성일</th>
+			</thead>
+			<tbody>
+				<c:choose>
+	                <c:when test="${fn:length(list) > 0}">
+	                    <c:forEach items="${list }" var="row">
+	                        <tr>
+	                            <td>${row.ORDER_FLOW_NM }</td>
+	                            <td>
+	                            	<c:if test="${row.ORDER_CATE eq 'A' }">사전검토</c:if>
+	                            	<c:if test="${row.ORDER_CATE eq 'B' }">NMPA 접수</c:if>
+	                            	<c:if test="${row.ORDER_CATE eq 'C' }">사전검역서비스</c:if>
+	                            </td>
+	                            <td>${row.PRODUCT_CATE_NM }</td>
+	                            <td class="title">
+	                                <a href="javascript:void(0);" onclick="fn_goDetail('${row.ORDER_SEQ }','${row.ORDER_FLOW }')">${row.PRODUCT_NM }</a>
+	                            </td>
+	                            <td>홍길동</td>
+	                            <td>${row.SDATE }</td>
+	                        </tr>
+	                    </c:forEach>
+	                </c:when>
+	                <c:otherwise>
+	                    <tr>
+	                        <td colspan="6">조회된 결과가 없습니다.</td>
+	                    </tr>
+	                </c:otherwise>
+	            </c:choose>
+			</tbody>
+		</table>
 	</div>
 </div>
 

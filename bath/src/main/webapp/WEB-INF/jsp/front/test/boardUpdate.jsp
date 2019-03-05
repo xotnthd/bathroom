@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<%@ include file="/WEB-INF/jsp/common/include-header.jspf" %>
+<%@ include file="/WEB-INF/jsp/front/common/include-header.jspf" %>
 </head>
 <body>
     <form id="frm">
@@ -49,7 +49,7 @@
     <a href="#this" class="btn" id="update">저장하기</a>
     <a href="#this" class="btn" id="delete">삭제하기</a>
      
-    <%@ include file="/WEB-INF/jsp/common/include-form.jspf" %>
+    <%@ include file="/WEB-INF/jsp/front/common/include-form.jspf" %>
     <script type="text/javascript">
         $(document).ready(function(){
             $("#list").on("click", function(e){ //목록으로 버튼

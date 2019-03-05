@@ -25,10 +25,10 @@ public class CommonController {
     @RequestMapping(value="/common/downloadFile.do")
     public void downloadFile(CommandMap commandMap, HttpServletResponse response) throws Exception{
         Map<String,Object> map = commonService.selectFileInfo(commandMap.getMap());
-        String storedFileName = (String)map.get("STORED_FILE_NAME");
-        String originalFileName = (String)map.get("ORIGINAL_FILE_NAME");
+        String storedFileName = (String)map.get("STORED_FILE_NM");
+        String originalFileName = (String)map.get("ORIGINAL_FILE_NM");
          
-        byte fileByte[] = FileUtils.readFileToByteArray(new File("E:\\bath\\context\\upload\\"+storedFileName));
+        byte fileByte[] = FileUtils.readFileToByteArray(new File("D:\\bath\\context\\upload\\"+storedFileName));
          
         response.setContentType("application/octet-stream");
         response.setContentLength(fileByte.length);

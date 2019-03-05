@@ -22,7 +22,18 @@ public class MainServiceImpl implements MainService {
     public List<Map<String, Object>> selectBoardList(Map<String, Object> map) throws Exception {
         return mainDAO.selectBoardList(map);
     }
+
 	
+	@Override
+	public List<Map<String, Object>> selectOrderCountInfo(Map<String, Object> map) throws Exception {
+		return mainDAO.selectOrderCountInfo(map);
+	}
+	
+	@Override
+    public List<Map<String, Object>> selectOrderingList(Map<String, Object> map) throws Exception {
+        return mainDAO.selectOrderingList(map);
+    }
+
 //	@Override
 //    public List<Map<String, Object>> selectBoardList(CommandMap commandMap) {
 //        return mainDAO.selectBoardList(commandMap);

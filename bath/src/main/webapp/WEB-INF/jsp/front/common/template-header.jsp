@@ -52,63 +52,56 @@
 		f.submit();
 	}
 	
+	function fn_goInsert(){
+		var f = document.headerform;
+		f.action = "<c:url value='/usr/member/suggestion.do' />";
+		f.submit();
+	}
+	
+	function fn_main(){
+		var f = document.headerform;
+		f.action = "<c:url value='/main.do' />";
+		f.submit();
+	}
 </script>
 <head>
 	<meta charset="utf-8">
 	<link rel="stylesheet" type="text/css" href="<c:url value='/resources/front/css/layout/layout.css'/>" />
 	<style type="text/css"></style>
-	<title>목욕탕</title>
+	<title>제안시스템</title>
 </head>
 <body>
-	<form id="headerform" name="headerform" method="post">
-		
-	</form>
-	<div class="m_login">
-		<div>
-			<button type="button" onclick="login();">로그인</button>
-			<button type="button" onclick="join();">회원가입</button>
-		</div> 
-	</div>
+<form id="headerform" name="headerform" method="post">
 	<div class="m_wrap">
 		<nav>
 			<div class="logo">
-				<h1><a href="javascript:void(0);" onclick="fn_getMenu('H');">목욕탕</a></h1>
-			</div>
+				<h1><a href="javascript:void(0);" onclick="fn_goInsert();">접수하기</a></h1>
+			</div> 
 			<ul>
 				<li>
-					<a href="javascript:void(0);" onclick="fn_getMenu('H');">HOME</a>
-					<ul>
-						<li><a href="javascript:void(0);" onclick="fn_getMenu('H');">기본정보</a></li>
-						<li><a href="javascript:void(0);" onclick="fn_getMenu('A');">유저목록</a></li>
-						<li><a href="/admin/bbs/adminBoardList.do">subMenu3</a></li>
-					</ul>
+					<a href="javascript:void(0);" onclick="fn_main();">관리자</a>
 				</li>
 				<li>
-					<a href="#">남탕</a>
-					<ul>
-						<li><a href="javascript:void(0);" onclick="fn_getMenu('B');">기본게시판</a></li>
-						<li><a href="#">subMenu2</a></li>
-						<li><a href="#">subMenu3</a></li>
-					</ul>
+					<div>
+						<select name="selectbox1">
+							<option value="접수시스템">접수시스템</option>
+							<option value="배송추적">배송추적</option>
+						</select>
+					</div>
+					<!-- <a href="javascript:alert('서비스 준비 중');">그룹 계정 관리</a> -->
 				</li>
 				<li>
-					<a href="#">혼탕</a>
-					<ul>
-						<li><a href="#">subMenu1</a></li>
-						<li><a href="#">subMenu2</a></li>
-						<li><a href="#">subMenu3</a></li>
-					</ul>
+					<a href="javascript:void(0);">톱니바퀴</a>
 				</li>
 				<li>
-					<a href="#">여탕</a>
-					<ul>
-						<li><a href="#">subMenu1</a></li>
-						<li><a href="#">subMenu2</a></li>
-						<li><a href="#">subMenu3</a></li>
-					</ul>
+					<a href="javascript:void(0);">벨모양</a>
+				</li>
+				<li>
+					<a href="javascript:void(0);">사람모양</a>
 				</li>
 			</ul>
 		</nav>
 	</div><!-- .wrap End -->
+</form>
 </body>
 </html>

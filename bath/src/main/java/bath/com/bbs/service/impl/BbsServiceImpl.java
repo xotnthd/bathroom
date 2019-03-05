@@ -33,8 +33,8 @@ public class BbsServiceImpl implements BbsService{
 	@Override
 	public void insertbbsWrite(Map<String, Object> map, HttpServletRequest request) throws Exception{
 		bbsDAO.insertbbsWrite(map);
-		
-		MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
+		System.out.println(map.get("p_order_seq"));
+		/*MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
 	    Iterator<String> iterator = multipartHttpServletRequest.getFileNames();
 	    MultipartFile multipartFile = null;
 	    while(iterator.hasNext()){
@@ -51,6 +51,6 @@ public class BbsServiceImpl implements BbsService{
 	    List<Map<String,Object>> list = fileUtils.parseInsertFileInfo(map, request);
         for(int i=0, size=list.size(); i<size; i++){
         	bbsDAO.insertFile(list.get(i));
-        }
+        }*/
 	}
 }

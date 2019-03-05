@@ -16,24 +16,33 @@ public class AbstractDAO {
 	@Autowired
     private SqlSessionTemplate sqlSession;
      
-    protected void printQueryId(String queryId) {
-        if(log.isDebugEnabled()){
-            log.debug("\t QueryId  \t:  " + queryId);
-        }
-    }
+	protected void printQueryId(String queryId) {
+		if(log.isDebugEnabled()){
+			log.debug("\t QueryId  \t:  " + queryId);
+		}
+	}
+
+	protected void printParams(Object params) {
+		if(log.isDebugEnabled()){
+			log.debug("\t Parameters  \t:  " + params);
+		}
+	}
      
     public Object insert(String queryId, Object params){
         printQueryId(queryId);
+        printParams(params);
         return sqlSession.insert(queryId, params);
     }
      
     public Object update(String queryId, Object params){
         printQueryId(queryId);
+        printParams(params);
         return sqlSession.update(queryId, params);
     }
      
     public Object delete(String queryId, Object params){
         printQueryId(queryId);
+        printParams(params);
         return sqlSession.delete(queryId, params);
     }
      

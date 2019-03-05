@@ -6,12 +6,12 @@
 	<select id="selectFileInfo" parameterType="hashmap" resultType="hashmap">
 	    <![CDATA[
 	        SELECT
-	            STORED_FILE_NAME,
-	            ORIGINAL_FILE_NAME
+	            STORED_FILE_NM,
+	            ORIGINAL_FILE_NM
 	        FROM
 	            TB_FILE
 	        WHERE
-	            IDX = #{IDX}
+	            FILE_SEQ = #{p_file_seq}
 	    ]]>
 	</select>
 </mapper>

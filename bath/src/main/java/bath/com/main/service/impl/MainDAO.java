@@ -17,6 +17,17 @@ public class MainDAO extends AbstractDAO{
 		return (List<Map<String, Object>>)selectList("main.selectBoardList", map);
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Map<String, Object>> selectOrderCountInfo(Map<String, Object> map) {
+		// TODO Auto-generated method stub
+		return (List<Map<String, Object>>)selectList("main.selectOrderCountInfo", map);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Map<String, Object>> selectOrderingList(Map<String, Object> map) {
+		// TODO Auto-generated method stub
+		return (List<Map<String, Object>>)selectList("main.selectOrderingList", map);
+	}
 	
 //	public List<Map<String, Object>> selectBoardList(CommandMap commandMap) {
 //		// TODO Auto-generated method stub

@@ -15,8 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.jcraft.jsch.Session;
-
 import bath.com.common.CommandMap;
 import bath.com.main.service.MainService;
 
@@ -31,16 +29,27 @@ public class MainController {
 	public ModelAndView main(CommandMap commandMap,HttpServletRequest request, HttpServletResponse response,HttpSession session) throws Exception{
 		ModelAndView mv = new ModelAndView("front/main/main");
 		
-//		request.getSession();
-		String v_usrid = (String)session.getAttribute("p_usrid");
+		//카운트 LNB용
+		List<Map<String,Object>> countList = mainService.selectOrderCountInfo(commandMap.getMap());
+		mv.addObject("countList", countList);
 		
-		System.out.println(v_usrid);
+		//검토요청 중
+		commandMap.put("flow_type", "A");
+		List<Map<String,Object>> aFlow = mainService.selectOrderingList(commandMap.getMap());
+		//검토 중
+		commandMap.put("flow_type", "C");
+		List<Map<String,Object>> cFlow = mainService.selectOrderingList(commandMap.getMap());
+		//접수 중
+		commandMap.put("flow_type", "B");
+		List<Map<String,Object>> bFlow = mainService.selectOrderingList(commandMap.getMap());
+		//반려
+		commandMap.put("flow_type", "F");
+		List<Map<String,Object>> fFlow = mainService.selectOrderingList(commandMap.getMap());
 		
-		
-//		commandMap.put("p_bbs_id", "1"); //��������
-//		System.out.println(commandMap.get("p_bbs_id"));
-//		List<Map<String,Object>> noticeList = mainService.selectBoardList(commandMap.getMap());
-//		mv.addObject("noticeList", noticeList);
+		mv.addObject("aList", aFlow);
+		mv.addObject("bList", bFlow);
+		mv.addObject("cList", cFlow);
+		mv.addObject("fList", fFlow);
 		
 		return mv;
 	}
@@ -48,6 +57,8 @@ public class MainController {
 	@RequestMapping(value="/maintest.do")
 	public ModelAndView main_test(CommandMap commandMap) throws Exception{
 		ModelAndView mv = new ModelAndView("front/main/main");
+		
+		
 		
 		return mv;
 	}

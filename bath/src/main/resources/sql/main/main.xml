@@ -15,5 +15,35 @@
 			ORDER BY BBS_ID
         ]]>
     </select>
+    
+    <select id="selectOrderCountInfo" parameterType="hashmap" resultType="hashmap">
+        <![CDATA[
+            SELECT C.ORDER_FLOW,C.ORDER_FLOW_NM, C.FLOW_CNT 
+			FROM (
+				SELECT A.*,IFNULL(B.FLOW_CNT, 0) AS FLOW_CNT
+				FROM TB_ORDERFLOW A 
+				LEFT OUTER JOIN (SELECT ORDER_FLOW ,COUNT(*) AS FLOW_CNT FROM TB_ORDERING C GROUP BY C.ORDER_FLOW) B
+				ON A.ORDER_FLOW = B.ORDER_FLOW
+			) C
+			ORDER BY C.ORDER_FLOW
+        ]]>
+    </select> 
+    
+    <select id="selectOrderingList" parameterType="hashmap" resultType="hashmap">
+        <![CDATA[
+            SELECT ORDER_SEQ
+				, PRODUCT_NM 
+				, PRODUCT_NM_ENG
+				, PRODUCT_NM_CHN
+				, ORDER_CATE
+				, PRODUCT_CATE
+				, ORDER_FLOW
+			FROM TB_ORDERING
+			WHERE 1 = 1
+        ]]>
+			<if test="flow_type != null">
+				AND ORDER_FLOW = #{flow_type}
+        	</if>
+    </select>
      
 </mapper>

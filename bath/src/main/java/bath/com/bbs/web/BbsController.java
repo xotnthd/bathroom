@@ -44,6 +44,8 @@ public class BbsController {
 	public ModelAndView boardWrite(CommandMap commandMap,HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception{
 		ModelAndView mv = new ModelAndView("redirect:/bbs/boardList.do");
 		
+		List<Map<String,Object>> list = bbsService.selectBoardList(commandMap.getMap());
+		
 		bbsService.insertbbsWrite(commandMap.getMap(), request);
 		return mv;
 	}

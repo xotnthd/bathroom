@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>회원가입</title>
+<title>제안시스템</title>
 </head>
 <script type="text/javascript">
 function pw_check(val){
