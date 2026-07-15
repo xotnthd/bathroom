@@ -11,3 +11,62 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* ==================================================
+   THEME DEFINITIONS
+   ================================================== */
+
+/* 1. Modern Minimalist (기본값) */
+:root, .theme-modern {
+    --bg-color: #f4f7f6;
+    --sidebar-bg: #2c3e50;
+    --sidebar-color: #ffffff;
+    --content-bg: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #7f8c8d;
+    --border-color: #e0e0e0;
+    --primary-color: #2980b9;
+    --table-header-bg: #f8f9fa;
+    --border-radius: 4px;
+    --box-shadow: none;
+    --font-size-base: 13px; /* 폰트 축소 (컴팩트 뷰) */
+}
+
+/* 2. Glassmorphism */
+.theme-glass {
+    --bg-color: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    --sidebar-bg: rgba(255, 255, 255, 0.25);
+    --sidebar-color: #333;
+    --content-bg: rgba(255, 255, 255, 0.6);
+    --text-primary: #2c3e50;
+    --text-secondary: #576574;
+    --border-color: rgba(255, 255, 255, 0.4);
+    --primary-color: #ff9ff3;
+    --table-header-bg: rgba(255, 255, 255, 0.3);
+    --border-radius: 16px;
+    --box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    --font-size-base: 14px;
+    backdrop-filter: blur(4px);
+}
+
+/* 3. Dark Mode */
+.theme-dark {
+    --bg-color: #121212;
+    --sidebar-bg: #1e1e1e;
+    --sidebar-color: #e0e0e0;
+    --content-bg: #1e1e1e;
+    --text-primary: #ffffff;
+    --text-secondary: #aaaaaa;
+    --border-color: #333333;
+    --primary-color: #00e5ff;
+    --table-header-bg: #2c2c2c;
+    --border-radius: 6px;
+    --box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    --font-size-base: 13px;
+}
+
+body {
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
