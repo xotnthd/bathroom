@@ -8,6 +8,7 @@ import RespondentList from './components/result/RespondentList';
 import IndividualAnswers from './components/result/IndividualAnswers';
 
 const SurveyResultDetail = () => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const { survId } = useParams();
     const navigate = useNavigate();
 
@@ -35,7 +36,7 @@ const SurveyResultDetail = () => {
         const res = await apiClient('/admin/api/survey/detail', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ survId })
+            body: JSON.stringify({ sysId: defaultSysId, survId })
         });
         if (res.ok) {
             const data = await res.json();
@@ -50,7 +51,7 @@ const SurveyResultDetail = () => {
         const res = await apiClient('/admin/api/survey/result/respondents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ survId })
+            body: JSON.stringify({ sysId: defaultSysId, survId })
         });
         if (res.ok) {
             const data = await res.json();
@@ -62,7 +63,7 @@ const SurveyResultDetail = () => {
         const res = await apiClient('/admin/api/survey/result/statistics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ survId })
+            body: JSON.stringify({ sysId: defaultSysId, survId })
         });
         if (res.ok) {
             const data = await res.json();
@@ -74,7 +75,7 @@ const SurveyResultDetail = () => {
         const res = await apiClient('/admin/api/survey/result/answers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ survId, respId })
+            body: JSON.stringify({ sysId: defaultSysId, survId, respId })
         });
         if (res.ok) {
             const data = await res.json();

@@ -6,6 +6,7 @@ import DataTable from '../../components/common/DataTable';
 import SearchForm from '../../components/common/SearchForm';
 
 const SurveyTemplateManage = () => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const [surveyList, setSurveyList] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -29,8 +30,8 @@ const SurveyTemplateManage = () => {
         const res = await apiClient('/admin/api/survey/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                page, limit, templateYn: 'Y',
+            body: JSON.stringify({
+                sysId: defaultSysId, page, limit, templateYn: 'Y',
                 survIdSearch: searchForm.survIdSearch,
                 survNm: searchForm.survNm
             })
@@ -45,7 +46,7 @@ const SurveyTemplateManage = () => {
     const handleDelete = async (survId) => {
         if (delYn !== 'Y') { alert('삭제 권한이 없습니다.'); return; }
         if (!window.confirm("정말 삭제하시겠습니까?")) return;
-        const res = await apiClient(`/admin/api/survey/delete/${survId}`, { method: 'DELETE' });
+        const res = await apiClient(`/admin/api/survey/delete/${survId}?sysId=${defaultSysId}`, { method: 'DELETE' });
         if (res.ok) {
             alert("삭제되었습니다.");
             fetchSurveyList();
@@ -69,7 +70,7 @@ const SurveyTemplateManage = () => {
         apiClient('/admin/api/survey/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ page: 1, limit, templateYn: 'Y', survIdSearch: '', survNm: '' })
+            body: JSON.stringify({ sysId: defaultSysId, page: 1, limit, templateYn: 'Y', survIdSearch: '', survNm: '' })
         }).then(async res => {
             if (res.ok) {
                 const data = await res.json();

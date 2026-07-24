@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiClient } from '../../utils/apiClient';
 
 const TemplateSearchModal = ({ onClose, onSelect }) => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const [templateList, setTemplateList] = useState([]);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -14,7 +15,7 @@ const TemplateSearchModal = ({ onClose, onSelect }) => {
         const res = await apiClient('/admin/api/survey/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ page: 1, limit: 1000, templateYn: 'Y' })
+            body: JSON.stringify({ sysId: defaultSysId, page: 1, limit: 1000, templateYn: 'Y' })
         });
         if (res.ok) {
             const data = await res.json();
@@ -35,7 +36,7 @@ const TemplateSearchModal = ({ onClose, onSelect }) => {
         const res = await apiClient('/admin/api/survey/detail', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ survId: selectedTemplate })
+            body: JSON.stringify({ sysId: defaultSysId, survId: selectedTemplate })
         });
         
         if (res.ok) {

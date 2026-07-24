@@ -1,0 +1,30 @@
+.board-post-manage-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    min-height: 100vh;
+}
+
+.admin-boardpost-search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    width: auto;
+}
+
+.admin-input-small {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--content-bg);
+    color: var(--text-primary);
+    font-size: 13px;
+    min-width: 120px;
+}
+
+.admin-input-small:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}

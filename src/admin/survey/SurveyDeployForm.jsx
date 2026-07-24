@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { useMenuAuth } from '../hooks/useMenuAuth';
 import TemplateSearchModal from './TemplateSearchModal';
-import DeployBasicInfo from './components/deploy/DeployBasicInfo';
+import SurveyBasicInfo from './components/SurveyBasicInfo';
 import DeployQuestionList from './components/deploy/DeployQuestionList';
 
 const SurveyDeployForm = () => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const navigate = useNavigate();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -40,7 +41,7 @@ const SurveyDeployForm = () => {
         const res = await apiClient('/admin/api/survey/detail', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ survId })
+            body: JSON.stringify({ sysId: defaultSysId, survId })
         });
         if (res.ok) {
             const data = await res.json();
@@ -66,8 +67,9 @@ const SurveyDeployForm = () => {
         }
         if (!form.survNm) return alert("설문 제목을 입력하세요.");
         
-        const payload = { 
+        const payload = {
             ...form,
+            sysId: defaultSysId,
             templateYn: 'N' // 배포 강제
         };
         if (survId) payload.survId = survId;
@@ -99,7 +101,7 @@ const SurveyDeployForm = () => {
                 </div>
             </div>
 
-            <DeployBasicInfo form={form} setForm={setForm} />
+            <SurveyBasicInfo form={form} setForm={setForm} />
 
             <DeployQuestionList form={form} setForm={setForm} />
 

@@ -7,6 +7,7 @@ import SearchForm from '../../components/common/SearchForm';
 import CommonCodePicker from '../../components/CommonCodePicker';
 
 const SurveyDeployManage = () => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const navigate = useNavigate();
     const { inqireYn, rgstYn, delYn } = useMenuAuth();
     
@@ -29,7 +30,7 @@ const SurveyDeployManage = () => {
     }, [page, inqireYn]);
 
     const fetchList = async () => {
-        const payload = { ...searchForm, page, limit: 10, templateYn: 'N' };
+        const payload = { ...searchForm, sysId: defaultSysId, page, limit: 10, templateYn: 'N' };
         const res = await apiClient('/admin/api/survey/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -65,7 +66,7 @@ const SurveyDeployManage = () => {
     const handleDelete = async (survId) => {
         if (delYn !== 'Y') { alert('삭제 권한이 없습니다.'); return; }
         if (!window.confirm("정말 삭제하시겠습니까?")) return;
-        const res = await apiClient(`/admin/api/survey/delete/${survId}`, { method: 'DELETE' });
+        const res = await apiClient(`/admin/api/survey/delete/${survId}?sysId=${defaultSysId}`, { method: 'DELETE' });
         if (res.ok) {
             alert("삭제되었습니다.");
             fetchList();

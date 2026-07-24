@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '../../utils/apiClient';
+import Modal from '../../components/common/Modal';
 
 const SurveySearchModal = ({ onClose, onSelect, sysSeCd }) => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const [surveyList, setSurveyList] = useState([]);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [selectedSurvey, setSelectedSurvey] = useState(null);
@@ -14,7 +16,7 @@ const SurveySearchModal = ({ onClose, onSelect, sysSeCd }) => {
         const res = await apiClient('/admin/api/survey/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ page: 1, limit: 1000, templateYn: 'N' })
+            body: JSON.stringify({ sysId: defaultSysId, page: 1, limit: 1000, templateYn: 'N' })
         });
         if (res.ok) {
             const data = await res.json();
@@ -32,14 +34,24 @@ const SurveySearchModal = ({ onClose, onSelect, sysSeCd }) => {
     };
 
     return (
-        <div className="admin-modal-overlay">
-            <div className="admin-modal-content" style={{ width: '600px' }}>
+        <Modal
+            isOpen={true}
+            onClose={onClose}
+            width="600px"
+            bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
+            header={
                 <div className="admin-modal-header">
                     <h3 style={{ margin: 0 }}>설문조사 매핑 검색</h3>
                     <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '20px', cursor: 'pointer' }}>&times;</button>
                 </div>
-                
-                <div className="admin-modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+            }
+            footer={
+                <>
+                    <button type="button" onClick={onClose} className="admin-btn admin-btn-secondary">취소</button>
+                    <button type="button" onClick={handleApply} className="admin-btn admin-btn-primary">선택 완료</button>
+                </>
+            }
+        >
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                         <input 
                             type="text" 
@@ -78,14 +90,7 @@ const SurveySearchModal = ({ onClose, onSelect, sysSeCd }) => {
                             )}
                         </tbody>
                     </table>
-                </div>
-                
-                <div className="admin-modal-footer">
-                    <button type="button" onClick={onClose} className="admin-btn admin-btn-secondary">취소</button>
-                    <button type="button" onClick={handleApply} className="admin-btn admin-btn-primary">선택 완료</button>
-                </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

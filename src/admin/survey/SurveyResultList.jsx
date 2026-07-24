@@ -6,6 +6,7 @@ import SearchForm from '../../components/common/SearchForm';
 import CommonCodePicker from '../../components/CommonCodePicker';
 
 const SurveyResultList = () => {
+    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const navigate = useNavigate();
     const [list, setList] = useState([]);
     const [total, setTotal] = useState(0);
@@ -24,7 +25,7 @@ const SurveyResultList = () => {
     }, [page]);
 
     const fetchList = async () => {
-        const payload = { ...searchForm, page, limit: 10 };
+        const payload = { ...searchForm, sysId: defaultSysId, page, limit: 10 };
         const res = await apiClient('/admin/api/survey/result/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
