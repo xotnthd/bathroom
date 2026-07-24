@@ -126,10 +126,10 @@ const PopupModal = ({ sysSeCd }) => {
                                 type="checkbox"
                                 onChange={(e) => handleClose(popup.popIdx, e.target.checked)}
                             />
-                            등�늘 등�루 보�등 등�기
+                            오늘 하루 그만보기
                         </label>
                         <button onClick={() => handleClose(popup.popIdx, false)} style={{ cursor: 'pointer', border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
-                            등�기
+                            닫기
                         </button>
                     </div>
                 </div>

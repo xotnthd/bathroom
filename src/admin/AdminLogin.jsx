@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../utils/apiClient';
 
 const AdminLogin = () => {
-    const [userId, setUserId] = useState('');
-    const [pswd, setPswd] = useState('');
+    const [userId, setUserId] = useState('admin');
+    const [pswd, setPswd] = useState('admin123');
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -42,14 +42,14 @@ const AdminLogin = () => {
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '300px' }}>
                     <input
                         type="text"
-                        placeholder="등�이삭제(admin)"
+                        placeholder="아이디(admin)"
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
                         required
                     />
                     <input
                         type="password"
-                        placeholder="비�등번호 (admin123)"
+                        placeholder="비밀번호 (admin123)"
                         value={pswd}
                         onChange={(e) => setPswd(e.target.value)}
                         required

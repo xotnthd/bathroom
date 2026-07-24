@@ -1,279 +1,202 @@
-import React, { useState, useEffect } from 'react';
-import { apiClient } from '../../utils/apiClient';
+import React, { useEffect } from 'react';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { useAuthManage } from './hooks/useAuthManage';
 import CommonCodePicker from '../../components/CommonCodePicker';
+import DataTable from '../../components/common/DataTable';
 
 const AuthManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const [roleList, setRoleList] = useState([]);
-    const [matrixList, setMatrixList] = useState([]);
-    const [selectedRoleCd, setSelectedRoleCd] = useState('');
-    const [sysSectCd, setSysSectCd] = useState('MG');
+    // 임시로 세션에서 현재 로그인된 사용자의 권한 레벨을 가져온다고 가정 (없으면 0: 최고관리자)
+    const currentUserLevel = parseInt(sessionStorage.getItem('currentUserLevel') || '0', 10);
 
-    // 모달 상태
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [roleForm, setRoleForm] = useState({ sysId: defaultSysId, sysSeCd: 'MG', oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y' });
+    const {
+        roleList,
+        matrixList,
+        selectedRoleCd,
+        sysSectCd,
+        setSysSectCd,
+        isModalOpen,
+        setIsModalOpen,
+        roleForm,
+        setRoleForm,
+        fetchRoleList,
+        handleRoleClick,
+        saveRole,
+        deleteRole,
+        saveMatrix,
+        updateMatrixCheckbox,
+        toggleMatrixHeader
+    } = useAuthManage(defaultSysId);
 
     const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
 
     useEffect(() => { 
         if (inqireYn === 'Y') {
-            fnFetchRoleList(); 
+            fetchRoleList(sysSectCd); 
         } else if (inqireYn === 'N') {
             alert('조회 권한이 없습니다. 관리자에게 문의하세요.');
         }
-    }, [inqireYn, sysSectCd]);
-
-    const fnFetchRoleList = async () => {
-        const res = await apiClient(`/admin/api/auth/role/list?sysId=${defaultSysId}&sysSeCd=${sysSectCd}`);
-        if (res.ok) setRoleList(await res.json());
-    };
-
-    const handleRoleClick = (role) => {
-        setSelectedRoleCd(role.athrtyComCd);
-        fnFetchMatrix(role.athrtyComCd);
-    };
-
-    const fnFetchMatrix = async (roleCd) => {
-        const res = await apiClient(`/admin/api/auth/matrix?sysId=${defaultSysId}&athrtyComCd=${roleCd}`);
-        if (res.ok) {
-            const rawData = await res.json();
-            const sortedFlattened = sortAndIndentMenus(rawData);
-            setMatrixList(sortedFlattened);
-        }
-    };
-
-    const sortAndIndentMenus = (list) => {
-        const menuMap = {};
-        const roots = [];
-
-        list.forEach(m => {
-            menuMap[m.menuId] = { ...m, children: [] };
-        });
-
-        list.forEach(m => {
-            if (m.uprMenuId === 'ROOT') {
-                roots.push(menuMap[m.menuId]);
-            } else if (menuMap[m.uprMenuId]) {
-                menuMap[m.uprMenuId].children.push(menuMap[m.menuId]);
-            } else {
-                roots.push(menuMap[m.menuId]); // fallback
-            }
-        });
-
-        const result = [];
-        const traverse = (node, depth) => {
-            let prefix = '';
-            if (depth === 1) prefix = 'ㄴ ';
-            if (depth === 2) prefix = 'ㄴㄴ ';
-            
-            result.push({ ...node, displayNm: prefix + node.menuNm, depth });
-            
-            if (node.children) {
-                node.children.forEach(child => traverse(child, depth + 1));
-            }
-        };
-
-        // 분리해서 그릴 때도 상단 MG, USER 모두 하나로 처리하므로 
-        // sysSectCd따라 1차 정렬 후 순회
-        roots.sort((a, b) => {
-            if (a.sysSectCd !== b.sysSectCd) return a.sysSectCd.localeCompare(b.sysSectCd);
-            return 0;
-        });
-
-        roots.forEach(r => traverse(r, 0));
-        return result;
-    };
+    }, [inqireYn, sysSectCd, fetchRoleList]);
 
     const openRoleModal = (role = null) => {
         if (role) setRoleForm({ ...role, oldAthrtyComCd: role.athrtyComCd });
-        else setRoleForm({ sysId: defaultSysId, sysSeCd: sysSectCd, oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y' });
+        else setRoleForm({ sysId: defaultSysId, sysSeCd: sysSectCd, oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y', athrtyLevel: '' });
         setIsModalOpen(true);
     };
 
-    const handleRoleSave = async (e) => {
+    const handleRoleSubmit = async (e) => {
         e.preventDefault();
-        const res = await apiClient('/admin/api/auth/role/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(roleForm)
-        });
-        if (res.ok) { 
-            alert("저장되었습니다.");
-            setIsModalOpen(false); 
-            fnFetchRoleList(); 
-            if (selectedRoleCd === roleForm.oldAthrtyComCd) {
-                setSelectedRoleCd(roleForm.athrtyComCd);
-                fnFetchMatrix(roleForm.athrtyComCd);
-            }
-        } else {
-            const errorMsg = await res.text();
-            alert("오류: " + errorMsg);
-        }
-    };
-
-    const handleRoleDelete = async (roleCd) => {
-        if (roleCd === 'S001') {
-            alert("최고 관리자(S001)는 삭제할 수 없습니다.");
-            return;
-        }
-        if (!window.confirm("정말 삭제하시겠습니까?")) return;
-        const res = await apiClient(`/admin/api/auth/role/delete/${defaultSysId}/${roleCd}`, {
-            method: 'DELETE'
-        });
-        if (res.ok) { 
-            alert("삭제되었습니다.");
-            fnFetchRoleList(); 
-            if (selectedRoleCd === roleCd) {
-                setSelectedRoleCd(null);
-                setMatrixList([]);
-            }
-        } else {
-            const errorMsg = await res.text();
-            alert("오류: " + errorMsg);
-        }
-    };
-
-    // --- 매트릭스 로직 ---
-    const handleCheckboxChange = (menuId, field) => {
-        const updated = [...matrixList];
-        const index = updated.findIndex(m => m.menuId === menuId);
-        if (index === -1) return;
-        const val = updated[index][field] === 'Y' ? 'N' : 'Y';
-        updated[index][field] = val;
-
-        // 로직: Show가 꺼지면 나머지 N
-        if (field === 'menuShowYn' && val === 'N') {
-            updated[index].inqireYn = 'N'; updated[index].rgstYn = 'N';
-            updated[index].mdfcnYn = 'N'; updated[index].delYn = 'N';
-        }
-        // 로직: CRUD가 켜지면 Show 자동 Y
-        if (field !== 'menuShowYn' && val === 'Y') {
-            updated[index].menuShowYn = 'Y';
-        }
-        setMatrixList(updated);
-    };
-
-    // 헤더 전체 선택
-    const handleHeaderToggle = (field) => {
-        const visibleItems = matrixList.filter(m => m.sysSectCd === sysSectCd);
-        const allChecked = visibleItems.length > 0 && visibleItems.every(m => m[field] === 'Y');
-        const nextVal = allChecked ? 'N' : 'Y';
-        
-        const updated = matrixList.map(m => {
-            if (m.sysSectCd !== sysSectCd) return m;
-            const newItem = { ...m, [field]: nextVal };
-            if (field === 'menuShowYn' && nextVal === 'N') {
-                newItem.inqireYn = 'N'; newItem.rgstYn = 'N'; newItem.mdfcnYn = 'N'; newItem.delYn = 'N';
-            }
-            if (field !== 'menuShowYn' && nextVal === 'Y') {
-                newItem.menuShowYn = 'Y';
-            }
-            return newItem;
-        });
-        setMatrixList(updated);
-    };
-
-    const handleMatrixSave = async () => {
-        const res = await apiClient('/admin/api/auth/matrix/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(matrixList)
-        });
-        if (res.ok) alert("매트릭스가 반영되었습니다.");
+        await saveRole(roleForm, currentUserLevel);
     };
 
     if (inqireYn === 'N') {
-        return <div style={{ padding: '20px', textAlign: 'center', color: '#7f8c8d' }}>조회 권한이 없습니다.</div>;
+        return <div className="p-8 text-center text-gray-500 font-semibold">조회 권한이 없습니다.</div>;
     }
 
+    const roleColumns = [
+        { key: 'athrtyComCd', label: '권한코드', width: '80px' },
+        { key: 'athrtyLevel', label: '레벨', width: '60px' },
+        { 
+            key: 'athrtyNm', 
+            label: '권한명',
+            render: (row) => <div style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all' }}>{row.athrtyNm}</div>
+        },
+        { 
+            key: 'useYn', 
+            label: '상태', 
+            width: '80px',
+            render: (row) => {
+                if (row.delYn === 'Y') return <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>삭제됨</span>;
+                return row.useYn === 'Y' ? <span style={{ color: '#2ecc71' }}>사용</span> : <span style={{ color: '#95a5a6' }}>미사용</span>;
+            }
+        },
+        {
+            key: 'manage',
+            label: '관리',
+            width: '120px',
+            render: (row) => (
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                    {mdfcnYn === 'Y' && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); openRoleModal(row); }}
+                            style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #3498db', background: 'transparent', color: '#3498db', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                            수정
+                        </button>
+                    )}
+                    {delYn === 'Y' && row.delYn !== 'Y' && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); deleteRole(row.athrtyComCd); }}
+                            style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #e74c3c', background: 'transparent', color: '#e74c3c', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                            삭제
+                        </button>
+                    )}
+                </div>
+            )
+        }
+    ];
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 150px)' }}>
-            {/* 전역 시스템 구분 필터 */}
-            <div style={{ background: '#fff', padding: '15px 20px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 'bold' }}>전체 권한 시스템구분:</span>
+        <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', gap: '20px', padding: '20px', background: '#f4f7f6', boxSizing: 'border-box' }}>
+            {/* 상단 컨트롤러 */}
+            <div style={{ background: '#fff', padding: '15px 25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#2c3e50' }}>권한 시스템 구분</span>
                 <CommonCodePicker 
                     grpCd="SYS_SE_CD" 
                     type="radio" 
                     name="globalSect" 
                     value={sysSectCd} 
-                    onChange={(e) => {
-                        setSysSectCd(e.target.value);
-                        setSelectedRoleCd('');
-                        setMatrixList([]);
-                    }} 
+                    onChange={(e) => setSysSectCd(e.target.value)} 
                 />
             </div>
 
             <div style={{ display: 'flex', gap: '20px', flex: 1, minHeight: 0 }}>
-                {/* 좌측 권한 리스트 */}
-                <div style={{ width: '350px', background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', display:'flex', flexDirection:'column' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                        <h4 style={{margin:0}}>전체 권한 그룹 관리 ({sysSectCd})</h4>
-                    {rgstYn === 'Y' && <button onClick={() => openRoleModal()} style={{background:'#2ecc71', color:'#fff', border:'none', padding:'5px 10px', borderRadius:'4px', cursor:'pointer'}}>+ 권한등록</button>}
-                </div>
-                <div style={{flex:1, overflowY:'auto'}}>
-                    <table border="1" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                        <thead><tr style={{background:'#f8f9fa'}}><th>코드</th><th>권한명</th><th>관리</th></tr></thead>
-                        <tbody>
-                        {roleList.map(r => (
-                            <tr key={r.athrtyComCd} onClick={() => handleRoleClick(r)} style={{ cursor: 'pointer', background: selectedRoleCd === r.athrtyComCd ? '#e3f2fd' : 'none' }}>
-                                <td style={{padding:'8px'}}>{r.athrtyComCd}</td>
-                                <td style={{padding:'8px'}}>{r.athrtyNm}</td>
-                                <td style={{padding:'4px', textAlign:'center'}}>
-                                    {mdfcnYn === 'Y' && <button onClick={(e) => { e.stopPropagation(); openRoleModal(r); }}>수정</button>}
-                                    {delYn === 'Y' && <button onClick={(e) => { e.stopPropagation(); handleRoleDelete(r.athrtyComCd); }}>삭제</button>}
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-                {/* 우측 매트릭스 */}
-                <div style={{ flex: 1, background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', display:'flex', flexDirection:'column' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
-                        <h4 style={{margin:0}}>상세 메뉴 접근 기능 권한 매트릭스 {selectedRoleCd && <span style={{color:'#e74c3c'}}>({selectedRoleCd})</span>}</h4>
-                        {(mdfcnYn === 'Y' || rgstYn === 'Y') && selectedRoleCd && <button onClick={handleMatrixSave} style={{background:'#34495e', color:'#fff', border:'none', padding:'8px 20px', borderRadius:'4px', cursor:'pointer', fontWeight:'bold'}}>수정 일괄 적용</button>}
+                {/* 좌측: 권한 리스트 */}
+                <div style={{ width: '600px', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <div style={{ padding: '20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafbfc' }}>
+                        <h4 style={{ margin: 0, color: '#2c3e50', fontSize: '16px' }}>전체 권한 그룹</h4>
+                        {rgstYn === 'Y' && (
+                            <button 
+                                onClick={() => openRoleModal()} 
+                                style={{ background: '#3498db', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                            >
+                                신규 권한 등록
+                            </button>
+                        )}
                     </div>
-                <div style={{flex:1, overflowY:'auto'}}>
-                    <table border="1" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center' }}>
-                        <thead style={{position:'sticky', top:0, background:'#2c3e50', color:'#fff'}}>
-                        <tr>
-                            <th style={{padding:'10px', textAlign:'left'}}>시스템 메뉴명</th>
-                            <th>Show<br/><input type="checkbox" onChange={() => handleHeaderToggle('menuShowYn')}/></th>
-                            <th>R<br/><input type="checkbox" onChange={() => handleHeaderToggle('inqireYn')}/></th>
-                            <th>C<br/><input type="checkbox" onChange={() => handleHeaderToggle('rgstYn')}/></th>
-                            <th>U<br/><input type="checkbox" onChange={() => handleHeaderToggle('mdfcnYn')}/></th>
-                            <th>D<br/><input type="checkbox" onChange={() => handleHeaderToggle('delYn')}/></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {matrixList.filter(m => m.sysSectCd === sysSectCd).map((m) => (
-                            <tr key={m.menuId}>
-                                <td style={{textAlign:'left', padding:'8px', fontWeight: m.depth === 0 ? 'bold' : 'normal', color: m.depth === 0 ? '#2c3e50' : '#555'}}>{m.displayNm}</td>
-                                <td><input type="checkbox" checked={m.menuShowYn === 'Y'} onChange={() => handleCheckboxChange(m.menuId, 'menuShowYn')}/></td>
-                                <td><input type="checkbox" checked={m.inqireYn === 'Y'} onChange={() => handleCheckboxChange(m.menuId, 'inqireYn')}/></td>
-                                <td><input type="checkbox" checked={m.rgstYn === 'Y'} onChange={() => handleCheckboxChange(m.menuId, 'rgstYn')}/></td>
-                                <td><input type="checkbox" checked={m.mdfcnYn === 'Y'} onChange={() => handleCheckboxChange(m.menuId, 'mdfcnYn')}/></td>
-                                <td><input type="checkbox" checked={m.delYn === 'Y'} onChange={() => handleCheckboxChange(m.menuId, 'delYn')}/></td>
-                            </tr>
-                        ))}
-                        {matrixList.filter(m => m.sysSectCd === sysSectCd).length === 0 && <tr><td colSpan="6" style={{padding:'40px', color:'#999'}}>해당 구분(관리/사용자)의 메뉴가 없거나 권한 그룹을 선택하지 않았습니다.</td></tr>}
-                        </tbody>
-                    </table>
+                    <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                        <DataTable 
+                            columns={roleColumns} 
+                            data={roleList} 
+                            onRowClick={handleRoleClick}
+                            rowKey="athrtyComCd"
+                            selectedKey={selectedRoleCd}
+                        />
+                    </div>
+                </div>
+
+                {/* 우측: 매트릭스 */}
+                <div style={{ flex: 1, background: '#fff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <div style={{ padding: '20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafbfc' }}>
+                        <h4 style={{ margin: 0, color: '#2c3e50', fontSize: '16px' }}>
+                            상세 메뉴 접근 권한 
+                            {selectedRoleCd && <span style={{ color: '#e74c3c', marginLeft: '10px' }}>[{selectedRoleCd}]</span>}
+                        </h4>
+                        {(mdfcnYn === 'Y' || rgstYn === 'Y') && selectedRoleCd && (
+                            <button 
+                                onClick={saveMatrix} 
+                                style={{ background: '#2c3e50', color: '#fff', border: 'none', padding: '8px 24px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                            >
+                                수정 일괄 적용
+                            </button>
+                        )}
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center' }}>
+                            <thead style={{ position: 'sticky', top: 0, background: '#f1f4f6', color: '#34495e' }}>
+                                <tr>
+                                    <th style={{ padding: '12px 20px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>시스템 메뉴명</th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Show<br/><input type="checkbox" onChange={() => toggleMatrixHeader('menuShowYn', sysSectCd)}/></th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>조회(R)<br/><input type="checkbox" onChange={() => toggleMatrixHeader('inqireYn', sysSectCd)}/></th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>등록(C)<br/><input type="checkbox" onChange={() => toggleMatrixHeader('rgstYn', sysSectCd)}/></th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>수정(U)<br/><input type="checkbox" onChange={() => toggleMatrixHeader('mdfcnYn', sysSectCd)}/></th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>삭제(D)<br/><input type="checkbox" onChange={() => toggleMatrixHeader('delYn', sysSectCd)}/></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {matrixList.filter(m => m.sysSectCd === sysSectCd).map((m) => (
+                                    <tr key={m.menuId} style={{ borderBottom: '1px solid #eee', transition: 'background 0.2s', '&:hover': { background: '#f9f9f9' } }}>
+                                        <td style={{ textAlign: 'left', padding: '12px 20px', fontWeight: m.depth === 0 ? 'bold' : 'normal', color: m.depth === 0 ? '#2c3e50' : '#7f8c8d' }}>
+                                            {m.displayNm}
+                                        </td>
+                                        <td><input type="checkbox" checked={m.menuShowYn === 'Y'} onChange={() => updateMatrixCheckbox(m.menuId, 'menuShowYn')}/></td>
+                                        <td><input type="checkbox" checked={m.inqireYn === 'Y'} onChange={() => updateMatrixCheckbox(m.menuId, 'inqireYn')}/></td>
+                                        <td><input type="checkbox" checked={m.rgstYn === 'Y'} onChange={() => updateMatrixCheckbox(m.menuId, 'rgstYn')}/></td>
+                                        <td><input type="checkbox" checked={m.mdfcnYn === 'Y'} onChange={() => updateMatrixCheckbox(m.menuId, 'mdfcnYn')}/></td>
+                                        <td><input type="checkbox" checked={m.delYn === 'Y'} onChange={() => updateMatrixCheckbox(m.menuId, 'delYn')}/></td>
+                                    </tr>
+                                ))}
+                                {matrixList.filter(m => m.sysSectCd === sysSectCd).length === 0 && (
+                                    <tr>
+                                        <td colSpan="6" style={{ padding: '50px', color: '#95a5a6', fontSize: '14px' }}>해당 구분(관리/사용자)의 메뉴가 없거나 권한 그룹을 선택하지 않았습니다.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-                {/* 권한 등록/수정 모달 */}
-                {isModalOpen && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
-                        <div style={{ background: '#fff', padding: '25px', borderRadius: '8px', width: '400px' }}>
-                            <h4>권한 그룹 설정</h4>
-                            <form onSubmit={handleRoleSave} style={{display:'flex', flexDirection:'column', gap:'10px'}}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                                    <span style={{ fontSize: '13px', fontWeight: 'bold', width: '80px' }}>시스템구분</span>
+            {/* 권한 등록/수정 모달 */}
+            {isModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
+                    <div style={{ background: '#fff', padding: '30px', borderRadius: '16px', width: '450px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+                        <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50', fontSize: '20px' }}>{roleForm.oldAthrtyComCd ? '권한 수정' : '신규 권한 등록'}</h3>
+                        <form onSubmit={handleRoleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>시스템 구분</label>
+                                <div style={{ background: '#f8f9fa', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}>
                                     <CommonCodePicker 
                                         grpCd="SYS_SE_CD" 
                                         type="radio" 
@@ -282,18 +205,75 @@ const AuthManage = () => {
                                         onChange={e => setRoleForm({...roleForm, sysSeCd: e.target.value})} 
                                     />
                                 </div>
-                                <input type="text" placeholder="권한코드 (예: A001)" value={roleForm.athrtyComCd} onChange={e => setRoleForm({...roleForm, athrtyComCd: e.target.value.toUpperCase()})} required />
-                                <input type="text" placeholder="권한명" value={roleForm.athrtyNm} onChange={e => setRoleForm({...roleForm, athrtyNm: e.target.value})} required />
-                                <textarea placeholder="설명" value={roleForm.cdExpl} onChange={e => setRoleForm({...roleForm, cdExpl: e.target.value})} style={{height:'80px'}} />
-                                <div style={{display:'flex', gap:'10px', marginTop:'10px'}}>
-                                    <button type="submit" style={{flex:1, padding:'10px', background:'#2c3e50', color:'#fff', border:'none', borderRadius:'4px', cursor:'pointer'}}>저장</button>
-                                    <button type="button" onClick={() => setIsModalOpen(false)} style={{flex:1, padding:'10px', background:'#eee', border:'none', borderRadius:'4px', cursor:'pointer'}}>취소</button>
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
+                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한 코드</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="예: A001" 
+                                        value={roleForm.athrtyComCd} 
+                                        onChange={e => setRoleForm({...roleForm, athrtyComCd: e.target.value.toUpperCase()})} 
+                                        required 
+                                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                                    />
                                 </div>
-                            </form>
-                        </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
+                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한 레벨 (숫자)</label>
+                                    <input 
+                                        type="number" 
+                                        placeholder="권한 레벨" 
+                                        value={roleForm.athrtyLevel} 
+                                        onChange={e => setRoleForm({...roleForm, athrtyLevel: e.target.value})} 
+                                        required 
+                                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한명</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="권한명" 
+                                    value={roleForm.athrtyNm} 
+                                    onChange={e => setRoleForm({...roleForm, athrtyNm: e.target.value})} 
+                                    required 
+                                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한 설명</label>
+                                <textarea 
+                                    placeholder="설명" 
+                                    value={roleForm.cdExpl} 
+                                    onChange={e => setRoleForm({...roleForm, cdExpl: e.target.value})} 
+                                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px', height: '80px', resize: 'none' }} 
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>사용 여부</label>
+                                <select 
+                                    value={roleForm.useYn} 
+                                    onChange={e => setRoleForm({...roleForm, useYn: e.target.value})}
+                                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                                >
+                                    <option value="Y">사용</option>
+                                    <option value="N">미사용</option>
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+                                <button type="button" onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: '12px', background: '#f1f4f6', color: '#7f8c8d', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>취소</button>
+                                <button type="submit" style={{ flex: 1, padding: '12px', background: '#3498db', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>저장 (수정)</button>
+                            </div>
+                        </form>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -90,10 +90,10 @@ const SurveyManage = () => {
                                 {s.survNm}
                             </td>
                             <td style={{ padding: '12px', textAlign: 'center' }}>
-                                <span style={{ color: s.useYn === 'Y' ? 'green' : 'red' }}>{s.useYn === 'Y' ? '등�용' : '미사용}</span>
+                                <span style={{ color: s.useYn === 'Y' ? 'green' : 'red' }}>{s.useYn === 'Y' ? '사용' : '미사용'}</span>
                             </td>
                             <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>
-                                {s.startDt ? new Date(s.startDt).toLocaleDateString() : '지등�안삭제} ~ {s.endDt ? new Date(s.endDt).toLocaleDateString() : '지등�안삭제}
+                                {s.startDt ? new Date(s.startDt).toLocaleDateString() : '시작일자'} ~ {s.endDt ? new Date(s.endDt).toLocaleDateString() : '종료일자'}
                             </td>
                             <td style={{ padding: '12px', textAlign: 'center' }}>
                                 {s.templateYn === 'Y' && (

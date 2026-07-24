@@ -49,6 +49,7 @@ export const useMenuAuth = () => {
         inqireYn: currentAuth.inqireYn || 'N',
         rgstYn: currentAuth.rgstYn || 'N',
         mdfcnYn: currentAuth.mdfcnYn || 'N',
-        delYn: currentAuth.delYn || 'N'
+        delYn: currentAuth.delYn || 'N',
+        menuNm: currentAuth.menuNm || ''
     };
 };

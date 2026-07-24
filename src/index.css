@@ -70,3 +70,154 @@ body {
     color: var(--text-primary);
     font-size: var(--font-size-base);
 }
+
+/* ==================================================
+   ADMIN COMMON UI COMPONENTS
+   ================================================== */
+
+.admin-card {
+    background: var(--content-bg);
+    border-radius: 8px; /* 통일된 모던 라운딩 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--table-header-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-card-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.admin-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+.admin-btn:hover { opacity: 0.9; }
+
+.admin-btn-primary { background: #3498db; color: #fff; }
+.admin-btn-success { background: #2ecc71; color: #fff; }
+.admin-btn-warning { background: #e67e22; color: #fff; }
+.admin-btn-danger { background: #e74c3c; color: #fff; }
+.admin-btn-secondary { background: #95a5a6; color: #fff; }
+
+.admin-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.admin-modal-content {
+    background: var(--content-bg);
+    padding: 24px;
+    border-radius: 8px;
+    width: 450px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+
+/* --- Admin Form Elements --- */
+.admin-form-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border-color);
+}
+.admin-form-row:first-child {
+    border-top: 2px solid var(--text-primary);
+}
+.admin-form-label {
+    width: 140px;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 16px;
+    font-size: 13px;
+    flex-shrink: 0;
+    background-color: var(--table-header-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: flex-start;
+}
+.admin-form-control {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 16px;
+}
+.admin-input, .admin-textarea, .admin-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--content-bg);
+    color: var(--text-primary);
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+.admin-input:focus, .admin-textarea:focus, .admin-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+.admin-input[readonly] {
+    background: rgba(0,0,0,0.03);
+    color: var(--text-secondary);
+}
+.admin-file-box {
+    background: rgba(0,0,0,0.02);
+    border: 1px dashed var(--border-color);
+    padding: 16px;
+    border-radius: 6px;
+    width: 100%;
+}
+
+
+/* --- Admin Modal Ext --- */
+.admin-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--table-header-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+.admin-modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background-color: var(--table-header-bg);
+}
+.admin-modal-body {
+    padding: 24px;
+}
+

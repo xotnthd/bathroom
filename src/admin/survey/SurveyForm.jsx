@@ -166,7 +166,7 @@ const SurveyForm = () => {
                                 <option value="T">등�답삭제(Text)</option>
                                 <option value="L">등�문삭제(Textarea)</option>
                             </select>
-                            <input type="text" value={q.qstnTxt} onChange={e => updateQuestion(qIndex, 'qstnTxt', e.target.value)} placeholder="질문확인�력등�세삭제 style={{ flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                            <input type="text" value={q.qstnTxt} onChange={e => updateQuestion(qIndex, 'qstnTxt', e.target.value)} placeholder="질문확인�력등�세삭제" style={{ flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
                             <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '14px' }}>
                                 <input type="checkbox" checked={q.reqYn === 'Y'} onChange={e => updateQuestion(qIndex, 'reqYn', e.target.checked ? 'Y' : 'N')} /> 등�수
                             </label>

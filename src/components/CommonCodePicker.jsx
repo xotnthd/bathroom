@@ -9,8 +9,9 @@ import { getCommonCodes } from '../utils/commonCode';
  * @param {any} value - 현재 선택된 값 (checkbox의 경우 배열)
  * @param {function} onChange - 상태 변경 핸들러
  * @param {string} defaultOption - select 박스일 때 기본 문구 (예: '선택하세요')
+ * @param {boolean} disabled - 비활성화 여부
  */
-const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defaultOption = null }) => {
+const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defaultOption = null, disabled = false }) => {
     const [codeList, setCodeList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -39,7 +40,7 @@ const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defau
     // 1) 셀렉트 박스(콤보) 렌더링
     if (type === 'select') {
         return (
-            <select name={name} value={value || ''} onChange={onChange} style={{ padding: '8px', flex: 1, borderRadius: '4px', border: '1px solid #ccc' }}>
+            <select name={name} value={value || ''} onChange={onChange} disabled={disabled} style={{ padding: '8px', flex: 1, borderRadius: '4px', border: '1px solid #ccc', opacity: disabled ? 0.6 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}>
                 {defaultOption && <option value="">{defaultOption}</option>}
                 {codeList.map(code => (
                     <option key={code.comCd} value={code.comCd}>{code.cdNm}</option>
@@ -51,15 +52,16 @@ const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defau
     // 2) 라디오 버튼 렌더링
     if (type === 'radio') {
         return (
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', flex: 1 }}>
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', flex: 1, opacity: disabled ? 0.6 : 1 }}>
                 {codeList.map(code => (
-                    <label key={code.comCd} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label key={code.comCd} style={{ cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <input
                             type="radio"
                             name={name}
                             value={code.comCd}
                             checked={value === code.comCd}
                             onChange={onChange}
+                            disabled={disabled}
                         />
                         {code.cdNm}
                     </label>
@@ -86,15 +88,16 @@ const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defau
         };
 
         return (
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', flex: 1 }}>
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', flex: 1, opacity: disabled ? 0.6 : 1 }}>
                 {codeList.map(code => (
-                    <label key={code.comCd} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label key={code.comCd} style={{ cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <input
                             type="checkbox"
                             name={name}
                             value={code.comCd}
                             checked={checkedList.includes(code.comCd)}
                             onChange={handleCheckboxChange}
+                            disabled={disabled}
                         />
                         {code.cdNm}
                     </label>
