@@ -10,16 +10,19 @@ import { getCommonCodes } from '../utils/commonCode';
  * @param {function} onChange - 상태 변경 핸들러
  * @param {string} defaultOption - select 박스일 때 기본 문구 (예: '선택하세요')
  * @param {boolean} disabled - 비활성화 여부
+ * @param {string} uprComCd - 지정 시 이 부모 코드 하위(3뎁스)만 필터링해서 조회 (계층형 그룹용, 예: 직급 체계별 세부 직급)
+ * @param {string} sysId - 조회할 테넌트 (생략 시 현재 로그인/전환된 시스템 - sessionStorage 'currentSysId')
  */
-const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defaultOption = null, disabled = false }) => {
+const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defaultOption = null, disabled = false, uprComCd, sysId }) => {
     const [codeList, setCodeList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const effectiveSysId = sysId || sessionStorage.getItem('currentSysId') || 'CORE';
 
     useEffect(() => {
         let isMounted = true;
         const fetchCodes = async () => {
             setIsLoading(true);
-            const codes = await getCommonCodes(grpCd);
+            const codes = await getCommonCodes(grpCd, effectiveSysId, uprComCd);
             if (isMounted) {
                 setCodeList(codes);
                 setIsLoading(false);
@@ -27,7 +30,7 @@ const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defau
         };
         fetchCodes();
         return () => { isMounted = false; };
-    }, [grpCd]);
+    }, [grpCd, uprComCd, effectiveSysId]);
 
     if (isLoading) {
         return <span style={{ color: '#95a5a6', fontSize: '13px' }}>Loading...</span>;

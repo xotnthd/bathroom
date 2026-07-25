@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
+import CommonCodePicker from '../../components/CommonCodePicker';
+import CommonCodePreview from '../../components/CommonCodePreview';
 
 const AdminSysForm = () => {
     const navigate = useNavigate();
@@ -10,20 +12,21 @@ const AdminSysForm = () => {
     const mode = sysId ? 'EDIT' : 'CREATE';
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = useState({
-        sysId: '', sysNm: '', useYn: 'Y', serviceBgnde: today, serviceEndde: '', 
-        adminThemeCd: 'MODERN', userThemeCd: 'MODERN', logoFileGrpId: '',
+        sysId: '', sysNm: '', useYn: 'Y', serviceBgnde: today, serviceEndde: '',
+        adminThemeCd: 'MODERN', userThemeCd: 'MODERN', logoFileGrpId: '', positionSchemeCd: '', deptSchemeCd: '', planCd: '',
         masterId: '', masterPw: '', masterNm: '', masterEmail: ''
     });
     const [logoFiles, setLogoFiles] = useState(null);
     const [existingLogo, setExistingLogo] = useState(null);
     const [idCheckStatus, setIdCheckStatus] = useState('NONE'); // NONE, SUCCESS, FAIL
-    
-    // 권한 메뉴 관리    
-    const [coreMenus, setCoreMenus] = useState([]);
-    const [selectedMenuIds, setSelectedMenuIds] = useState(new Set());
+
+    // 요금제(권한코드 템플릿) 목록 - 신규 생성 시에만 선택
+    const [planList, setPlanList] = useState([]);
 
     useEffect(() => {
-        fetchCoreMenus();
+        if (mode === 'CREATE') {
+            fetchPlanList();
+        }
 
         if (mode === 'EDIT' && sysId) {
             fetchSystemDetail(sysId);
@@ -33,35 +36,12 @@ const AdminSysForm = () => {
             setExistingLogo(null);
             setIdCheckStatus('NONE');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode, sysId]);
 
-    const fetchCoreMenus = async () => {
-        // 시스템 생성 시에는 CORE의 전체 메뉴를 불러오고, 수정 시에는 해당 시스템의 전체 메뉴를 불러옵니다.
-        const fetchSysId = (mode === 'EDIT' && sysId) ? sysId : 'CORE';
-        const res = await apiClient('/admin/api/menu/sidebar/list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sysId: fetchSysId, sysSectCd: 'MG', athrtyCd: 'S001' })
-        });
-        if (res.ok) {
-            const data = await res.json();
-            setCoreMenus(data);
-            
-            // 기본 선택: 시스템 환경 설정(메뉴, 공통코드, 권한) 및 운영 리소스 관리 하위
-            const defaultSelected = new Set();
-            data.forEach(menu => {
-                if (menu.menuId === 'MNU_0000000001' || 
-                    menu.menuId === 'MNU_0000000002' || 
-                    menu.menuId === 'MNU_0000000003' || 
-                    menu.menuId === 'MNU_0000000004' || 
-                    menu.menuId === 'MNU_0000000008' || 
-                    menu.menuId === 'MNU_0000000009' || 
-                    menu.uprMenuId === 'MNU_0000000008') { 
-                    defaultSelected.add(menu.menuId);
-                }
-            });
-            if (mode === 'CREATE') { setSelectedMenuIds(defaultSelected); }
-        }
+    const fetchPlanList = async () => {
+        const res = await apiClient('/admin/api/auth-template/plan/list', { method: 'POST' });
+        if (res.ok) setPlanList(await res.json());
     };
 
     const fetchSystemDetail = async (id) => {
@@ -69,10 +49,6 @@ const AdminSysForm = () => {
         if (res.ok) {
             const data = await res.json();
             setFormData(data);
-            
-            if (data.menuIds) {
-                setSelectedMenuIds(new Set(data.menuIds));
-            }
 
             if (data.logoFileGrpId) {
                 const fRes = await apiClient(`/admin/api/comn/file/list/${data.logoFileGrpId}?sysId=${id}`);
@@ -95,7 +71,7 @@ const AdminSysForm = () => {
             alert('마스터 계정 ID를 입력하세요.');
             return;
         }
-        
+
         const res = await apiClient(`/admin/api/sys/check-id?sysId=${formData.sysId}&masterId=${formData.masterId}`);
         if (res.ok) {
             const data = await res.json();
@@ -109,74 +85,6 @@ const AdminSysForm = () => {
         }
     };
 
-    const toggleMenu = (menuId) => {
-        const newSet = new Set(selectedMenuIds);
-        
-        // 특정 메뉴의 모든 하위 메뉴 ID를 재귀적으로 가져오는 함수
-        const getAllChildren = (id) => {
-            let children = coreMenus.filter(m => m.uprMenuId === id).map(m => m.menuId);
-            let allChildren = [...children];
-            children.forEach(childId => {
-                allChildren = allChildren.concat(getAllChildren(childId));
-            });
-            return allChildren;
-        };
-
-        if (newSet.has(menuId)) {
-            newSet.delete(menuId);
-            // 자식 메뉴도 모두 체크 해제 (3뎁스 이상 포함)
-            const childrenToUncheck = getAllChildren(menuId);
-            childrenToUncheck.forEach(childId => newSet.delete(childId));
-        } else {
-            newSet.add(menuId);
-            // 부모 메뉴로 연쇄적 체크
-            let currentId = menuId;
-            while (true) {
-                const menu = coreMenus.find(m => m.menuId === currentId);
-                if (menu && menu.uprMenuId && menu.uprMenuId !== 'ROOT') {
-                    newSet.add(menu.uprMenuId);
-                    currentId = menu.uprMenuId;
-                } else {
-                    break;
-                }
-            }
-            // 하위 뎁스 자동 전체 체크 (3뎁스 이상 포함)
-            const childrenToCheck = getAllChildren(menuId);
-            childrenToCheck.forEach(childId => newSet.add(childId));
-        }
-        setSelectedMenuIds(newSet);
-    };
-
-    const renderMenuTree = (parentId, depth) => {
-        const children = coreMenus.filter(m => m.uprMenuId === parentId);
-        if (children.length === 0) return null;
-
-        return (
-            <div style={{ paddingLeft: depth === 0 ? '0' : '20px', marginTop: depth === 0 ? '0' : '5px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                {children.map(menu => (
-                    <div key={menu.menuId} style={{ marginBottom: depth === 0 ? '10px' : '0' }}>
-                        <label style={{ 
-                            fontWeight: depth === 0 ? 'bold' : 'normal', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '5px', 
-                            fontSize: depth === 0 ? '14px' : '13px',
-                            color: depth === 0 ? '#333' : (depth === 1 ? '#555' : '#777')
-                        }}>
-                            <input 
-                                type="checkbox" 
-                                checked={selectedMenuIds.has(menu.menuId)} 
-                                onChange={() => toggleMenu(menu.menuId)} 
-                            />
-                            {menu.menuNm}
-                        </label>
-                        {renderMenuTree(menu.menuId, depth + 1)}
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
     const handleSave = async () => {
         if (!formData.sysId) return alert("System ID를 입력하세요.");
         if (!formData.sysNm) return alert("시스템 명칭을 입력하세요.");
@@ -185,20 +93,17 @@ const AdminSysForm = () => {
             if (idCheckStatus !== 'SUCCESS') return alert("ID 중복 확인을 해주세요.");
             if (!formData.masterPw) return alert("마스터 계정 비밀번호를 입력하세요.");
             if (!formData.masterNm) return alert("마스터 계정 이름을 입력하세요.");
-            if (selectedMenuIds.size === 0) return alert("최소 1개 이상의 메뉴 권한을 선택하세요.");
+            if (!formData.planCd) return alert("요금제를 선택하세요.");
         }
-        
+
         const payload = new FormData();
-        const sysData = { ...formData };
-        sysData.menuIds = Array.from(selectedMenuIds);
-        
-        payload.append('sysData', JSON.stringify(sysData));
+        payload.append('sysData', JSON.stringify(formData));
         if (logoFiles && logoFiles.length > 0) {
             payload.append('logoFiles', logoFiles[0]);
         }
 
         const url = mode === 'CREATE' ? '/admin/api/sys/create' : '/admin/api/sys/save';
-        
+
         const res = await apiClient(url, {
             method: 'POST',
             body: payload
@@ -234,6 +139,21 @@ const AdminSysForm = () => {
                         <input type="text" value={formData.sysNm} onChange={e => setFormData({...formData, sysNm: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
                     </div>
                 </div>
+
+                {mode === 'CREATE' && (
+                    <div>
+                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>요금제</label>
+                        <select value={formData.planCd} onChange={e => setFormData({...formData, planCd: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}>
+                            <option value="">요금제 선택</option>
+                            {planList.map(p => (
+                                <option key={p.planCd} value={p.planCd}>{p.planNm} ({p.planCd})</option>
+                            ))}
+                        </select>
+                        <p style={{ fontSize: '12px', color: '#888', marginTop: '5px', marginBottom: 0 }}>
+                            * 선택한 요금제의 부서/역할/메뉴 권한 구조(권한코드 템플릿 관리에서 설정)가 그대로 복제됩니다. 마스터 계정(A001)의 메뉴 권한도 여기서 자동으로 결정됩니다.
+                        </p>
+                    </div>
+                )}
 
                 <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '4px', border: '1px solid #e9ecef' }}>
                     <h4 style={{ margin: '0 0 10px 0', color: '#34495e' }}>마스터 계정 정보</h4>
@@ -299,6 +219,44 @@ const AdminSysForm = () => {
                         </select>
                     </div>
                 </div>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>부서 체계</label>
+                        <CommonCodePicker
+                            grpCd="DEPT_CD"
+                            uprComCd="ROOT"
+                            type="select"
+                            name="deptSchemeCd"
+                            value={formData.deptSchemeCd}
+                            onChange={e => setFormData({ ...formData, deptSchemeCd: e.target.value })}
+                            defaultOption="부서 체계 선택"
+                        />
+                        <div style={{ marginTop: '8px' }}>
+                            <CommonCodePreview grpCd="DEPT_CD" uprComCd={formData.deptSchemeCd} />
+                        </div>
+                        <p style={{ fontSize: '12px', color: '#888', marginTop: '5px', marginBottom: 0 }}>
+                            * 선택한 체계에 속한 부서들이 직원 관리 화면의 "부서" 드롭다운에 노출됩니다. 체계/부서 항목은 공통코드 관리(DEPT_CD)에서 추가·수정할 수 있습니다.
+                        </p>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>직급 체계</label>
+                        <CommonCodePicker
+                            grpCd="POSITION_CD"
+                            uprComCd="ROOT"
+                            type="select"
+                            name="positionSchemeCd"
+                            value={formData.positionSchemeCd}
+                            onChange={e => setFormData({ ...formData, positionSchemeCd: e.target.value })}
+                            defaultOption="직급 체계 선택"
+                        />
+                        <div style={{ marginTop: '8px' }}>
+                            <CommonCodePreview grpCd="POSITION_CD" uprComCd={formData.positionSchemeCd} />
+                        </div>
+                        <p style={{ fontSize: '12px', color: '#888', marginTop: '5px', marginBottom: 0 }}>
+                            * 선택한 체계에 속한 직급들이 직원 관리 화면의 "직급" 드롭다운에 노출됩니다. 체계/직급 항목은 공통코드 관리(POSITION_CD)에서 추가·수정할 수 있습니다.
+                        </p>
+                    </div>
+                </div>
                 <div>
                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>서비스 로고 이미지</label>
                     {existingLogo && mode === 'EDIT' && (
@@ -308,16 +266,6 @@ const AdminSysForm = () => {
                         </div>
                     )}
                     <input type="file" accept="image/*" onChange={e => setLogoFiles(e.target.files)} style={{ width: '100%', padding: '8px', border: '1px dashed #aaa', borderRadius: '4px' }} />
-                </div>
-                
-                <div style={{ background: '#fdfdfd', padding: '15px', borderRadius: '4px', border: '1px solid #eee', marginTop: '10px' }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#34495e' }}>시스템 메뉴 & 권한 할당 (마스터 계정 기본 부여)</h4>
-                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px', borderRadius: '4px', background: '#fff' }}>
-                        {renderMenuTree('ROOT', 0)}
-                    </div>
-                    <p style={{ fontSize: '12px', color: '#888', marginTop: '5px', marginBottom: 0 }}>
-                        * 선택된 메뉴는 해당 시스템에 복사되며, 마스터 계정에는 해당 메뉴의 모든 권한이 부여됩니다.
-                    </p>
                 </div>
 
                 <div style={{ textAlign: 'right', marginTop: '10px' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import { apiClient } from '../../utils/apiClient';
@@ -7,6 +8,7 @@ import MenuModal from './components/MenuModal';
 
 const MenuManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
+    const { isTrueSuperAdmin } = useOutletContext();
 
     const {
         sysSectCd, setSysSectCd,
@@ -15,7 +17,9 @@ const MenuManage = () => {
         selMidId, setSelMidId,
         setMidMenuList, setSubMenuList,
         fetchMainMenu, fetchMidMenu, fetchSubMenu,
-        handleMenuLogicalDelete, saveMenu
+        handleMenuLogicalDelete, saveMenu,
+        moveMainItem, moveMidItem, moveSubItem,
+        saveMainOrder, saveMidOrder, saveSubOrder
     } = useMenuManage(defaultSysId);
 
     const [targetBrdList, setTargetBrdList] = useState([]);
@@ -24,7 +28,7 @@ const MenuManage = () => {
     const [isBrdMapping, setIsBrdMapping] = useState(false);
     const [menuForm, setMenuForm] = useState({
         sysId: defaultSysId, menuId: '', uprMenuId: 'ROOT', sysSectCd: 'MG',
-        menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y'
+        menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N'
     });
 
     const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
@@ -72,7 +76,7 @@ const MenuManage = () => {
         setMenuForm({
             sysId: defaultSysId, menuId: '',
             uprMenuId: targetType === 'MAIN' ? 'ROOT' : (targetType === 'MID' ? selMainId : selMidId),
-            sysSectCd: sysSectCd, menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y'
+            sysSectCd: sysSectCd, menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N'
         });
     };
 
@@ -133,20 +137,29 @@ const MenuManage = () => {
                 <div className="admin-card" style={{ flex: 1 }}>
                     <div className="admin-card-header">
                         <span className="admin-card-title">1단계 메뉴</span>
-                        {rgstYn === 'Y' && <button onClick={() => handleOpenInsert('MAIN')} className="admin-btn admin-btn-success">등록</button>}
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                            {mdfcnYn === 'Y' && <button onClick={saveMainOrder} className="admin-btn admin-btn-secondary">순서 저장</button>}
+                            {rgstYn === 'Y' && <button onClick={() => handleOpenInsert('MAIN')} className="admin-btn admin-btn-success">등록</button>}
+                        </div>
                     </div>
                     <div style={{ flex: 1, overflowY: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                             <tbody>
-                            {mainMenuList.map(m => (
-                                <tr key={m.menuId} 
-                                    onClick={() => { setSelMainId(m.menuId); setMidMenuList([]); setSubMenuList([]); setSelMidId(''); fetchMidMenu(sysSectCd, m.menuId); }} 
+                            {mainMenuList.map((m, idx) => (
+                                <tr key={m.menuId}
+                                    onClick={() => { setSelMainId(m.menuId); setMidMenuList([]); setSubMenuList([]); setSelMidId(''); fetchMidMenu(sysSectCd, m.menuId); }}
                                     style={{ cursor: 'pointer', background: selMainId === m.menuId ? 'rgba(52, 152, 219, 0.1)' : 'transparent', borderBottom: '1px solid var(--border-color)' }}>
                                     <td style={{ padding: '12px' }}>
                                         <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{m.menuNm}</div>
                                         <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{m.menuId}</div>
                                     </td>
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                                    <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                        {mdfcnYn === 'Y' && (
+                                            <span style={{ display: 'inline-flex', gap: '2px', marginRight: '4px' }}>
+                                                <button onClick={(e) => { e.stopPropagation(); moveMainItem(idx, -1); }} disabled={idx === 0} className="admin-btn admin-btn-secondary" style={{ padding: '4px 6px' }}>▲</button>
+                                                <button onClick={(e) => { e.stopPropagation(); moveMainItem(idx, 1); }} disabled={idx === mainMenuList.length - 1} className="admin-btn admin-btn-secondary" style={{ padding: '4px 6px' }}>▼</button>
+                                            </span>
+                                        )}
                                         {mdfcnYn === 'Y' && <button onClick={(e) => { e.stopPropagation(); handleOpenUpdate('MAIN', m); }} className="admin-btn admin-btn-secondary" style={{ marginRight: '4px', padding: '4px 8px' }}>수정</button>}
                                         {delYn === 'Y' && <button onClick={(e) => { e.stopPropagation(); handleMenuLogicalDelete('MAIN', m.menuId); }} className="admin-btn admin-btn-danger" style={{ padding: '4px 8px' }}>삭제</button>}
                                     </td>
@@ -161,20 +174,29 @@ const MenuManage = () => {
                 <div className="admin-card" style={{ flex: 1 }}>
                     <div className="admin-card-header">
                         <span className="admin-card-title">2단계 메뉴 {selMainId && <span style={{color: 'var(--primary-color)', fontSize: '12px', marginLeft: '6px'}}>{selMainId}</span>}</span>
-                        {rgstYn === 'Y' && <button onClick={() => handleOpenInsert('MID')} className="admin-btn admin-btn-success">등록</button>}
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                            {mdfcnYn === 'Y' && <button onClick={saveMidOrder} className="admin-btn admin-btn-secondary">순서 저장</button>}
+                            {rgstYn === 'Y' && <button onClick={() => handleOpenInsert('MID')} className="admin-btn admin-btn-success">등록</button>}
+                        </div>
                     </div>
                     <div style={{ flex: 1, overflowY: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                             <tbody>
-                            {midMenuList.map(m => (
-                                <tr key={m.menuId} 
-                                    onClick={() => { setSelMidId(m.menuId); setSubMenuList([]); fetchSubMenu(sysSectCd, m.menuId); }} 
+                            {midMenuList.map((m, idx) => (
+                                <tr key={m.menuId}
+                                    onClick={() => { setSelMidId(m.menuId); setSubMenuList([]); fetchSubMenu(sysSectCd, m.menuId); }}
                                     style={{ cursor: 'pointer', background: selMidId === m.menuId ? 'rgba(46, 204, 113, 0.1)' : 'transparent', borderBottom: '1px solid var(--border-color)' }}>
                                     <td style={{ padding: '12px' }}>
                                         <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{m.menuNm}</div>
                                         <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{m.menuId}</div>
                                     </td>
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                                    <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                        {mdfcnYn === 'Y' && (
+                                            <span style={{ display: 'inline-flex', gap: '2px', marginRight: '4px' }}>
+                                                <button onClick={(e) => { e.stopPropagation(); moveMidItem(idx, -1); }} disabled={idx === 0} className="admin-btn admin-btn-secondary" style={{ padding: '4px 6px' }}>▲</button>
+                                                <button onClick={(e) => { e.stopPropagation(); moveMidItem(idx, 1); }} disabled={idx === midMenuList.length - 1} className="admin-btn admin-btn-secondary" style={{ padding: '4px 6px' }}>▼</button>
+                                            </span>
+                                        )}
                                         {mdfcnYn === 'Y' && <button onClick={(e) => { e.stopPropagation(); handleOpenUpdate('MID', m); }} className="admin-btn admin-btn-secondary" style={{ marginRight: '4px', padding: '4px 8px' }}>수정</button>}
                                         {delYn === 'Y' && <button onClick={(e) => { e.stopPropagation(); handleMenuLogicalDelete('MID', m.menuId); }} className="admin-btn admin-btn-danger" style={{ padding: '4px 8px' }}>삭제</button>}
                                     </td>
@@ -190,7 +212,10 @@ const MenuManage = () => {
                 <div className="admin-card" style={{ flex: 2 }}>
                     <div className="admin-card-header">
                         <span className="admin-card-title">3단계 메뉴 (상세) {selMidId && <span style={{color: 'var(--primary-color)', fontSize: '12px', marginLeft: '6px'}}>{selMidId}</span>}</span>
-                        {rgstYn === 'Y' && <button onClick={() => handleOpenInsert('SUB')} className="admin-btn admin-btn-primary">신규 등록</button>}
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                            {mdfcnYn === 'Y' && <button onClick={saveSubOrder} className="admin-btn admin-btn-secondary">순서 저장</button>}
+                            {rgstYn === 'Y' && <button onClick={() => handleOpenInsert('SUB')} className="admin-btn admin-btn-primary">신규 등록</button>}
+                        </div>
                     </div>
                     <div style={{ flex: 1, overflowY: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
@@ -198,11 +223,11 @@ const MenuManage = () => {
                                 <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--table-header-bg)' }}>
                                     <th style={{ padding: '12px' }}>메뉴명/ID</th>
                                     <th style={{ padding: '12px' }}>연결 정보</th>
-                                    <th style={{ padding: '12px', width: '110px', textAlign: 'center' }}>조작</th>
+                                    <th style={{ padding: '12px', width: '160px', textAlign: 'center' }}>조작</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            {subMenuList.map(s => (
+                            {subMenuList.map((s, idx) => (
                                 <tr key={s.menuId} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                     <td style={{ padding: '12px' }}>
                                         <div style={{ fontWeight: 'bold' }}>{s.menuNm}</div>
@@ -210,7 +235,7 @@ const MenuManage = () => {
                                     </td>
                                     <td style={{ padding: '12px' }}>
                                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                                            {s.brdId ? <span style={{ background: 'rgba(230, 126, 34, 0.1)', color: '#e67e22', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>게시판 연동: {s.brdId}</span> 
+                                            {s.brdId ? <span style={{ background: 'rgba(230, 126, 34, 0.1)', color: '#e67e22', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>게시판 연동: {s.brdId}</span>
                                                      : <span style={{ background: 'rgba(149, 165, 166, 0.1)', color: '#7f8c8d', padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>컴포넌트</span>}
                                             {s.menuKwd && s.menuKwd.split(',').map((kwd, i) => (
                                                 <span key={i} style={{ background: 'var(--table-header-bg)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '11px', padding: '2px 6px', borderRadius: '4px' }}>#{kwd.trim()}</span>
@@ -218,7 +243,13 @@ const MenuManage = () => {
                                         </div>
                                         <div style={{ fontSize: '12px', color: 'var(--primary-color)' }}>{s.menuUrl || s.compPath || '경로 없음'}</div>
                                     </td>
-                                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                                    <td style={{ padding: '12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                        {mdfcnYn === 'Y' && (
+                                            <span style={{ display: 'inline-flex', gap: '2px', marginRight: '4px' }}>
+                                                <button onClick={() => moveSubItem(idx, -1)} disabled={idx === 0} className="admin-btn admin-btn-secondary" style={{ padding: '4px 6px' }}>▲</button>
+                                                <button onClick={() => moveSubItem(idx, 1)} disabled={idx === subMenuList.length - 1} className="admin-btn admin-btn-secondary" style={{ padding: '4px 6px' }}>▼</button>
+                                            </span>
+                                        )}
                                         {mdfcnYn === 'Y' && <button onClick={() => handleOpenUpdate('SUB', s)} className="admin-btn admin-btn-secondary" style={{ marginRight: '4px', padding: '4px 8px' }}>수정</button>}
                                         {delYn === 'Y' && <button onClick={() => handleMenuLogicalDelete('SUB', s.menuId)} className="admin-btn admin-btn-danger" style={{ padding: '4px 8px' }}>삭제</button>}
                                     </td>
@@ -231,7 +262,7 @@ const MenuManage = () => {
                 </div>
             </div>
 
-            <MenuModal 
+            <MenuModal
                 modal={modal}
                 setModal={setModal}
                 menuForm={menuForm}
@@ -242,6 +273,7 @@ const MenuManage = () => {
                 targetBrdList={targetBrdList}
                 useYnList={useYnList}
                 handleModalFormSubmit={handleModalFormSubmit}
+                isTrueSuperAdmin={isTrueSuperAdmin}
             />
 
         </div>

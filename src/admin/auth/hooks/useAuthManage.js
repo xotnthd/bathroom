@@ -9,18 +9,60 @@ export const useAuthManage = (defaultSysId) => {
 
     // 모달 상태
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [roleForm, setRoleForm] = useState({ sysId: defaultSysId, sysSeCd: 'MG', oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y', athrtyLevel: 99 });
+    const [roleForm, setRoleForm] = useState({ sysId: defaultSysId, sysSeCd: 'MG', oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y' });
+
+    // 레벨 위아래 버튼 조정용 스냅샷 (메뉴관리 순서변경과 동일한 패턴)
+    const [roleLevelSnapshot, setRoleLevelSnapshot] = useState({});
 
     const fetchRoleList = useCallback(async (sectCd = sysSectCd) => {
         try {
             const res = await apiClient(`/admin/api/auth/role/list?sysId=${defaultSysId}&sysSeCd=${sectCd}`);
             if (res.ok) {
-                setRoleList(await res.json());
+                const data = await res.json();
+                setRoleList(data);
+                const snapshot = {};
+                data.forEach(r => { snapshot[r.athrtyComCd] = r.athrtyLevel; });
+                setRoleLevelSnapshot(snapshot);
             }
         } catch (error) {
             console.error("Failed to fetch role list", error);
         }
     }, [defaultSysId, sysSectCd]);
+
+    // 레벨을 한 단계 강하게(-1)/약하게(+1) 조정 - 실제 방어(자신보다 강하게 못 만듦)는 서버가 최종 검증
+    const moveRoleLevel = useCallback((athrtyComCd, delta) => {
+        setRoleList(prev => prev.map(r => {
+            if (r.athrtyComCd !== athrtyComCd) return r;
+            const nextLevel = Math.max(1, (r.athrtyLevel ?? 99) + delta);
+            return { ...r, athrtyLevel: nextLevel };
+        }));
+    }, []);
+
+    const saveRoleLevels = useCallback(async () => {
+        const changed = roleList.filter(r => roleLevelSnapshot[r.athrtyComCd] !== r.athrtyLevel);
+        if (changed.length === 0) {
+            alert('변경된게 없습니다.');
+            return;
+        }
+        try {
+            const items = changed.map(r => ({ sysId: r.sysId, athrtyComCd: r.athrtyComCd, athrtyLevel: r.athrtyLevel }));
+            const res = await apiClient('/admin/api/auth/role/level/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(items)
+            });
+            if (res.ok) {
+                alert('레벨이 저장되었습니다.');
+                fetchRoleList();
+            } else {
+                const errorMsg = await res.text();
+                alert('오류: ' + errorMsg);
+            }
+        } catch (error) {
+            console.error("Failed to save role levels", error);
+            alert('레벨 저장 중 오류가 발생했습니다.');
+        }
+    }, [roleList, roleLevelSnapshot, fetchRoleList]);
 
     const sortAndIndentMenus = (list) => {
         const menuMap = {};
@@ -76,14 +118,13 @@ export const useAuthManage = (defaultSysId) => {
         fetchMatrix(role.athrtyComCd);
     }, [fetchMatrix]);
 
-    const saveRole = useCallback(async (form, currentUserLevel) => {
+    const saveRole = useCallback(async (form) => {
         try {
-            // Include currentUserLevel in the payload for validation
-            const payload = { ...form, currentUserLevel };
+            // currentUserLevel/isTrueSuperAdmin은 더 이상 클라이언트가 보내지 않는다 - 서버가 세션에서 직접 계산한다
             const res = await apiClient('/admin/api/auth/role/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(form)
             });
             if (res.ok) { 
                 alert("저장되었습니다.");
@@ -212,6 +253,8 @@ export const useAuthManage = (defaultSysId) => {
         deleteRole,
         saveMatrix,
         updateMatrixCheckbox,
-        toggleMatrixHeader
+        toggleMatrixHeader,
+        moveRoleLevel,
+        saveRoleLevels
     };
 };

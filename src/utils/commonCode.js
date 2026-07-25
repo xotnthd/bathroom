@@ -1,8 +1,11 @@
 import { apiClient } from './apiClient';
 
-export const getCommonCodes = async (grpCd, sysId = 'CORE') => {
+export const getCommonCodes = async (grpCd, sysId = 'CORE', uprComCd) => {
     try {
-        const res = await apiClient(`/api/comn/code/list?sysId=${sysId}&grpCd=${grpCd}`, {
+        const query = uprComCd
+            ? `sysId=${sysId}&grpCd=${grpCd}&uprComCd=${uprComCd}`
+            : `sysId=${sysId}&grpCd=${grpCd}`;
+        const res = await apiClient(`/api/comn/code/list?${query}`, {
             method: 'GET'
         });
 

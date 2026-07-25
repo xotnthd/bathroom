@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import { useMenuAuth } from '../hooks/useMenuAuth';
 import { useUserManage } from './hooks/useUserManage';
@@ -9,7 +10,8 @@ import UserModal from './components/UserModal';
 const UserManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
-    const [sysSectCd, setSysSectCd] = useState('MG'); 
+    const { sysConfig } = useOutletContext();
+    const [sysSectCd, setSysSectCd] = useState('MG');
 
     // 커스텀 훅을 통한 비즈니스 로직 및 상태 분리
     const {
@@ -39,6 +41,7 @@ const UserManage = () => {
     const columns = [
         { key: 'userId', label: '아이디', isKey: true, align: 'center' },
         { key: 'userNm', label: '이름', align: 'center' },
+        { key: 'empNo', label: '사번', align: 'center', render: (row) => row.empNo || '-' },
         { key: 'athrtyCd', label: '권한', align: 'center', render: (row) => {
             const role = roleList.find(r => r.athrtyComCd === row.athrtyCd);
             return role ? role.athrtyNm : row.athrtyCd;
@@ -160,7 +163,7 @@ const UserManage = () => {
             </div>
 
             {/* 모달 폼 컴포넌트 */}
-            <UserModal 
+            <UserModal
                 isOpen={isModalOpen}
                 onClose={closeModal}
                 userForm={userForm}
@@ -175,6 +178,8 @@ const UserManage = () => {
                 handleFileDelete={handleFileDelete}
                 handleFileDownload={handleFileDownload}
                 setUserForm={setUserForm}
+                sysSectCd={sysSectCd}
+                sysConfig={sysConfig}
             />
 
         </div>

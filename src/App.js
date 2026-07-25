@@ -5,6 +5,7 @@ import AdminLayout from './admin/AdminLayout';
 import MenuManage from './admin/menu/MenuManage';
 import CodeManage from './admin/code/CodeManage';
 import AuthManage from './admin/auth/AuthManage';
+import AdminAuthTemplateManage from './admin/authtpl/AdminAuthTemplateManage';
 import AdminSysManage from './admin/sys/AdminSysManage';
 import AdminSysForm from './admin/sys/AdminSysForm';
 import UserManage from './admin/user/UserManage';
@@ -43,6 +44,7 @@ function App() {
                     <Route path="menu" element={<MenuManage />} />
                     <Route path="code" element={<CodeManage />} />
                     <Route path="auth" element={<AuthManage />} />
+                    <Route path="auth-template" element={<AdminAuthTemplateManage />} />
                     <Route path="sys" element={<AdminSysManage />} />
                     <Route path="sys/write" element={<AdminSysForm />} />
                     <Route path="user" element={<UserManage />} />

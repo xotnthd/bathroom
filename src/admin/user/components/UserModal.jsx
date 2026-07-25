@@ -4,10 +4,10 @@ import Modal from '../../../components/common/Modal';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
-const UserModal = ({ 
-    isOpen, onClose, userForm, handleFormChange, handleUserSave, 
+const UserModal = ({
+    isOpen, onClose, userForm, handleFormChange, handleUserSave,
     selectedUserId, roleList, rgstYn, mdfcnYn, setUploadFiles, existingFiles,
-    handleFileDelete, handleFileDownload, setUserForm
+    handleFileDelete, handleFileDownload, setUserForm, sysSectCd, sysConfig
 }) => {
     const [pswdConfirm, setPswdConfirm] = useState('');
 
@@ -137,6 +137,52 @@ const UserModal = ({
                                 <input type="text" name="dtlAddr" className="admin-input" placeholder="상세 주소" value={userForm.dtlAddr || ''} onChange={handleFormChange} disabled={isReadOnly} />
                             </div>
                         </div>
+
+                        {sysSectCd === 'MG' && (
+                            <div className="admin-form-row" style={{ alignItems: 'stretch' }}>
+                                <label className="admin-form-label" style={{ alignItems: 'flex-start', paddingTop: '15px', height: 'auto' }}>직원 정보</label>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <input type="text" name="empNo" className="admin-input" placeholder="사번" value={userForm.empNo || ''} onChange={handleFormChange} disabled={isReadOnly} />
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <CommonCodePicker
+                                            grpCd="DEPT_CD"
+                                            uprComCd={sysConfig?.deptSchemeCd}
+                                            type="select"
+                                            name="deptCd"
+                                            value={userForm.deptCd}
+                                            onChange={handleFormChange}
+                                            defaultOption="부서 선택"
+                                            disabled={isReadOnly}
+                                        />
+                                        <CommonCodePicker
+                                            grpCd="POSITION_CD"
+                                            uprComCd={sysConfig?.positionSchemeCd}
+                                            type="select"
+                                            name="positionCd"
+                                            value={userForm.positionCd}
+                                            onChange={handleFormChange}
+                                            defaultOption="직급 선택"
+                                            disabled={isReadOnly}
+                                        />
+                                        <CommonCodePicker
+                                            grpCd="EMP_STAT_CD"
+                                            type="select"
+                                            name="empStatCd"
+                                            value={userForm.empStatCd}
+                                            onChange={handleFormChange}
+                                            defaultOption="재직상태 선택"
+                                            disabled={isReadOnly}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '12px', color: '#7f8c8d' }}>입사일</span>
+                                        <input type="date" name="hireDt" className="admin-input" value={userForm.hireDt || ''} onChange={handleFormChange} disabled={isReadOnly} />
+                                        <span style={{ fontSize: '12px', color: '#7f8c8d' }}>퇴사일</span>
+                                        <input type="date" name="resignDt" className="admin-input" value={userForm.resignDt || ''} onChange={handleFormChange} disabled={isReadOnly} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="admin-form-row">
                             <label className="admin-form-label">등록 기간</label>

@@ -6,8 +6,6 @@ import DataTable from '../../components/common/DataTable';
 
 const AuthManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    // 임시로 세션에서 현재 로그인된 사용자의 권한 레벨을 가져온다고 가정 (없으면 0: 최고관리자)
-    const currentUserLevel = parseInt(sessionStorage.getItem('currentUserLevel') || '0', 10);
 
     const {
         roleList,
@@ -25,14 +23,16 @@ const AuthManage = () => {
         deleteRole,
         saveMatrix,
         updateMatrixCheckbox,
-        toggleMatrixHeader
+        toggleMatrixHeader,
+        moveRoleLevel,
+        saveRoleLevels
     } = useAuthManage(defaultSysId);
 
     const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
 
-    useEffect(() => { 
+    useEffect(() => {
         if (inqireYn === 'Y') {
-            fetchRoleList(sysSectCd); 
+            fetchRoleList(sysSectCd);
         } else if (inqireYn === 'N') {
             alert('조회 권한이 없습니다. 관리자에게 문의하세요.');
         }
@@ -40,13 +40,13 @@ const AuthManage = () => {
 
     const openRoleModal = (role = null) => {
         if (role) setRoleForm({ ...role, oldAthrtyComCd: role.athrtyComCd });
-        else setRoleForm({ sysId: defaultSysId, sysSeCd: sysSectCd, oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y', athrtyLevel: '' });
+        else setRoleForm({ sysId: defaultSysId, sysSeCd: sysSectCd, oldAthrtyComCd: '', athrtyComCd: '', athrtyNm: '', cdExpl: '', useYn: 'Y' });
         setIsModalOpen(true);
     };
 
     const handleRoleSubmit = async (e) => {
         e.preventDefault();
-        await saveRole(roleForm, currentUserLevel);
+        await saveRole(roleForm);
     };
 
     if (inqireYn === 'N') {
@@ -55,8 +55,31 @@ const AuthManage = () => {
 
     const roleColumns = [
         { key: 'athrtyComCd', label: '권한코드', width: '80px' },
-        { key: 'athrtyLevel', label: '레벨', width: '60px' },
-        { 
+        {
+            key: 'athrtyLevel',
+            label: '레벨',
+            width: '90px',
+            render: (row) => (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    {mdfcnYn === 'Y' && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); moveRoleLevel(row.athrtyComCd, -1); }}
+                            title="더 강하게"
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
+                        >▲</button>
+                    )}
+                    {mdfcnYn === 'Y' && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); moveRoleLevel(row.athrtyComCd, 1); }}
+                            title="더 약하게"
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
+                        >▼</button>
+                    )}
+                    {mdfcnYn !== 'Y' && <span style={{ color: '#bbb', fontSize: '11px' }}>-</span>}
+                </div>
+            )
+        },
+        {
             key: 'athrtyNm', 
             label: '권한명',
             render: (row) => <div style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all' }}>{row.athrtyNm}</div>
@@ -116,14 +139,24 @@ const AuthManage = () => {
                 <div style={{ width: '600px', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div style={{ padding: '20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafbfc' }}>
                         <h4 style={{ margin: 0, color: '#2c3e50', fontSize: '16px' }}>전체 권한 그룹</h4>
-                        {rgstYn === 'Y' && (
-                            <button 
-                                onClick={() => openRoleModal()} 
-                                style={{ background: '#3498db', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
-                            >
-                                신규 권한 등록
-                            </button>
-                        )}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            {mdfcnYn === 'Y' && (
+                                <button
+                                    onClick={saveRoleLevels}
+                                    style={{ background: '#2c3e50', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                                >
+                                    레벨 저장
+                                </button>
+                            )}
+                            {rgstYn === 'Y' && (
+                                <button
+                                    onClick={() => openRoleModal()}
+                                    style={{ background: '#3498db', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                                >
+                                    신규 권한 등록
+                                </button>
+                            )}
+                        </div>
                     </div>
                     <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
                         <DataTable 
@@ -207,29 +240,19 @@ const AuthManage = () => {
                                 </div>
                             </div>
                             
-                            <div style={{ display: 'flex', gap: '15px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
-                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한 코드</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="예: A001" 
-                                        value={roleForm.athrtyComCd} 
-                                        onChange={e => setRoleForm({...roleForm, athrtyComCd: e.target.value.toUpperCase()})} 
-                                        required 
-                                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
-                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한 레벨 (숫자)</label>
-                                    <input 
-                                        type="number" 
-                                        placeholder="권한 레벨" 
-                                        value={roleForm.athrtyLevel} 
-                                        onChange={e => setRoleForm({...roleForm, athrtyLevel: e.target.value})} 
-                                        required 
-                                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
-                                    />
-                                </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#7f8c8d' }}>권한 코드</label>
+                                <input
+                                    type="text"
+                                    placeholder="예: A001"
+                                    value={roleForm.athrtyComCd}
+                                    onChange={e => setRoleForm({...roleForm, athrtyComCd: e.target.value.toUpperCase()})}
+                                    required
+                                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                                />
+                                {!roleForm.oldAthrtyComCd && (
+                                    <span style={{ fontSize: '12px', color: '#95a5a6' }}>신규 등록 시 레벨은 항상 최하위로 생성됩니다 - 등록 후 좌측 목록의 ▲▼ 버튼으로 조정하세요.</span>
+                                )}
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>

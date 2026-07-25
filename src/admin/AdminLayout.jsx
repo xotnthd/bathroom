@@ -16,6 +16,7 @@ const AdminLayout = () => {
     const [menuTree, setMenuTree] = useState([]);
     const [menuAuths, setMenuAuths] = useState([]);
     const [sysConfig, setSysConfig] = useState(null);
+    const [isTrueSuperAdmin, setIsTrueSuperAdmin] = useState(false);
 
     // 2. 교차 관리용 시스템 목록
     const [systemList, setSystemList] = useState([]);
@@ -50,11 +51,12 @@ const AdminLayout = () => {
                     const data = await res.json();
                     setLoginId(data.loginId || '알수없음');
 
-                    // S001 최고관리자(CORE의 A001) 인 경우 시스템 전환 가능
-                    if (data.role === 'S001' || (data.sysId === 'CORE' && data.role === 'A001')) {
+                    // S001/SUPR 최고관리자(CORE의 A001) 인 경우 시스템 전환 가능
+                    if (data.role === 'S001' || data.role === 'SUPR' || (data.sysId === 'CORE' && data.role === 'A001')) {
                         setCanSwitchSystem(true);
                         fetchSystemListForSwitch();
                     }
+                    setIsTrueSuperAdmin(data.role === 'SUPR');
 
                     // 백엔드에서 넘겨준 권한(role)의 변경에 따라 메뉴 호출 함수를 전달
                     const userRole = data.role;
@@ -273,7 +275,7 @@ const AdminLayout = () => {
                 </aside>
 
                 <main className="admin-body">
-                    <Outlet key={currentSysId} context={{ menuAuths }} />
+                    <Outlet key={currentSysId} context={{ menuAuths, sysConfig, isTrueSuperAdmin }} />
                 </main>
             </div>
 

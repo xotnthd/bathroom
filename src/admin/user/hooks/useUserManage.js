@@ -14,7 +14,8 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
     const initialUserForm = {
         sysId: defaultSysId, userId: '', pswd: '', userNm: '', athrtyCd: '', userStatCd: 'ACTV',
         email: '', mblTelno: '', zipCd: '', baseAddr: '', dtlAddr: '',
-        rgstBgngDt: '', rgstEndDt: '', imgFileSn: null, rmrk: ''
+        rgstBgngDt: '', rgstEndDt: '', imgFileSn: null, rmrk: '',
+        empNo: '', deptCd: '', positionCd: '', empStatCd: '', hireDt: '', resignDt: ''
     };
     
     const [userForm, setUserForm] = useState(initialUserForm);
@@ -104,9 +105,12 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
                 fetchUserList(selectedRoleCd, searchForm);
                 closeModal();
                 return true;
+            } else {
+                const errorMsg = await res.text();
+                alert(errorMsg || "계정 정보 저장 실패");
             }
-        } catch (err) { 
-            alert("계정 정보 저장 실패"); 
+        } catch (err) {
+            alert("계정 정보 저장 실패");
         }
         return false;
     };
@@ -162,11 +166,13 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
             return dtStr.substring(0, 10);
         };
         
-        setUserForm({ 
-            ...user, 
+        setUserForm({
+            ...user,
             pswd: '',
             rgstBgngDt: formatDateTime(user.rgstBgngDt),
-            rgstEndDt: formatDateTime(user.rgstEndDt)
+            rgstEndDt: formatDateTime(user.rgstEndDt),
+            hireDt: formatDateTime(user.hireDt),
+            resignDt: formatDateTime(user.resignDt)
         });
         
         fetchExistingFile(user.imgFileSn);

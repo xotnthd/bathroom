@@ -10,7 +10,8 @@ const MenuModal = ({
     setIsBrdMapping,
     targetBrdList,
     useYnList,
-    handleModalFormSubmit
+    handleModalFormSubmit,
+    isTrueSuperAdmin
 }) => {
     if (!modal.isOpen) return null;
 
@@ -78,6 +79,18 @@ const MenuModal = ({
                             )}
                         </select>
                     </div>
+
+                    {isTrueSuperAdmin && (
+                        <div style={{ background: '#fff5f5', padding: '10px 12px', borderRadius: '6px', border: '1px solid #f5b7b1', marginTop: '5px' }}>
+                            <label style={{ fontWeight: 'bold', color: '#c0392b', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={menuForm.sensitiveYn === 'Y'}
+                                    onChange={(e) => setMenuForm({ ...menuForm, sensitiveYn: e.target.checked ? 'Y' : 'N' })}
+                                /> 민감 화면 (SUPR만 관리/열람 가능 - 일반 관리자에게는 완전히 숨김)
+                            </label>
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                         <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1, padding: '10px' }}>메뉴 저장</button>
