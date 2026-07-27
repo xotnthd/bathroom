@@ -1,39 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CommonCodePicker from '../../components/CommonCodePicker';
-import SurveySearchModal from './SurveySearchModal';
 import { useMenuAuth } from '../hooks/useMenuAuth';
 import { usePopupManage } from './hooks/usePopupManage';
-import PopupModal from './components/PopupModal';
 
 const PopupManage = () => {
+    const navigate = useNavigate();
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn } = useMenuAuth();
 
     const {
-        today,
         searchForm, setSearchForm, initialSearch,
-        popupList, fetchPopupList,
-        savePopup, deletePopup,
-        handleFileDelete, handleFileDownload
+        popupList, fetchPopupList
     } = usePopupManage(defaultSysId);
-
-    const [modal, setModal] = useState({ isOpen: false, mode: 'INSERT' });
-    const [showSurveyModal, setShowSurveyModal] = useState(false);
-
-    const initialForm = {
-        popIdx: '',
-        sysId: defaultSysId,
-        sysSeCd: 'MG',
-        popTitl: '',
-        popCn: '',
-        bgngYmd: today,
-        endYmd: today,
-        useYn: 'Y',
-        survId: '',
-        survNm: '',
-        fileGrpId: ''
-    };
-    const [formData, setFormData] = useState(initialForm);
 
     useEffect(() => {
         if (inqireYn === 'Y') {
@@ -41,14 +20,15 @@ const PopupManage = () => {
         } else if (inqireYn === 'N') {
             alert('조회 권한이 없습니다.');
         }
-    }, [inqireYn, fetchPopupList]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [inqireYn]);
+
+    if (inqireYn === 'N') {
+        return <div style={{ padding: '20px', textAlign: 'center', color: '#7f8c8d' }}>조회 권한이 없습니다.</div>;
+    }
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        if (inqireYn !== 'Y') {
-            alert('조회 권한이 없습니다.');
-            return;
-        }
         fetchPopupList(searchForm);
     };
 
@@ -57,65 +37,45 @@ const PopupManage = () => {
         fetchPopupList(initialSearch);
     };
 
-    const handleOpenInsert = () => {
-        setFormData({
-            ...initialForm,
-            // 검색 조건의 sysSeCd 값이 있으면 등록 폼에 기본값으로 설정
-            sysSeCd: searchForm.searchSysSeCd || 'MG' 
-        });
-        setModal({ isOpen: true, mode: 'INSERT' });
-    };
-
-    const handleRowClick = (item) => {
-        setFormData({
-            popIdx: item.popIdx,
-            sysId: defaultSysId,
-            sysSeCd: item.sysSeCd,
-            popTitl: item.popTitl,
-            popCn: item.popCn || '',
-            bgngYmd: item.bgngYmd,
-            endYmd: item.endYmd,
-            useYn: item.useYn,
-            survId: item.survId || '',
-            survNm: item.survNm || '',
-            fileGrpId: item.fileGrpId || ''
-        });
-        setModal({ isOpen: true, mode: 'UPDATE' });
-    };
-
     const truncateText = (text, maxLength = 30) => {
         if (!text) return '';
         return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px' }}>
 
             {/* 상단 검색 섹션 */}
             <div className="admin-card">
-                <div className="admin-card-header" style={{ padding: '12px 20px', justifyContent: 'flex-start', gap: '24px' }}>
+                <div className="admin-card-header" style={{ padding: '12px 20px', flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
                     <span className="admin-card-title">팝업 관리</span>
-                    <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>시스템 구분:</span>
-                        <CommonCodePicker
-                            grpCd="SYS_SE_CD"
-                            type="radio"
-                            name="searchSysSeCd"
-                            value={searchForm.searchSysSeCd}
-                            onChange={(e) => {
-                                const newForm = {...searchForm, searchSysSeCd: e.target.value};
-                                setSearchForm(newForm);
-                                fetchPopupList(newForm);
-                            }}
-                        />
-                        <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 8px' }}></div>
-                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>노출 기간:</span>
-                        <input type="date" value={searchForm.searchStDate} onChange={(e) => setSearchForm({...searchForm, searchStDate: e.target.value})} style={{ padding: '6px', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'var(--content-bg)', color: 'var(--text-primary)' }} />
-                        <span style={{ color: 'var(--text-secondary)' }}>~</span>
-                        <input type="date" value={searchForm.searchEdDate} onChange={(e) => setSearchForm({...searchForm, searchEdDate: e.target.value})} style={{ padding: '6px', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'var(--content-bg)', color: 'var(--text-primary)' }} />
+                    <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', rowGap: '10px', margin: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>시스템 구분:</span>
+                            <CommonCodePicker
+                                grpCd="SYS_SE_CD"
+                                type="radio"
+                                name="searchSysSeCd"
+                                value={searchForm.searchSysSeCd}
+                                onChange={(e) => {
+                                    const newForm = { ...searchForm, searchSysSeCd: e.target.value };
+                                    setSearchForm(newForm);
+                                    fetchPopupList(newForm);
+                                }}
+                            />
+                        </div>
+                        <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 8px', flexShrink: 0 }}></div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>노출 기간:</span>
+                            <input type="date" className="admin-input" style={{ padding: '4px 8px', width: '150px' }} value={searchForm.searchStDate} onChange={(e) => setSearchForm({ ...searchForm, searchStDate: e.target.value })} />
+                            <span style={{ color: 'var(--text-secondary)' }}>~</span>
+                            <input type="date" className="admin-input" style={{ padding: '4px 8px', width: '150px' }} value={searchForm.searchEdDate} onChange={(e) => setSearchForm({ ...searchForm, searchEdDate: e.target.value })} />
+                        </div>
 
-                        <button type="submit" className="admin-btn admin-btn-primary" style={{ marginLeft: '8px' }}>조회</button>
-                        <button type="button" onClick={handleSearchReset} className="admin-btn admin-btn-secondary">초기화</button>
+                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                            <button type="submit" className="admin-btn admin-btn-primary" style={{ marginLeft: '8px' }}>조회</button>
+                            <button type="button" onClick={handleSearchReset} className="admin-btn admin-btn-secondary">초기화</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -123,8 +83,8 @@ const PopupManage = () => {
             {/* 리스트 영역 */}
             <div className="admin-card" style={{ flex: 1 }}>
                 <div className="admin-card-header">
-                    <span className="admin-card-title">팝업 목록</span>
-                    {rgstYn === 'Y' && <button onClick={handleOpenInsert} className="admin-btn admin-btn-success">신규 등록</button>}
+                    <span className="admin-card-title">팝업 목록 (총 {popupList.length}건)</span>
+                    {rgstYn === 'Y' && <button onClick={() => navigate('/admin/popup/write')} className="admin-btn admin-btn-primary">+ 팝업 등록</button>}
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
                     <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', textAlign: 'center', fontSize: '12px', whiteSpace: 'nowrap' }}>
@@ -145,8 +105,9 @@ const PopupManage = () => {
                         {popupList.map(item => (
                             <tr
                                 key={item.popIdx}
-                                onClick={() => handleRowClick(item)}
+                                onClick={() => navigate(`/admin/popup/write?popIdx=${item.popIdx}`)}
                                 style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer', height: '48px' }}
+                                className="admin-table-row-hover"
                             >
                                 <td style={{ padding: '4px 10px' }}>{item.popIdx}</td>
                                 <td style={{ padding: '4px 10px' }}>
@@ -170,7 +131,7 @@ const PopupManage = () => {
                                 </td>
                                 <td style={{ padding: '4px 10px' }}>{item.fileGrpId ? 'O' : '-'}</td>
                                 <td style={{ padding: '4px 10px' }}>
-                                    <span style={{ 
+                                    <span style={{
                                         padding: '4px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold',
                                         background: item.useYn === 'Y' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)',
                                         color: item.useYn === 'Y' ? '#2ecc71' : '#e74c3c'
@@ -189,34 +150,6 @@ const PopupManage = () => {
                     </table>
                 </div>
             </div>
-
-            <PopupModal 
-                isOpen={modal.isOpen} 
-                onClose={() => setModal({ ...modal, isOpen: false })} 
-                mode={modal.mode}
-                formData={formData}
-                setFormData={setFormData}
-                handleSave={savePopup}
-                handleDelete={deletePopup}
-                handleFileDelete={handleFileDelete}
-                handleFileDownload={handleFileDownload}
-                delYn={delYn}
-                mdfcnYn={mdfcnYn}
-                rgstYn={rgstYn}
-                defaultSysId={defaultSysId}
-                setShowSurveyModal={setShowSurveyModal}
-            />
-
-            {showSurveyModal && (
-                <SurveySearchModal 
-                    sysSeCd={formData.sysSeCd}
-                    onClose={() => setShowSurveyModal(false)}
-                    onSelect={(survey) => {
-                        setFormData({ ...formData, survId: survey.survId, survNm: survey.survNm });
-                        setShowSurveyModal(false);
-                    }}
-                />
-            )}
         </div>
     );
 };

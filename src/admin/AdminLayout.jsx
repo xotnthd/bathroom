@@ -25,6 +25,9 @@ const AdminLayout = () => {
     // Sidebar collapse state
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+    // 사이드바 1/2단계 그룹 접힘 상태 - 펼쳐진 menuId 집합 (스크롤 과다 방지, 기본은 모두 접힘)
+    const [expandedIds, setExpandedIds] = useState(new Set());
+
     // 세션 사용자 정보 상태
     const [loginId, setLoginId] = useState('');
     const [isChecking, setIsChecking] = useState(true);
@@ -128,28 +131,44 @@ const AdminLayout = () => {
         return tree;
     };
 
-    const findFirstValidChildUrl = (menu) => {
-        if (!menu.children || menu.children.length === 0) return null;
-        for (let child of menu.children) {
-            if (child.menuUrl && child.menuUrl.trim() !== '' && child.menuUrl.trim() !== '#') {
-                return child.menuUrl;
+    // 메뉴 트리가 (재)로드될 때, 현재 페이지가 속한 그룹만 자동으로 펼쳐두고 나머지는 접어서 스크롤을 줄임
+    useEffect(() => {
+        if (menuTree.length === 0) return;
+        const activeAncestors = [];
+        const findActiveAncestors = (nodes, ancestors) => {
+            for (const node of nodes) {
+                if (node.menuUrl && node.menuUrl === location.pathname) {
+                    activeAncestors.push(...ancestors);
+                    return true;
+                }
+                if (node.children && node.children.length > 0 && findActiveAncestors(node.children, [...ancestors, node.menuId])) {
+                    return true;
+                }
             }
-            const found = findFirstValidChildUrl(child);
-            if (found) return found;
+            return false;
+        };
+        findActiveAncestors(menuTree, []);
+        if (activeAncestors.length > 0) {
+            setExpandedIds(new Set(activeAncestors));
         }
-        return null;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [menuTree]);
+
+    const toggleExpand = (menuId) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(menuId)) next.delete(menuId); else next.add(menuId);
+            return next;
+        });
     };
 
+    // 상위(그룹) 메뉴 클릭 시: 자기 URL이 있으면 이동, 없으면(순수 그룹 헤더) 접힘/펼침만 토글
     const handleMenuClick = (menu) => {
         if (menu.menuUrl && menu.menuUrl.trim() !== '' && menu.menuUrl.trim() !== '#') {
             navigate(menu.menuUrl);
             return;
         }
-        
-        let targetUrl = findFirstValidChildUrl(menu);
-        if (targetUrl) {
-            navigate(targetUrl);
-        }
+        toggleExpand(menu.menuId);
     };
 
     // Security 6.x 정책에 맞춰 무조건 POST 통신으로 로그아웃 호출
@@ -214,58 +233,70 @@ const AdminLayout = () => {
             <div className="admin-main-wrapper">
                 <aside className="admin-sidebar" style={{ width: sidebarCollapsed ? '60px' : '260px', transition: 'width 0.3s ease', background: 'var(--sidebar-bg, #2c3e50)', padding: '1rem', color: 'var(--sidebar-color, #fff)', overflowY: 'auto' }}>
 
-                    {menuTree.map(mainMenu => (
+                    {menuTree.map(mainMenu => {
+                        const mainExpanded = expandedIds.has(mainMenu.menuId);
+                        const mainHasOwnUrl = mainMenu.menuUrl && mainMenu.menuUrl.trim() !== '' && mainMenu.menuUrl.trim() !== '#';
+                        return (
                         <div key={mainMenu.menuId} style={{ marginBottom: '1.5rem' }}>
-                            <h3 
+                            <h3
                                 onClick={() => handleMenuClick(mainMenu)}
-                                style={{ fontSize: '15px', color: '#bdc3c7', borderBottom: '1px solid #34495e', paddingBottom: '8px', marginBottom: '10px', cursor: 'pointer', transition: 'color 0.2s' }}
-                                onMouseOver={(e) => e.target.style.color = '#fff'}
-                                onMouseOut={(e) => e.target.style.color = '#bdc3c7'}
+                                style={{ fontSize: '15px', color: '#bdc3c7', borderBottom: '1px solid #34495e', paddingBottom: '8px', marginBottom: '10px', cursor: 'pointer', transition: 'color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                                onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
+                                onMouseOut={(e) => e.currentTarget.style.color = '#bdc3c7'}
                             >
-                                {mainMenu.menuNm}
+                                <span>{mainMenu.menuNm}</span>
+                                {!mainHasOwnUrl && <span style={{ fontSize: '11px', transition: 'transform 0.2s', transform: mainExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>}
                             </h3>
 
-                            {mainMenu.children.map(midMenu => (
+                            {mainExpanded && mainMenu.children.map(midMenu => {
+                                const midExpanded = expandedIds.has(midMenu.menuId);
+                                const midHasOwnUrl = midMenu.menuUrl && midMenu.menuUrl.trim() !== '' && midMenu.menuUrl.trim() !== '#';
+                                return (
                                 <div key={midMenu.menuId} style={{ marginBottom: '1rem' }}>
-                                    <div 
+                                    <div
                                         onClick={() => handleMenuClick(midMenu)}
-                                        style={{ fontSize: '13px', fontWeight: 'bold', color: '#ecf0f1', marginBottom: '5px', paddingLeft: '5px', cursor: 'pointer', transition: 'color 0.2s' }}
-                                        onMouseOver={(e) => e.target.style.color = '#3498db'}
-                                        onMouseOut={(e) => e.target.style.color = '#ecf0f1'}
+                                        style={{ fontSize: '13px', fontWeight: 'bold', color: '#ecf0f1', marginBottom: '5px', paddingLeft: '5px', cursor: 'pointer', transition: 'color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                                        onMouseOver={(e) => e.currentTarget.style.color = '#3498db'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = '#ecf0f1'}
                                     >
-                                        {midMenu.menuNm}
+                                        <span>{midMenu.menuNm}</span>
+                                        {!midHasOwnUrl && midMenu.children.length > 0 && <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: midExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>}
                                     </div>
 
-                                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                        {midMenu.children.map(subMenu => {
-                                            const isActive = location.pathname === subMenu.menuUrl;
-                                            return (
-                                                <li key={subMenu.menuId} style={{ marginBottom: '2px' }}>
-                                                    <Link
-                                                        to={subMenu.menuUrl || '#'}
-                                                        style={{
-                                                            display: 'block',
-                                                            padding: '8px 10px 8px 15px',
-                                                            fontSize: '13px',
-                                                            color: isActive ? 'var(--primary-color, #fff)' : '#95a5a6',
-                                                            textDecoration: 'none',
-                                                            background: isActive ? 'rgba(0,0,0,0.2)' : 'transparent',
-                                                            borderRadius: 'var(--border-radius, 4px)',
-                                                            transition: 'all 0.2s ease',
-                                                            whiteSpace: 'nowrap',
-                                                            overflow: 'hidden'
-                                                        }}
-                                                    >
-                                                        {sidebarCollapsed ? '-' : subMenu.menuNm}
-                                                    </Link>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
+                                    {midExpanded && (
+                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            {midMenu.children.map(subMenu => {
+                                                const isActive = location.pathname === subMenu.menuUrl;
+                                                return (
+                                                    <li key={subMenu.menuId} style={{ marginBottom: '2px' }}>
+                                                        <Link
+                                                            to={subMenu.menuUrl || '#'}
+                                                            style={{
+                                                                display: 'block',
+                                                                padding: '8px 10px 8px 15px',
+                                                                fontSize: '13px',
+                                                                color: isActive ? 'var(--primary-color, #fff)' : '#95a5a6',
+                                                                textDecoration: 'none',
+                                                                background: isActive ? 'rgba(0,0,0,0.2)' : 'transparent',
+                                                                borderRadius: 'var(--border-radius, 4px)',
+                                                                transition: 'all 0.2s ease',
+                                                                whiteSpace: 'nowrap',
+                                                                overflow: 'hidden'
+                                                            }}
+                                                        >
+                                                            {sidebarCollapsed ? '-' : subMenu.menuNm}
+                                                        </Link>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    )}
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
-                    ))}
+                        );
+                    })}
 
                     {menuTree.length === 0 && (
                         <div style={{ textAlign: 'center', color: '#7f8c8d', fontSize: '13px', marginTop: '20px' }}>

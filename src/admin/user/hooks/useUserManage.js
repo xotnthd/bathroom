@@ -72,6 +72,12 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
     const [uploadFiles, setUploadFiles] = useState([]);
     const [existingFiles, setExistingFiles] = useState([]);
 
+    const fetchUserDetail = async (userId) => {
+        const res = await apiClient(`/admin/api/user/detail/${defaultSysId}/${userId}`);
+        if (res.ok) return await res.json();
+        return null;
+    };
+
     const fetchExistingFile = async (fileSn) => {
         if (!fileSn) {
             setExistingFiles([]);
@@ -83,16 +89,18 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
         setExistingFiles([{ fileSn: fileSn, fileOrgnlNm: '업로드된 이미지', fileSize: 0, fileType: 'image/jpeg' }]);
     };
 
-    const saveUser = async () => {
+    const saveUser = async (formValues, uploadFilesParam) => {
+        const targetForm = formValues || userForm;
+        const targetFiles = uploadFilesParam || uploadFiles;
         try {
             const formData = new FormData();
-            Object.keys(userForm).forEach(key => {
-                if (userForm[key] !== null && userForm[key] !== undefined) {
-                    formData.append(key, userForm[key]);
+            Object.keys(targetForm).forEach(key => {
+                if (targetForm[key] !== null && targetForm[key] !== undefined) {
+                    formData.append(key, targetForm[key]);
                 }
             });
 
-            uploadFiles.forEach(file => {
+            targetFiles.forEach(file => {
                 formData.append('files', file);
             });
 
@@ -102,8 +110,6 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
             });
             if (res.ok) {
                 alert("사용자 계정 정보가 정상 처리되었습니다.");
-                fetchUserList(selectedRoleCd, searchForm);
-                closeModal();
                 return true;
             } else {
                 const errorMsg = await res.text();
@@ -222,12 +228,15 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
         deleteUser,
         resetForm,
         selectUserForEdit,
+        fetchUserDetail,
+        fetchExistingFile,
         isModalOpen,
         openModal,
         closeModal,
         uploadFiles,
         setUploadFiles,
         existingFiles,
+        setExistingFiles,
         handleFileDelete,
         handleFileDownload,
         setUserForm

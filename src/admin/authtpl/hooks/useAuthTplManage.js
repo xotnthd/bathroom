@@ -2,27 +2,27 @@ import { useState, useCallback } from 'react';
 import { apiClient } from '../../../utils/apiClient';
 
 export const useAuthTplManage = () => {
-    const [planList, setPlanList] = useState([]);
+    const [tplList, setTplList] = useState([]);
     const [deptList, setDeptList] = useState([]);
     const [roleList, setRoleList] = useState([]);
     const [menuMapList, setMenuMapList] = useState([]);
 
-    const [selPlanIdx, setSelPlanIdx] = useState('');
-    const [selPlanCd, setSelPlanCd] = useState('');
+    const [selTplIdx, setSelTplIdx] = useState('');
+    const [selTplCd, setSelTplCd] = useState('');
     const [selDeptIdx, setSelDeptIdx] = useState('');
     const [selAthrtyIdx, setSelAthrtyIdx] = useState('');
     const [sysSectCd, setSysSectCd] = useState('MG');
 
-    const fetchPlanList = useCallback(async () => {
-        const res = await apiClient('/admin/api/auth-template/plan/list', { method: 'POST' });
-        if (res.ok) setPlanList(await res.json());
+    const fetchTplList = useCallback(async () => {
+        const res = await apiClient('/admin/api/auth-template/tpl/list', { method: 'POST' });
+        if (res.ok) setTplList(await res.json());
     }, []);
 
-    const fetchDeptList = useCallback(async (planIdx) => {
+    const fetchDeptList = useCallback(async (tplIdx) => {
         const res = await apiClient('/admin/api/auth-template/dept/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ planIdx })
+            body: JSON.stringify({ tplIdx })
         });
         if (res.ok) setDeptList(await res.json());
     }, []);
@@ -66,15 +66,15 @@ export const useAuthTplManage = () => {
         if (res.ok) setMenuMapList(indentMenus(await res.json()));
     }, [sysSectCd]);
 
-    const handlePlanClick = useCallback((plan) => {
-        setSelPlanIdx(plan.idx);
-        setSelPlanCd(plan.planCd);
+    const handleTplClick = useCallback((tpl) => {
+        setSelTplIdx(tpl.idx);
+        setSelTplCd(tpl.tplCd);
         setSelDeptIdx('');
         setSelAthrtyIdx('');
         setDeptList([]);
         setRoleList([]);
         setMenuMapList([]);
-        fetchDeptList(plan.idx);
+        fetchDeptList(tpl.idx);
     }, [fetchDeptList]);
 
     const handleDeptClick = useCallback((dept) => {
@@ -95,34 +95,34 @@ export const useAuthTplManage = () => {
         alert('오류: ' + msg);
     };
 
-    const savePlan = useCallback(async (form) => {
-        const res = await apiClient('/admin/api/auth-template/plan/save', {
+    const saveTpl = useCallback(async (form) => {
+        const res = await apiClient('/admin/api/auth-template/tpl/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(form)
         });
         if (res.ok) {
             alert('저장되었습니다.');
-            fetchPlanList();
+            fetchTplList();
             return true;
         }
         await reportError(res);
         return false;
-    }, [fetchPlanList]);
+    }, [fetchTplList]);
 
-    const deletePlan = useCallback(async (planCd) => {
-        if (!window.confirm('요금제 삭제 시 속한 모든 부서/역할/메뉴권한이 함께 삭제됩니다. 진행하시겠습니까?')) return;
-        const res = await apiClient(`/admin/api/auth-template/plan/delete/${planCd}`, { method: 'DELETE' });
+    const deleteTpl = useCallback(async (tplCd) => {
+        if (!window.confirm('템플릿 삭제 시 속한 모든 부서/역할/메뉴권한이 함께 삭제됩니다. 진행하시겠습니까?')) return;
+        const res = await apiClient(`/admin/api/auth-template/tpl/delete/${tplCd}`, { method: 'DELETE' });
         if (res.ok) {
-            fetchPlanList();
-            if (selPlanCd === planCd) {
-                setSelPlanIdx(''); setSelPlanCd(''); setSelDeptIdx(''); setSelAthrtyIdx('');
+            fetchTplList();
+            if (selTplCd === tplCd) {
+                setSelTplIdx(''); setSelTplCd(''); setSelDeptIdx(''); setSelAthrtyIdx('');
                 setDeptList([]); setRoleList([]); setMenuMapList([]);
             }
         } else {
             await reportError(res);
         }
-    }, [fetchPlanList, selPlanCd]);
+    }, [fetchTplList, selTplCd]);
 
     const saveDept = useCallback(async (form) => {
         const res = await apiClient('/admin/api/auth-template/dept/save', {
@@ -132,18 +132,18 @@ export const useAuthTplManage = () => {
         });
         if (res.ok) {
             alert('저장되었습니다.');
-            fetchDeptList(selPlanIdx);
+            fetchDeptList(selTplIdx);
             return true;
         }
         await reportError(res);
         return false;
-    }, [fetchDeptList, selPlanIdx]);
+    }, [fetchDeptList, selTplIdx]);
 
     const deleteDept = useCallback(async (deptIdx) => {
         if (!window.confirm('부서 삭제 시 속한 모든 역할/메뉴권한이 함께 삭제됩니다. 진행하시겠습니까?')) return;
         const res = await apiClient(`/admin/api/auth-template/dept/delete/${deptIdx}`, { method: 'DELETE' });
         if (res.ok) {
-            fetchDeptList(selPlanIdx);
+            fetchDeptList(selTplIdx);
             if (selDeptIdx === deptIdx) {
                 setSelDeptIdx(''); setSelAthrtyIdx('');
                 setRoleList([]); setMenuMapList([]);
@@ -151,7 +151,7 @@ export const useAuthTplManage = () => {
         } else {
             await reportError(res);
         }
-    }, [fetchDeptList, selPlanIdx, selDeptIdx]);
+    }, [fetchDeptList, selTplIdx, selDeptIdx]);
 
     const saveRole = useCallback(async (form) => {
         const res = await apiClient('/admin/api/auth-template/role/save', {
@@ -225,11 +225,11 @@ export const useAuthTplManage = () => {
     }, []);
 
     return {
-        planList, deptList, roleList, menuMapList,
-        selPlanIdx, selPlanCd, selDeptIdx, selAthrtyIdx, sysSectCd, setSysSectCd,
-        fetchPlanList, fetchDeptList, fetchRoleList, fetchMenuMap,
-        handlePlanClick, handleDeptClick, handleRoleClick,
-        savePlan, deletePlan, saveDept, deleteDept, saveRole, deleteRole,
+        tplList, deptList, roleList, menuMapList,
+        selTplIdx, selTplCd, selDeptIdx, selAthrtyIdx, sysSectCd, setSysSectCd,
+        fetchTplList, fetchDeptList, fetchRoleList, fetchMenuMap,
+        handleTplClick, handleDeptClick, handleRoleClick,
+        saveTpl, deleteTpl, saveDept, deleteDept, saveRole, deleteRole,
         saveMenuMap, updateMenuMapCheckbox, toggleMenuMapHeader
     };
 };

@@ -6,12 +6,12 @@ import { getCommonCodes } from '../utils/commonCode';
  * "이 체계를 선택하면 어떤 값들이 들어있는지" 바로 옆에서 확인하기 위한 용도 (선택 컨트롤 아님).
  * @param {string} grpCd - 공통코드 그룹
  * @param {string} uprComCd - 미리볼 부모(2뎁스) 코드. 없으면 아무것도 렌더링하지 않음
- * @param {string} sysId - 조회할 테넌트 (생략 시 현재 활성 시스템)
+ * @param {string} sysId - 조회할 테넌트 (생략 시 CORE 고정 - 공통코드는 업체별로 복제하지 않고 항상 CORE 코드만 참조)
  */
 const CommonCodePreview = ({ grpCd, uprComCd, sysId }) => {
     const [codes, setCodes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const effectiveSysId = sysId || sessionStorage.getItem('currentSysId') || 'CORE';
+    const effectiveSysId = sysId || 'CORE';
 
     useEffect(() => {
         let isMounted = true;

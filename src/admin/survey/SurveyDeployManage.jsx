@@ -2,18 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { useMenuAuth } from '../hooks/useMenuAuth';
-import DataTable from '../../components/common/DataTable';
-import SearchForm from '../../components/common/SearchForm';
-import CommonCodePicker from '../../components/CommonCodePicker';
+import Pagination from '../../components/common/Pagination';
 
 const SurveyDeployManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const navigate = useNavigate();
     const { inqireYn, rgstYn, delYn } = useMenuAuth();
-    
+
     const [list, setList] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
+    const limit = 10;
     const [searchForm, setSearchForm] = useState({
         survIdSearch: '',
         survNm: '',
@@ -27,10 +26,11 @@ const SurveyDeployManage = () => {
         } else if (inqireYn === 'N') {
             alert('조회 권한이 없습니다. 관리자에게 문의하세요.');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, inqireYn]);
 
     const fetchList = async () => {
-        const payload = { ...searchForm, sysId: defaultSysId, page, limit: 10, templateYn: 'N' };
+        const payload = { ...searchForm, sysId: defaultSysId, page, limit, templateYn: 'N' };
         const res = await apiClient('/admin/api/survey/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -43,23 +43,13 @@ const SurveyDeployManage = () => {
         }
     };
 
-    const handleSearchChange = (name, value) => {
-        setSearchForm(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
+    const handleSearch = () => {
         setPage(1);
         fetchList();
     };
 
     const handleSearchReset = () => {
-        setSearchForm({
-            survIdSearch: '',
-            survNm: '',
-            startDt: '',
-            endDt: ''
-        });
+        setSearchForm({ survIdSearch: '', survNm: '', startDt: '', endDt: '' });
         setPage(1);
     };
 
@@ -73,88 +63,84 @@ const SurveyDeployManage = () => {
         }
     };
 
-    const handleRowClick = (item) => {
-        navigate(`/admin/survey/deploy/write?survId=${item.survId}`);
-    };
+    if (inqireYn === 'N') {
+        return <div style={{ padding: '20px', textAlign: 'center', color: '#7f8c8d' }}>조회 권한이 없습니다.</div>;
+    }
 
-    const columns = [
-        { label: '구분', key: 'type', width: '80px', render: () => <span style={{ background: '#2ecc71', color: '#fff', padding: '3px 6px', borderRadius: '4px', fontSize: '12px' }}>배포설문</span> },
-        { label: '설문 ID', key: 'survId', width: '150px' },
-        { label: '제목', key: 'survNm', align: 'left', render: (row) => <span style={{ color: '#2980b9', fontWeight: 'bold' }}>{row.survNm}</span> },
-        { label: '사용여부', key: 'useYn', width: '80px', render: (row) => <span style={{ color: row.useYn === 'Y' ? 'green' : 'red' }}>{row.useYn === 'Y' ? '사용' : '미사용'}</span> },
-        { label: '기간', key: 'period', width: '220px', render: (row) => `${row.startDt ? row.startDt.substring(0, 10) : '상시'} ~ ${row.endDt ? row.endDt.substring(0, 10) : '상시'}` },
-        { label: '관리', key: 'manage', width: '80px', render: (row) => (
-            delYn === 'Y' && (
-                <button 
-                    onClick={(e) => { e.stopPropagation(); handleDelete(row.survId); }} 
-                    style={{ padding: '4px 8px', background: '#e74c3c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    삭제
-                </button>
-            )
-        )}
-    ];
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
-                
-                <SearchForm 
-                    title="배포 설문 관리"
-                    searchData={searchForm} 
-                    onChange={handleSearchChange}
-                    onSubmit={handleSearchSubmit} 
-                    onReset={handleSearchReset}
-                >
-                    <input type="text" name="survIdSearch" placeholder="설문 ID" value={searchForm.survIdSearch} onChange={(e) => handleSearchChange(e.target.name, e.target.value)} style={{ padding: '8px', width: '150px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                    <input type="text" name="survNm" placeholder="설문 제목" value={searchForm.survNm} onChange={(e) => handleSearchChange(e.target.name, e.target.value)} style={{ padding: '8px', width: '200px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <input type="date" name="startDt" value={searchForm.startDt} onChange={(e) => handleSearchChange(e.target.name, e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                        <span>~</span>
-                        <input type="date" name="endDt" value={searchForm.endDt} onChange={(e) => handleSearchChange(e.target.name, e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                    </div>
-                </SearchForm>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px' }}>
 
-                <div style={{ flex: 1, background: '#fff', padding: '1.2rem', borderRadius: '8px', border: '1px solid #ddd', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '14px', color: '#555' }}>
-                            전체 설문: <b>{total}</b>건
-                        </span>
-                        {rgstYn === 'Y' && (
-                            <button onClick={() => navigate('/admin/survey/deploy/write')} style={{ padding: '6px 12px', background: '#3498db', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
-                                + 신규 배포 설문 등록
-                            </button>
-                        )}
-                    </div>
+            {/* 상단 검색 섹션 */}
+            <div className="admin-card">
+                <div className="admin-card-header" style={{ padding: '12px 20px', flexWrap: 'wrap', justifyContent: 'flex-start', gap: '10px 24px' }}>
+                    <span className="admin-card-title">설문 배포 관리</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', margin: 0 }}>
+                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>설문 ID:</span>
+                        <input type="text" className="admin-input" style={{ padding: '4px 8px', width: '150px' }} value={searchForm.survIdSearch} onChange={e => setSearchForm({ ...searchForm, survIdSearch: e.target.value })} onKeyPress={e => e.key === 'Enter' && handleSearch()} />
 
-                    <div style={{ flex: 1, overflowY: 'auto' }}>
-                        <DataTable 
-                            columns={columns} 
-                            data={list} 
-                            onRowClick={handleRowClick}
-                            emptyMessage="등록된 설문이 없습니다."
-                        />
-                    </div>
+                        <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 8px' }}></div>
 
-                    {total > 10 && (
-                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
-                            {Array.from({ length: Math.ceil(total / 10) }, (_, i) => i + 1).map(p => (
-                                <button 
-                                    key={p} 
-                                    onClick={() => setPage(p)} 
-                                    style={{ 
-                                        padding: '5px 12px', 
-                                        border: '1px solid #ddd', 
-                                        background: page === p ? '#3498db' : '#fff', 
-                                        color: page === p ? '#fff' : '#333', 
-                                        cursor: 'pointer', 
-                                        borderRadius: '4px' 
-                                    }}
-                                >
-                                    {p}
-                                </button>
+                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>제목:</span>
+                        <input type="text" className="admin-input" style={{ padding: '4px 8px', width: '180px' }} value={searchForm.survNm} onChange={e => setSearchForm({ ...searchForm, survNm: e.target.value })} onKeyPress={e => e.key === 'Enter' && handleSearch()} />
+
+                        <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 8px' }}></div>
+
+                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>배포 기간:</span>
+                        <input type="date" className="admin-input" style={{ padding: '4px 8px', width: '150px' }} value={searchForm.startDt} onChange={e => setSearchForm({ ...searchForm, startDt: e.target.value })} />
+                        <span style={{ color: 'var(--text-secondary)' }}>~</span>
+                        <input type="date" className="admin-input" style={{ padding: '4px 8px', width: '150px' }} value={searchForm.endDt} onChange={e => setSearchForm({ ...searchForm, endDt: e.target.value })} />
+
+                        <button type="button" onClick={handleSearch} className="admin-btn admin-btn-primary" style={{ marginLeft: '8px' }}>조회</button>
+                        <button type="button" onClick={handleSearchReset} className="admin-btn admin-btn-secondary">초기화</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* 리스트 영역 */}
+            <div className="admin-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="admin-card-title">배포 설문 목록 (총 {total}건)</span>
+                    {rgstYn === 'Y' && (
+                        <button onClick={() => navigate('/admin/survey/deploy/write')} className="admin-btn admin-btn-primary" style={{ padding: '6px 16px', flexShrink: 0, whiteSpace: 'nowrap' }}>+ 배포 설문 등록</button>
+                    )}
+                </div>
+                <div className="admin-card-body" style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'center' }}>
+                        <thead style={{ position: 'sticky', top: 0, background: 'var(--table-header-bg, #f4f7f6)', zIndex: 1 }}>
+                            <tr>
+                                <th style={{ padding: '12px' }}>구분</th>
+                                <th style={{ padding: '12px' }}>설문 ID</th>
+                                <th style={{ padding: '12px' }}>제목</th>
+                                <th style={{ padding: '12px' }}>사용여부</th>
+                                <th style={{ padding: '12px' }}>기간</th>
+                                {delYn === 'Y' && <th style={{ padding: '12px' }}>관리</th>}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {list.map(row => (
+                                <tr key={row.survId} onClick={() => navigate(`/admin/survey/deploy/write?survId=${row.survId}`)} style={{ cursor: 'pointer', borderBottom: '1px solid var(--border-color, #eee)' }} className="admin-table-row-hover">
+                                    <td style={{ padding: '12px' }}><span style={{ background: '#2ecc71', color: '#fff', padding: '3px 6px', borderRadius: '4px', fontSize: '12px' }}>배포설문</span></td>
+                                    <td style={{ padding: '12px' }}>{row.survId}</td>
+                                    <td style={{ padding: '12px', textAlign: 'left', color: '#2980b9', fontWeight: 'bold' }}>{row.survNm}</td>
+                                    <td style={{ padding: '12px', color: row.useYn === 'Y' ? '#2ecc71' : '#e74c3c' }}>{row.useYn === 'Y' ? '사용' : '미사용'}</td>
+                                    <td style={{ padding: '12px', fontSize: '13px' }}>{row.startDt ? row.startDt.substring(0, 10) : '상시'} ~ {row.endDt ? row.endDt.substring(0, 10) : '상시'}</td>
+                                    {delYn === 'Y' && (
+                                        <td style={{ padding: '12px' }}>
+                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(row.survId); }} className="admin-btn admin-btn-danger" style={{ padding: '4px 10px', fontSize: '12px' }}>삭제</button>
+                                        </td>
+                                    )}
+                                </tr>
                             ))}
-                        </div>
+                            {list.length === 0 && (
+                                <tr><td colSpan={delYn === 'Y' ? 6 : 5} style={{ padding: '30px', textAlign: 'center', color: '#95a5a6' }}>등록된 설문이 없습니다.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+
+                    {totalPages > 1 && (
+                        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
                     )}
                 </div>
             </div>

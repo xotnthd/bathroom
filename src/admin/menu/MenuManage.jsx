@@ -274,6 +274,7 @@ const MenuManage = () => {
                 useYnList={useYnList}
                 handleModalFormSubmit={handleModalFormSubmit}
                 isTrueSuperAdmin={isTrueSuperAdmin}
+                isCoreContext={defaultSysId === 'CORE'}
             />
 
         </div>

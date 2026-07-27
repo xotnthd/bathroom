@@ -11,12 +11,12 @@ import { getCommonCodes } from '../utils/commonCode';
  * @param {string} defaultOption - select 박스일 때 기본 문구 (예: '선택하세요')
  * @param {boolean} disabled - 비활성화 여부
  * @param {string} uprComCd - 지정 시 이 부모 코드 하위(3뎁스)만 필터링해서 조회 (계층형 그룹용, 예: 직급 체계별 세부 직급)
- * @param {string} sysId - 조회할 테넌트 (생략 시 현재 로그인/전환된 시스템 - sessionStorage 'currentSysId')
+ * @param {string} sysId - 조회할 테넌트 (생략 시 CORE 고정 - 공통코드는 업체별로 복제하지 않고 항상 CORE 코드만 참조)
  */
 const CommonCodePicker = ({ grpCd, type = 'select', name, value, onChange, defaultOption = null, disabled = false, uprComCd, sysId }) => {
     const [codeList, setCodeList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const effectiveSysId = sysId || sessionStorage.getItem('currentSysId') || 'CORE';
+    const effectiveSysId = sysId || 'CORE';
 
     useEffect(() => {
         let isMounted = true;

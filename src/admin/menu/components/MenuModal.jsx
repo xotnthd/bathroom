@@ -11,7 +11,8 @@ const MenuModal = ({
     targetBrdList,
     useYnList,
     handleModalFormSubmit,
-    isTrueSuperAdmin
+    isTrueSuperAdmin,
+    isCoreContext
 }) => {
     if (!modal.isOpen) return null;
 
@@ -29,8 +30,12 @@ const MenuModal = ({
 
                     <input type="text" placeholder="메뉴 고유 식별 ID (영문자)" value={menuForm.menuId} onChange={e => setMenuForm({ ...menuForm, menuId: e.target.value.toUpperCase() })} required disabled={modal.mode === 'UPDATE'} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
                     <input type="text" placeholder="화면 표시 메뉴 이름" value={menuForm.menuNm} onChange={e => setMenuForm({ ...menuForm, menuNm: e.target.value })} required style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
-                    <input type="text" placeholder="브라우저 라우팅 경로 (path)" value={menuForm.menuUrl || ''} onChange={e => setMenuForm({ ...menuForm, menuUrl: e.target.value })} disabled={isBrdMapping} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', background: isBrdMapping ? '#f8f9fa' : '#fff' }} />
-                    <input type="text" placeholder="물리 파일 컴포넌트 위치 소스 주소" value={menuForm.compPath || ''} onChange={e => setMenuForm({ ...menuForm, compPath: e.target.value })} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                    {isCoreContext && (
+                        <>
+                            <input type="text" placeholder="브라우저 라우팅 경로 (path)" value={menuForm.menuUrl || ''} onChange={e => setMenuForm({ ...menuForm, menuUrl: e.target.value })} disabled={isBrdMapping} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', background: isBrdMapping ? '#f8f9fa' : '#fff' }} />
+                            <input type="text" placeholder="물리 파일 컴포넌트 위치 소스 주소" value={menuForm.compPath || ''} onChange={e => setMenuForm({ ...menuForm, compPath: e.target.value })} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                        </>
+                    )}
 
                     <div style={{ borderTop: '1px dashed #ccc', margin: '5px 0' }}></div>
                     <input type="text" placeholder="검색 매핑 키워드 (콤마 단위로 복수 등록 가능)" value={menuForm.menuKwd || ''} onChange={e => setMenuForm({ ...menuForm, menuKwd: e.target.value })} style={{ padding: '8px', border: '1px solid #3498db', borderRadius: '4px' }} />

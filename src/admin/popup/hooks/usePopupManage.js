@@ -18,6 +18,12 @@ export const usePopupManage = (defaultSysId) => {
         }
     }, [defaultSysId]);
 
+    const fetchPopupInfo = useCallback(async (popIdx) => {
+        const res = await apiClient(`/admin/api/popup/detail/${defaultSysId}/${popIdx}`);
+        if (res.ok) return await res.json();
+        return null;
+    }, [defaultSysId]);
+
     const handleFileDelete = async (fileSn, currentGrpId, setExistingFiles) => {
         if (!window.confirm("파일을 삭제하시겠습니까?")) return false;
         const res = await apiClient(`/admin/api/comn/file/delete/${fileSn}`, { method: 'DELETE' });
@@ -70,14 +76,13 @@ export const usePopupManage = (defaultSysId) => {
 
             if (res.ok) {
                 alert(formData.popIdx ? "팝업이 수정되었습니다." : "팝업이 등록되었습니다.");
-                fetchPopupList(searchForm);
-                return true;
+                return await res.json();
             }
         } catch (error) {
             console.error("팝업 저장 에러", error);
             alert("서버 통신 중 에러가 발생했습니다.");
         }
-        return false;
+        return null;
     };
 
     const deletePopup = async (popIdx) => {
@@ -98,7 +103,7 @@ export const usePopupManage = (defaultSysId) => {
     return {
         today,
         searchForm, setSearchForm, initialSearch,
-        popupList, fetchPopupList,
+        popupList, fetchPopupList, fetchPopupInfo,
         savePopup, deletePopup,
         handleFileDelete, handleFileDownload
     };

@@ -4,7 +4,8 @@ import { useCodeManage } from './hooks/useCodeManage';
 import CodeModal from './components/CodeModal';
 
 const CodeManage = () => {
-    const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
+    // 공통코드는 업체별로 복제/관리하지 않고 항상 CORE 코드만 다룸 - 업체 컨텍스트로 전환되어 있어도 고정
+    const defaultSysId = 'CORE';
     const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
 
     const {

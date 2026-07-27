@@ -52,6 +52,12 @@ export const useBoardManage = (defaultSysId, inqireYn) => {
         }
     }, [inqireYn]);
 
+    const fetchBoardDetail = async (brdId) => {
+        const res = await apiClient(`/admin/api/board/managing/detail/${defaultSysId}/${brdId}`);
+        if (res.ok) return await res.json();
+        return null;
+    };
+
     const handleSearch = () => {
         fnFetchManagingList(searchParams);
     };
@@ -101,6 +107,7 @@ export const useBoardManage = (defaultSysId, inqireYn) => {
         searchParams,
         setSearchParams,
         handleSearch,
+        fetchBoardDetail,
         saveBoard,
         deleteBoard
     };

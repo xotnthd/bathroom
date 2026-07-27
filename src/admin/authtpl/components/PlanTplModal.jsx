@@ -16,7 +16,7 @@ const PlanTplModal = ({ isOpen, onClose, mode, formData, setFormData, handleSave
             onClose={onClose}
             width="500px"
             bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            title={`요금제 ${mode === 'INSERT' ? '등록' : '수정'}`}
+            title={`권한 템플릿 ${mode === 'INSERT' ? '등록' : '수정'}`}
             footer={
                 <>
                     <button type="button" onClick={onClose} className="admin-btn admin-btn-secondary">취소</button>
@@ -28,21 +28,21 @@ const PlanTplModal = ({ isOpen, onClose, mode, formData, setFormData, handleSave
         >
             <form id="planTplForm" onSubmit={onSubmit}>
                 <div className="admin-form-row">
-                    <label className="admin-form-label">요금제 코드</label>
+                    <label className="admin-form-label">템플릿 코드</label>
                     <div className="admin-form-control">
-                        <input type="text" className="admin-input" placeholder="예) BASIC" value={formData.planCd || ''} onChange={e => setFormData({ ...formData, planCd: e.target.value.toUpperCase() })} required disabled={mode === 'UPDATE'} />
+                        <input type="text" className="admin-input" placeholder="예) BASIC" value={formData.tplCd || ''} onChange={e => setFormData({ ...formData, tplCd: e.target.value.toUpperCase() })} required disabled={mode === 'UPDATE'} />
                     </div>
                 </div>
                 <div className="admin-form-row">
-                    <label className="admin-form-label">요금제 명칭</label>
+                    <label className="admin-form-label">템플릿 명칭</label>
                     <div className="admin-form-control">
-                        <input type="text" className="admin-input" value={formData.planNm || ''} onChange={e => setFormData({ ...formData, planNm: e.target.value })} required />
+                        <input type="text" className="admin-input" value={formData.tplNm || ''} onChange={e => setFormData({ ...formData, tplNm: e.target.value })} required />
                     </div>
                 </div>
                 <div className="admin-form-row">
                     <label className="admin-form-label">설명</label>
                     <div className="admin-form-control">
-                        <textarea className="admin-textarea" rows="3" value={formData.planExpl || ''} onChange={e => setFormData({ ...formData, planExpl: e.target.value })} />
+                        <textarea className="admin-textarea" rows="3" value={formData.tplExpl || ''} onChange={e => setFormData({ ...formData, tplExpl: e.target.value })} />
                     </div>
                 </div>
                 <div className="admin-form-row">
@@ -54,8 +54,8 @@ const PlanTplModal = ({ isOpen, onClose, mode, formData, setFormData, handleSave
                 <div className="admin-form-row">
                     <label className="admin-form-label">사용 여부</label>
                     <div className="admin-form-control">
-                        <label style={{ marginRight: '15px' }}><input type="radio" name="planUseYn" value="Y" checked={formData.useYn === 'Y'} onChange={() => setFormData({ ...formData, useYn: 'Y' })} style={{ marginRight: '5px' }} />사용</label>
-                        <label><input type="radio" name="planUseYn" value="N" checked={formData.useYn === 'N'} onChange={() => setFormData({ ...formData, useYn: 'N' })} style={{ marginRight: '5px' }} />중지</label>
+                        <label style={{ marginRight: '15px' }}><input type="radio" name="tplUseYn" value="Y" checked={formData.useYn === 'Y'} onChange={() => setFormData({ ...formData, useYn: 'Y' })} style={{ marginRight: '5px' }} />사용</label>
+                        <label><input type="radio" name="tplUseYn" value="N" checked={formData.useYn === 'N'} onChange={() => setFormData({ ...formData, useYn: 'N' })} style={{ marginRight: '5px' }} />중지</label>
                     </div>
                 </div>
             </form>
