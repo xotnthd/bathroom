@@ -2,11 +2,11 @@ import React from 'react';
 
 const SurveyStatistics = ({ statList, totalRespondents }) => {
     return (
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '20px', flexShrink: 0, maxHeight: '300px', display: 'flex', flexDirection: 'column', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 설문 문항별 응답 통계
             </h3>
-            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '10px' }}>
+            <div>
                 {statList.map(stat => (
                     <div key={stat.qstnSn} style={{ marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px dashed #ccc' }}>
                         <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>

@@ -106,7 +106,7 @@ const SurveyResultDetail = () => {
     const questions = [...(survey.questions || [])].sort((a, b) => a.ordNo - b.ordNo);
 
     return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif', height: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+        <div style={{ padding: '20px' }}>
             
             <SurveyMasterInfo survey={survey} />
 

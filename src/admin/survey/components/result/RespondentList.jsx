@@ -2,11 +2,11 @@ import React from 'react';
 
 const RespondentList = ({ respondents, selectedRespId, onSelectRespondent }) => {
     return (
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '20px', flexShrink: 0, maxHeight: '250px', display: 'flex', flexDirection: 'column', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 전체 응답자 목록 <span style={{ fontSize: '14px', background: '#e74c3c', color: '#fff', padding: '2px 8px', borderRadius: '12px' }}>총 {respondents.length}명</span>
             </h3>
-            <div style={{ overflowY: 'auto', flex: 1, border: '1px solid #eee' }}>
+            <div style={{ border: '1px solid #eee' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '14px' }}>
                     <thead style={{ background: '#f8f9fa', position: 'sticky', top: 0 }}>
                         <tr>

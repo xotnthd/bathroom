@@ -2,9 +2,9 @@ import React from 'react';
 
 const IndividualAnswers = ({ questions, answers, selectedRespId }) => {
     return (
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50' }}>개별 상세 응답 내역 {selectedRespId && <span style={{ fontSize: '14px', color: '#7f8c8d' }}>({selectedRespId})</span>}</h3>
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px', background: '#fcfcfc', border: '1px inset #eee', padding: '15px' }}>
+            <div style={{ background: '#fcfcfc', border: '1px inset #eee', padding: '15px' }}>
                 {!selectedRespId ? (
                     <div style={{ textAlign: 'center', color: '#aaa', marginTop: '50px' }}>위에서 응답자를 선택해주세요.</div>
                 ) : (

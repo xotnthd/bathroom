@@ -32,6 +32,10 @@ import SurveyDeployManage from './admin/survey/SurveyDeployManage';
 import SurveyDeployForm from './admin/survey/SurveyDeployForm';
 import SurveyResultList from './admin/survey/SurveyResultList';
 import SurveyResultDetail from './admin/survey/SurveyResultDetail';
+import VoteManage from './admin/vote/VoteManage';
+import VoteDetail from './admin/vote/VoteDetail';
+import VoteResultList from './admin/vote/VoteResultList';
+import VoteResultDetail from './admin/vote/VoteResultDetail';
 import UserSurvey from './user/survey/UserSurvey';
 import AdminDynamicBoardList from './admin/board/dynamic/AdminDynamicBoardList';
 import AdminDynamicBoardDetail from './admin/board/dynamic/AdminDynamicBoardDetail';
@@ -83,6 +87,10 @@ function App() {
                     <Route path="survey/deploy/write" element={<SurveyDeployForm />} />
                     <Route path="survey/result/list" element={<SurveyResultList />} />
                     <Route path="survey/result/:survId" element={<SurveyResultDetail />} />
+                    <Route path="vote" element={<VoteManage />} />
+                    <Route path="vote/write" element={<VoteDetail />} />
+                    <Route path="vote/result/list" element={<VoteResultList />} />
+                    <Route path="vote/result" element={<VoteResultDetail />} />
                     {/* 동적 게시판 관리자용 라우트 */}
                     <Route path="board/view/:brdId" element={<AdminDynamicBoardList />} />
                     <Route path="board/view/:brdId/detail/:postId" element={<AdminDynamicBoardDetail />} />
