@@ -77,7 +77,7 @@ public class AdminSurveyController {
 
     // --- Survey Results Endpoints ---
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/survey/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_SURVEY_03")
     @PostMapping("/result/list")
     public ResponseEntity<?> getSurveyResultList(@RequestBody Map<String, Object> param) {
         param.putIfAbsent("sysId", "CORE");
@@ -90,7 +90,7 @@ public class AdminSurveyController {
         return ResponseEntity.ok(result);
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/survey/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_SURVEY_03")
     @PostMapping("/result/respondents")
     public ResponseEntity<?> getSurveyRespondents(@RequestBody Map<String, Object> param) {
         param.putIfAbsent("sysId", "CORE");
@@ -98,7 +98,7 @@ public class AdminSurveyController {
         return ResponseEntity.ok(result);
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/survey/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_SURVEY_03")
     @PostMapping("/result/answers")
     public ResponseEntity<?> getSurveyRespondentAnswers(@RequestBody Map<String, Object> param) {
         param.putIfAbsent("sysId", "CORE");
@@ -106,7 +106,7 @@ public class AdminSurveyController {
         return ResponseEntity.ok(result);
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/survey/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_SURVEY_03")
     @PostMapping("/result/statistics")
     public ResponseEntity<?> getSurveyStatistics(@RequestBody Map<String, Object> param) {
         param.putIfAbsent("sysId", "CORE");

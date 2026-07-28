@@ -27,7 +27,7 @@ import java.util.Map;
  * 서버사이드 테넌트(sys_id) 격리 + 메뉴별 CRUD 권한 매트릭스(TN_ATH_M001) 강제.
  * {@link TenantGuard}가 붙은 컨트롤러 메서드를 감싸서:
  *   1) 요청에 실린 sysId가 로그인한 관리자의 실제 소속과 일치하는지 확인 (교차 테넌트 가능자는 예외)
- *   2) 그 sysId에서 해당 메뉴(menuUrl로 조회)에 대해 요구된 CRUD 권한을 갖고 있는지 확인
+ *   2) 그 sysId에서 해당 메뉴(menuId로 조회)에 대해 요구된 CRUD 권한을 갖고 있는지 확인
  * 어느 쪽이든 실패하면 즉시 403을 반환하고 실제 컨트롤러 로직은 실행되지 않는다.
  */
 @Aspect
@@ -126,8 +126,8 @@ public class TenantGuardAspect {
             }
         }
 
-        if (tenantGuard.menuUrl() != null && !tenantGuard.menuUrl().isEmpty()) {
-            Map<String, Object> menuInfo = securityMapper.selectMenuIdBySysIdAndUrl(effectiveSysId, tenantGuard.menuUrl());
+        if (tenantGuard.menuId() != null && !tenantGuard.menuId().isEmpty()) {
+            Map<String, Object> menuInfo = securityMapper.selectMenuBySysIdAndId(effectiveSysId, tenantGuard.menuId());
             if (menuInfo == null) {
                 return forbidden("사용할 수 없는 기능입니다.");
             }
@@ -154,7 +154,7 @@ public class TenantGuardAspect {
                 return forbidden("접근 권한이 없습니다.");
             }
         } else if (principal.isSuperAdmin() || principal.isTrueSuperAdmin()) {
-            // menuUrl이 없는(=sysId만 검증하는) 일반 케이스는 기존과 동일하게 S001/SUPR 전면 통과
+            // menuId가 없는(=sysId만 검증하는) 일반 케이스는 기존과 동일하게 S001/SUPR 전면 통과
             return joinPoint.proceed(args);
         }
 

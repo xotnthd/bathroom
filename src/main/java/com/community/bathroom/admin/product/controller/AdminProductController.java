@@ -27,7 +27,7 @@ public class AdminProductController {
         return "system";
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @PostMapping("/list")
     public ResponseEntity<Map<String, Object>> getProductList(@RequestBody Map<String, Object> param) {
         String sysId = (String) param.get("sysId");
@@ -38,13 +38,13 @@ public class AdminProductController {
         return ResponseEntity.ok(adminProductService.getProductList(sysId, searchKeyword, cteIdx, pageNum, pageSize));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @GetMapping("/detail/{sysId}/{idx}")
     public ResponseEntity<Map<String, Object>> getProduct(@PathVariable String sysId, @PathVariable Long idx) {
         return ResponseEntity.ok(adminProductService.getProduct(sysId, idx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRD_01")
     @PostMapping("/save")
     public ResponseEntity<?> saveProduct(@RequestBody Map<String, Object> param) {
         try {
@@ -56,26 +56,26 @@ public class AdminProductController {
         }
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_PRD_01")
     @DeleteMapping("/delete/{sysId}/{idx}")
     public ResponseEntity<?> deleteProduct(@PathVariable String sysId, @PathVariable Long idx) {
         adminProductService.deleteProduct(sysId, idx);
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @GetMapping("/optgroup/list")
     public ResponseEntity<List<Map<String, Object>>> getProductOptGroups(@RequestParam Long prdIdx) {
         return ResponseEntity.ok(adminProductService.getProductOptGroups(prdIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @GetMapping("/sku/list")
     public ResponseEntity<List<Map<String, Object>>> getSkuList(@RequestParam Long prdIdx) {
         return ResponseEntity.ok(adminProductService.getSkuList(prdIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRD_01")
     @PostMapping("/sku/save")
     public ResponseEntity<?> saveSkuList(@RequestBody Map<String, Object> param) {
         try {
@@ -89,19 +89,19 @@ public class AdminProductController {
         }
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @GetMapping("/stock/list")
     public ResponseEntity<List<Map<String, Object>>> getStockByProduct(@RequestParam String sysId, @RequestParam Long prdIdx) {
         return ResponseEntity.ok(adminProductService.getStockByProduct(sysId, prdIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @GetMapping("/stock/summary")
     public ResponseEntity<List<Map<String, Object>>> getStockSummary(@RequestParam Long prdIdx) {
         return ResponseEntity.ok(adminProductService.getStockSummaryByProduct(prdIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRD_01")
     @PostMapping("/stock/move")
     public ResponseEntity<?> processStockMove(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
@@ -109,7 +109,7 @@ public class AdminProductController {
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/product")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRD_01")
     @GetMapping("/stock/history")
     public ResponseEntity<List<Map<String, Object>>> getStockHistory(@RequestParam Long prdIdx) {
         return ResponseEntity.ok(adminProductService.getStockHistory(prdIdx));

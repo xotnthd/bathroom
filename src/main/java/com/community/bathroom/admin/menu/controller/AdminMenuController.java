@@ -37,7 +37,7 @@ public class AdminMenuController {
 
     // 활성화 및 미삭제(del_yn = 'N')된 상태의 계층별 메뉴 배열 풀링 API
     @AuditLog(actionName = "메뉴 리스트 가져오기")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/menu")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_MENU_01")
     @PostMapping("/hierarchical/list")
     public ResponseEntity<List<Map<String, Object>>> getHierarchicalMenuList(@RequestBody Map<String, String> param) {
         String sysId = param.getOrDefault("sysId", "CORE");
@@ -48,7 +48,7 @@ public class AdminMenuController {
 
     // 메뉴 속성 및 동적 게시판 연동 정보 저장/수정 (Upsert)
     @AuditLog(actionName = "메뉴 저장")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/menu")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_MENU_01")
     @PostMapping("/save")
     public ResponseEntity<?> saveMenu(@RequestBody Map<String, Object> menuParam) {
         try {
@@ -62,7 +62,7 @@ public class AdminMenuController {
 
     // 같은 부모 아래 형제 메뉴들의 노출 순서 일괄 재지정 (위/아래 재정렬 후 "순서 저장")
     @AuditLog(actionName = "메뉴 순서 일괄 변경")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/menu")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_MENU_01")
     @PostMapping("/sort/save")
     public ResponseEntity<?> saveMenuSortOrder(@RequestBody Map<String, Object> param) {
         String sysId = (String) param.get("sysId");
@@ -74,7 +74,7 @@ public class AdminMenuController {
 
     // 물리 삭제 구문을 전면 폐기하고 del_yn = 'Y'로 치환 업데이트하는 Soft Delete API
     @AuditLog(actionName = "메뉴 삭제")
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/menu")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_MENU_01")
     @DeleteMapping("/delete/{sysId}/{menuId}")
     public ResponseEntity<?> deleteMenu(@PathVariable String sysId, @PathVariable String menuId) {
         adminMenuService.deleteMenu(sysId, menuId);

@@ -46,7 +46,7 @@ public class AdminAuthController {
 
     // 권한 그룹 저장/수정 (팝업 모달용)
     @AuditLog(actionName = "권한 그룹 저장/수정") // 👈 이것만 딱 붙이면 끝!
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/auth")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_AUTH_01")
     @PostMapping("/role/save")
     public ResponseEntity<?> saveRole(@RequestBody Map<String, Object> param) {
         try {
@@ -64,7 +64,7 @@ public class AdminAuthController {
 
     // 권한 레벨 일괄 저장 (역할 목록의 ▲▼ 버튼으로 조정된 레벨을 반영)
     @AuditLog(actionName = "권한 레벨 일괄 저장")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/auth")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_AUTH_01")
     @PostMapping("/role/level/save")
     public ResponseEntity<?> saveRoleLevels(@RequestBody List<Map<String, Object>> paramList) {
         try {
@@ -81,7 +81,7 @@ public class AdminAuthController {
 
     // 권한 그룹 논리 삭제
     @AuditLog(actionName = "권한 그룹 논리 삭제") // 👈 이것만 딱 붙이면 끝!
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/auth")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_AUTH_01")
     @DeleteMapping("/role/delete/{sysId}/{athrtyComCd}")
     public ResponseEntity<?> deleteRole(@PathVariable String sysId, @PathVariable String athrtyComCd) {
         try {
@@ -97,7 +97,7 @@ public class AdminAuthController {
 
     // 권한별 메뉴 매트릭스 조회 (노출 여부 포함)
     @AuditLog(actionName = "권한별 메뉴 매트릭스 조회") // 👈 이것만 딱 붙이면 끝!
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/auth")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_AUTH_01")
     @GetMapping("/matrix")
     public ResponseEntity<List<Map<String, Object>>> getAuthMenuMatrix(
             @RequestParam(required = false) String sysId,
@@ -112,7 +112,7 @@ public class AdminAuthController {
 
     // 매트릭스 설정 일괄 저장
     @AuditLog(actionName = "매트릭스 설정 일괄 저장") // 👈 이것만 딱 붙이면 끝!
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/auth")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_AUTH_01")
     @PostMapping("/matrix/save")
     public ResponseEntity<?> saveAuthMenuMatrix(@RequestBody List<Map<String, Object>> paramList) {
         AdminPrincipal principal = getPrincipal();

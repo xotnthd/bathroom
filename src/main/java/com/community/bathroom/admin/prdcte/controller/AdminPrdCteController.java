@@ -27,7 +27,7 @@ public class AdminPrdCteController {
         return "system";
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/category")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDCTE_01")
     @PostMapping("/list")
     public ResponseEntity<List<Map<String, Object>>> getChildList(@RequestBody Map<String, Object> param) {
         String sysId = (String) param.get("sysId");
@@ -35,13 +35,13 @@ public class AdminPrdCteController {
         return ResponseEntity.ok(adminPrdCteService.getChildList(sysId, uprCteIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/category")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDCTE_01")
     @GetMapping("/leaf/list")
     public ResponseEntity<List<Map<String, Object>>> getLeafCategoryList(@RequestParam String sysId) {
         return ResponseEntity.ok(adminPrdCteService.getLeafCategoryList(sysId));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/category")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRDCTE_01")
     @PostMapping("/save")
     public ResponseEntity<?> saveCategory(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
@@ -49,7 +49,7 @@ public class AdminPrdCteController {
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/category")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRDCTE_01")
     @PostMapping("/sort/save")
     public ResponseEntity<?> saveSortOrder(@RequestBody Map<String, Object> param) {
         String sysId = (String) param.get("sysId");
@@ -59,7 +59,7 @@ public class AdminPrdCteController {
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/prd/category")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_PRDCTE_01")
     @DeleteMapping("/delete/{sysId}/{idx}")
     public ResponseEntity<?> deleteCategory(@PathVariable String sysId, @PathVariable Long idx) {
         adminPrdCteService.deleteCategory(sysId, idx);

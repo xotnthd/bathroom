@@ -27,19 +27,19 @@ public class AdminPrdSupController {
         return "system";
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/supplier")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDSUP_01")
     @GetMapping("/list")
     public ResponseEntity<List<Map<String, Object>>> getSupplierList(@RequestParam String sysId) {
         return ResponseEntity.ok(adminPrdSupService.getSupplierList(sysId));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/supplier")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDSUP_01")
     @GetMapping("/detail/{sysId}/{idx}")
     public ResponseEntity<Map<String, Object>> getSupplier(@PathVariable String sysId, @PathVariable Long idx) {
         return ResponseEntity.ok(adminPrdSupService.getSupplier(sysId, idx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/supplier")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRDSUP_01")
     @PostMapping("/save")
     public ResponseEntity<?> saveSupplier(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
@@ -47,7 +47,7 @@ public class AdminPrdSupController {
         return ResponseEntity.ok(param);
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/prd/supplier")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_PRDSUP_01")
     @DeleteMapping("/delete/{sysId}/{idx}")
     public ResponseEntity<?> deleteSupplier(@PathVariable String sysId, @PathVariable Long idx) {
         adminPrdSupService.deleteSupplier(sysId, idx);

@@ -33,7 +33,7 @@ public class AdminBoardController {
 
     // 1. 게시판 마스터 정보 목록 조회
     @AuditLog(actionName = "게시판 마스터 목록 조회")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/board")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_BOARD_01")
     @PostMapping("/managing/list")
     public ResponseEntity<List<Map<String, Object>>> getBoardManagingList(@RequestBody Map<String, Object> param) {
         param.putIfAbsent("sysId", "CORE");
@@ -42,7 +42,7 @@ public class AdminBoardController {
 
     // 1-1. 게시판 마스터 단건 상세 조회
     @AuditLog(actionName = "게시판 마스터 상세 조회")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/board")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_BOARD_01")
     @GetMapping("/managing/detail/{sysId}/{brdId}")
     public ResponseEntity<Map<String, Object>> getBoardManagingDetail(@PathVariable String sysId, @PathVariable String brdId) {
         return ResponseEntity.ok(adminBoardService.getBoardManagingDetail(sysId, brdId));
@@ -50,7 +50,7 @@ public class AdminBoardController {
 
     // 2. 공통코드 동적 풀링
     @AuditLog(actionName = "공통코드 동적 풀링")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/board")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_BOARD_01")
     @PostMapping("/common/code")
     public ResponseEntity<List<Map<String, Object>>> getCommonCodeList(@RequestBody Map<String, String> param) {
         String sysId = param.getOrDefault("sysId", "CORE");
@@ -61,7 +61,7 @@ public class AdminBoardController {
 
     // 3. 게시판 마스터 설정 저장/수정
     @AuditLog(actionName = "게시판 마스터 설정 저장/수정")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/board")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_BOARD_01")
     @PostMapping("/managing/save")
     public ResponseEntity<?> saveBoardManaging(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId()); // 세션 유저 아이디 치환
@@ -71,7 +71,7 @@ public class AdminBoardController {
 
     // 4. 게시판 마스터 영구 삭제 (논리 삭제 아님)
     @AuditLog(actionName = "게시판 마스터 영구 삭제")
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/board")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_BOARD_01")
     @DeleteMapping("/managing/delete/{sysId}/{brdId}")
     public ResponseEntity<?> deleteBoardManaging(@PathVariable String sysId, @PathVariable String brdId) {
         adminBoardService.deleteBoardManaging(sysId, brdId);
@@ -80,7 +80,7 @@ public class AdminBoardController {
 
     // 5. 특정 게시판의 게시물 (포스트) 실시간 뷰어 리스트 조회
     @AuditLog(actionName = "게시물 목록 실시간 조회")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_BOARD_POST")
     @PostMapping("/post/monitor")
     public ResponseEntity<List<Map<String, Object>>> getMonitorPostList(@RequestBody Map<String, String> param) {
         String sysId = param.getOrDefault("sysId", "CORE");
@@ -90,7 +90,7 @@ public class AdminBoardController {
 
     // 6. 공통 파일 그룹에 속한 1:N 맵핑 파일 스토리지 목록 풀링
     @AuditLog(actionName = "게시물 연동 1:N 다중 파일 스토리지 목록 조회")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_BOARD_POST")
     @PostMapping("/common/file/list")
     public ResponseEntity<List<Map<String, Object>>> getCommonFileList(@RequestBody Map<String, String> param) {
         String sysId = param.getOrDefault("sysId", "CORE");
@@ -100,7 +100,7 @@ public class AdminBoardController {
 
     // 7. 게시글 및 1:N 다중 파일 업로드 통합 저장 (Service로 토스)
     @AuditLog(actionName = "게시글 및 1:N 다중 파일 업로드 통합 저장")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_BOARD_POST")
     @PostMapping("/post/save")
     public ResponseEntity<?> saveBoardPost(
             @RequestParam Map<String, Object> param,
@@ -116,7 +116,7 @@ public class AdminBoardController {
     // 8. 게시글 강제 차단 (논리 삭제)
     // 참고: idx 하나만 받아서 sysId를 알 수 없음 - 소속 테넌트 소유권 검증은 서비스 레이어 후속 작업 필요 (알려진 갭)
     @AuditLog(actionName = "게시글 강제 차단 (논리 삭제)")
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_BOARD_POST")
     @DeleteMapping("/post/kick/{idx}")
     public ResponseEntity<?> kickBoardPost(@PathVariable Long idx) {
         adminBoardService.deleteBoardPost(idx);
@@ -125,7 +125,7 @@ public class AdminBoardController {
 
     // 9. 게시글 일괄 차단 (논리 삭제)
     @AuditLog(actionName = "게시글 일괄 차단")
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_BOARD_POST")
     @PostMapping("/post/kick/bulk")
     public ResponseEntity<?> kickBoardPostBulk(@RequestBody List<Long> ids) {
         adminBoardService.deleteBoardPostBulk(ids);
@@ -134,7 +134,7 @@ public class AdminBoardController {
 
     // 10. 게시글 강제 차단 해제 (원복)
     @AuditLog(actionName = "게시글 차단 해제")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_BOARD_POST")
     @PostMapping("/post/restore/{idx}")
     public ResponseEntity<?> restoreBoardPost(@PathVariable Long idx) {
         adminBoardService.restoreBoardPost(idx);
@@ -143,7 +143,7 @@ public class AdminBoardController {
 
     // 11. 게시글 일괄 차단 해제 (원복)
     @AuditLog(actionName = "게시글 일괄 차단 해제")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/boardPost")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_BOARD_POST")
     @PostMapping("/post/restore/bulk")
     public ResponseEntity<?> restoreBoardPostBulk(@RequestBody List<Long> ids) {
         adminBoardService.restoreBoardPostBulk(ids);

@@ -39,12 +39,12 @@
           AND M.del_yn = 'N'
     </select>
 
-    <!-- TenantGuardAspect: sys_id + 프론트 라우트(menu_url)로 그 테넌트의 실제 menu_id 조회 -->
-    <select id="selectMenuIdBySysIdAndUrl" resultType="java.util.Map">
+    <!-- TenantGuardAspect: sys_id + menu_id로 그 테넌트에 해당 메뉴가 실제 사용 중인지 + 민감여부 조회 -->
+    <select id="selectMenuBySysIdAndId" resultType="java.util.Map">
         SELECT menu_id AS "menuId", sensitive_yn AS "sensitiveYn"
         FROM TN_MNU_M001
         WHERE sys_id = #{sysId}
-          AND menu_url = #{menuUrl}
+          AND menu_id = #{menuId}
           AND use_yn = 'Y'
           AND del_yn = 'N'
         LIMIT 1

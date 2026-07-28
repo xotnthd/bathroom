@@ -26,7 +26,7 @@ public class PopupController {
     private CommonFileService commonFileService;
 
     // Get list with search conditions
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/popup")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_POP_01")
     @GetMapping("/list")
     public ResponseEntity<List<Map<String, Object>>> getPopupList(@RequestParam Map<String, Object> param) {
         // param has sysId, searchSysSeCd, searchStDate, searchEdDate
@@ -46,13 +46,13 @@ public class PopupController {
         return ResponseEntity.ok(list);
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/popup")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_POP_01")
     @GetMapping("/detail/{sysId}/{popIdx}")
     public ResponseEntity<Map<String, Object>> getPopup(@PathVariable String sysId, @PathVariable Long popIdx) {
         return ResponseEntity.ok(popupService.getPopup(sysId, popIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/popup")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_POP_01")
     @PostMapping("/save")
     public ResponseEntity<?> savePopup(
             @RequestParam Map<String, Object> param,
@@ -87,7 +87,7 @@ public class PopupController {
     }
 
     // 참고: popIdx만 받아서 sysId를 알 수 없음 - 소속 테넌트 소유권 검증은 서비스 레이어 후속 작업 필요 (알려진 갭)
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/popup")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_POP_01")
     @DeleteMapping("/delete/{popIdx}")
     public ResponseEntity<?> deletePopup(@PathVariable Long popIdx) {
         popupService.deletePopup(popIdx);

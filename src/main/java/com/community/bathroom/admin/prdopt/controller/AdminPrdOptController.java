@@ -27,13 +27,13 @@ public class AdminPrdOptController {
         return "system";
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/option")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDOPT_01")
     @GetMapping("/group/list")
     public ResponseEntity<List<Map<String, Object>>> getGroupList(@RequestParam String sysId) {
         return ResponseEntity.ok(adminPrdOptService.getGroupList(sysId));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/option")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRDOPT_01")
     @PostMapping("/group/save")
     public ResponseEntity<?> saveGroup(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
@@ -41,20 +41,20 @@ public class AdminPrdOptController {
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/prd/option")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_PRDOPT_01")
     @DeleteMapping("/group/delete/{sysId}/{idx}")
     public ResponseEntity<?> deleteGroup(@PathVariable String sysId, @PathVariable Long idx) {
         adminPrdOptService.deleteGroup(sysId, idx);
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/option")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDOPT_01")
     @GetMapping("/value/list")
     public ResponseEntity<List<Map<String, Object>>> getValueList(@RequestParam Long optGrpIdx) {
         return ResponseEntity.ok(adminPrdOptService.getValueList(optGrpIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/option")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRDOPT_01")
     @PostMapping("/value/save")
     public ResponseEntity<?> saveValue(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
@@ -62,7 +62,7 @@ public class AdminPrdOptController {
         return ResponseEntity.ok().build();
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/prd/option")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_PRDOPT_01")
     @DeleteMapping("/value/delete/{idx}")
     public ResponseEntity<?> deleteValue(@PathVariable Long idx) {
         adminPrdOptService.deleteValue(idx);

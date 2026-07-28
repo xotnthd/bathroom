@@ -27,19 +27,19 @@ public class AdminPrdLocController {
         return "system";
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/location")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDLOC_01")
     @GetMapping("/list")
     public ResponseEntity<List<Map<String, Object>>> getLocationList(@RequestParam String sysId) {
         return ResponseEntity.ok(adminPrdLocService.getLocationList(sysId));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/prd/location")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_PRDLOC_01")
     @GetMapping("/detail/{sysId}/{idx}")
     public ResponseEntity<Map<String, Object>> getLocation(@PathVariable String sysId, @PathVariable Long idx) {
         return ResponseEntity.ok(adminPrdLocService.getLocation(sysId, idx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/prd/location")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_PRDLOC_01")
     @PostMapping("/save")
     public ResponseEntity<?> saveLocation(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
@@ -47,7 +47,7 @@ public class AdminPrdLocController {
         return ResponseEntity.ok(param);
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/prd/location")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_PRDLOC_01")
     @DeleteMapping("/delete/{sysId}/{idx}")
     public ResponseEntity<?> deleteLocation(@PathVariable String sysId, @PathVariable Long idx) {
         adminPrdLocService.deleteLocation(sysId, idx);

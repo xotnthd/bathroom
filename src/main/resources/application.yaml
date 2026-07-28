@@ -15,7 +15,7 @@ spring:
     name: bathRoom
   datasource:
     # MySQL 로컬 DB 정보 (bathroom 이라는 스키마를 미리 생성해두셔야 합니다)
-    url: jdbc:mysql://localhost:3306/bathroom?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/bathroom?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:root}   # 본인의 MySQL 계정명
     password: ${DB_PASSWORD}        # 환경변수로만 주입 (IntelliJ 실행 구성의 Environment variables에 DB_PASSWORD 추가, .idea는 git에서 제외되어 있어 안전함)

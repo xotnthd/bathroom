@@ -9,8 +9,10 @@ import java.lang.annotation.Target;
  * 컨트롤러 메서드에 붙여서 서버사이드 테넌트(sys_id) 격리와 메뉴별 CRUD 권한 매트릭스를 강제한다.
  * 실제 검사는 {@link com.community.bathroom.comn.security.aspect.TenantGuardAspect}가 수행한다.
  *
- * menuUrl은 프론트엔드 라우트 경로(TN_MNU_M001.menu_url과 동일한 값, 예: "/admin/board")를 그대로 적어야 한다.
- * SUPER_ADMIN_ONLY일 때는 menuUrl을 쓰지 않는다 (테넌트 자체를 관리/생성하는 화면 전용).
+ * menuId는 TN_MNU_M001.menu_id(불변 키)를 그대로 적어야 한다 (예: "MNU_BOARD_01").
+ * 프론트엔드 라우트 경로(menu_url)는 사이드바 이동 목적지로만 쓰이는 값이라 여기서는 참조하지 않는다 -
+ * URL 문자열로 권한을 추측하면 리스트/상세 라우트 모양이 어긋날 때 깨지기 쉽다 (2026-07-28 투표결과 화면 사고 참고).
+ * SUPER_ADMIN_ONLY일 때는 menuId를 쓰지 않는다 (테넌트 자체를 관리/생성하는 화면 전용).
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -29,5 +31,5 @@ public @interface TenantGuard {
 
     Action action();
 
-    String menuUrl() default "";
+    String menuId() default "";
 }

@@ -21,14 +21,14 @@ public class AdminCodeController {
      * 1. 최상위 그룹 코드 (TN_COM_C001) 제어부
      * ========================================================== */
     @AuditLog(actionName = "최상위 그룹 코드 리스트")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/code")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_CODE_01")
     @GetMapping("/group/list")
     public ResponseEntity<List<Map<String, Object>>> getGroupCodeList(@RequestParam(required = false) String sysId) {
         return ResponseEntity.ok(adminCodeService.getGroupCodeList(sysId));
     }
 
     @AuditLog(actionName = "코드 그룹 저장")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/code")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_CODE_01")
     @PostMapping("/group/save")
     public ResponseEntity<?> saveGroupCode(@RequestBody Map<String, Object> param) {
         param.put("userId", "admin");
@@ -37,7 +37,7 @@ public class AdminCodeController {
     }
 
     @AuditLog(actionName = "코드 그룹 삭제")
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/code")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_CODE_01")
     @DeleteMapping("/group/delete/{sysId}/{comCd}")
     public ResponseEntity<?> deleteGroupCode(@PathVariable String sysId, @PathVariable String comCd) {
         adminCodeService.deleteGroupCode(sysId, comCd);
@@ -48,7 +48,7 @@ public class AdminCodeController {
      * 2. 계층형 상세 세부 코드 (TN_COM_C002) 제어부 (중간레벨, 상세레벨 통합 통제)
      * ========================================================== */
     @AuditLog(actionName = "코드 디테일 리스트")
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/code")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_CODE_01")
     @GetMapping("/detail/list")
     public ResponseEntity<List<Map<String, Object>>> getDetailCodeList(
             @RequestParam(required = false) String sysId,
@@ -58,7 +58,7 @@ public class AdminCodeController {
     }
 
     @AuditLog(actionName = "코드 디테일 저장")
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/code")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_CODE_01")
     @PostMapping("/detail/save")
     public ResponseEntity<?> saveDetailCode(@RequestBody Map<String, Object> param) {
         param.put("userId", "admin");
@@ -67,7 +67,7 @@ public class AdminCodeController {
     }
 
     @AuditLog(actionName = "코드 디테일 삭제")
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/code")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_CODE_01")
     @DeleteMapping("/detail/delete/{sysId}/{grpCd}/{uprComCd}/{comCd}")
     public ResponseEntity<?> deleteDetailCode(
             @PathVariable String sysId,

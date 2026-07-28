@@ -14,8 +14,8 @@ public interface SecurityMapper {
 
     int countAdminMenuByRole(String role);
 
-    // 3. TenantGuardAspect용: sys_id + 프론트 라우트(menu_url)로 그 테넌트의 실제 menu_id + 민감여부 조회
-    Map<String, Object> selectMenuIdBySysIdAndUrl(@Param("sysId") String sysId, @Param("menuUrl") String menuUrl);
+    // 3. TenantGuardAspect용: sys_id + menu_id로 그 테넌트에 해당 메뉴가 실제로 존재/사용 중인지 + 민감여부 조회
+    Map<String, Object> selectMenuBySysIdAndId(@Param("sysId") String sysId, @Param("menuId") String menuId);
 
     // 4. TenantGuardAspect용: sys_id + 권한코드 + menu_id로 CRUD 플래그 조회
     Map<String, Object> selectMenuPermission(@Param("sysId") String sysId, @Param("athrtyComCd") String athrtyComCd, @Param("menuId") String menuId);

@@ -27,26 +27,26 @@ public class AdminVoteController {
         return "system";
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/vote")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_VOTE_01")
     @PostMapping("/list")
     public ResponseEntity<List<Map<String, Object>>> getVoteList(@RequestBody Map<String, Object> param) {
         return ResponseEntity.ok(adminVoteService.getVoteList(param));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/vote")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_VOTE_01")
     @GetMapping("/detail/{sysId}/{voteIdx}")
     public ResponseEntity<Map<String, Object>> getVoteDetail(@PathVariable String sysId, @PathVariable Long voteIdx) {
         return ResponseEntity.ok(adminVoteService.getVoteDetail(sysId, voteIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/vote")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_VOTE_01")
     @PostMapping("/save")
     public ResponseEntity<?> saveVote(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
         return ResponseEntity.ok(adminVoteService.saveVote(param));
     }
 
-    @TenantGuard(action = TenantGuard.Action.DELETE, menuUrl = "/admin/vote")
+    @TenantGuard(action = TenantGuard.Action.DELETE, menuId = "MNU_VOTE_01")
     @DeleteMapping("/delete/{sysId}/{voteIdx}")
     public ResponseEntity<?> deleteVote(@PathVariable String sysId, @PathVariable Long voteIdx) {
         adminVoteService.deleteVote(sysId, voteIdx);
@@ -55,25 +55,25 @@ public class AdminVoteController {
 
     // --- 아래는 "투표 결과 관리"(결과관리 하위) 화면 전용 - 투표 관리(관리/등록) 메뉴 권한과 별개로 검사한다 ---
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/vote/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_VOTE_RESULT")
     @PostMapping("/result/list")
     public ResponseEntity<List<Map<String, Object>>> getVoteListForResult(@RequestBody Map<String, Object> param) {
         return ResponseEntity.ok(adminVoteService.getVoteList(param));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/vote/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_VOTE_RESULT")
     @GetMapping("/result/detail/{sysId}/{voteIdx}")
     public ResponseEntity<Map<String, Object>> getVoteDetailForResult(@PathVariable String sysId, @PathVariable Long voteIdx) {
         return ResponseEntity.ok(adminVoteService.getVoteDetail(sysId, voteIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/vote/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_VOTE_RESULT")
     @GetMapping("/eligibility/{sysId}/{voteIdx}")
     public ResponseEntity<Map<String, Object>> getEligibility(@PathVariable String sysId, @PathVariable Long voteIdx) {
         return ResponseEntity.ok(adminVoteService.getEligibility(sysId, voteIdx, getLoginUserId()));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/vote/result/list")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_VOTE_RESULT")
     @PostMapping("/cast")
     public ResponseEntity<?> castVote(@RequestBody Map<String, Object> param) {
         try {
@@ -87,13 +87,13 @@ public class AdminVoteController {
         }
     }
 
-    @TenantGuard(action = TenantGuard.Action.READ, menuUrl = "/admin/vote/result/list")
+    @TenantGuard(action = TenantGuard.Action.READ, menuId = "MNU_VOTE_RESULT")
     @GetMapping("/result/{sysId}/{voteIdx}")
     public ResponseEntity<Map<String, Object>> getResult(@PathVariable String sysId, @PathVariable Long voteIdx) {
         return ResponseEntity.ok(adminVoteService.getResult(sysId, voteIdx));
     }
 
-    @TenantGuard(action = TenantGuard.Action.WRITE, menuUrl = "/admin/vote/result/list")
+    @TenantGuard(action = TenantGuard.Action.WRITE, menuId = "MNU_VOTE_RESULT")
     @PostMapping("/draw/{sysId}/{voteIdx}")
     public ResponseEntity<?> drawWinner(@PathVariable String sysId, @PathVariable Long voteIdx) {
         try {

@@ -50,9 +50,18 @@ com.community.bathroom
 
 1. **로그인**: `CommonAuthController` (`/api/auth/login`)가 Spring Security 인증을 트리거 → `CommonUserDetailsService.loadUserByUsername`이 `SecurityMapper.selectAdminById`(`TN_MEM_M001`+`TN_ATH_A001` 조인)로 1차 조회, 실패 시 `selectUserById`(`TN_USR_M001`, 실제 라이브 DB엔 이 테이블이 없어 이 폴백 경로는 항상 에러남)로 폴백. 조회된 `sysId`/`athrtyLevel`은 이제 `AdminPrincipal`(커스텀 `UserDetails`)에 실려 세션 내내 유지됨.
 2. **관리자 화면 접근 제어(1차, 거친 게이트)**: `DynamicAdminAuthorizationManager`가 요청마다 로그인한 사용자의 권한코드(role)가 `TN_ATH_M001`/`TN_MNU_M001` 조인 기준으로 `sys_sect_cd = 'MG'`(관리자) 메뉴에 하나라도 매핑돼 있는지 검사(`/admin/api/**` 전체 진입 여부만 결정, sysId/메뉴별 CRUD는 모름). `S001`/`SUPR`은 `TN_ATH_M001`에 매핑이 하나도 없어도(부트스트랩 직후 등) 이 게이트를 무조건 통과한다(`AdminPrincipal.isSuperAdmin()`/`isTrueSuperAdmin()` 체크).
-3. **테넌트 격리 + 메뉴별 CRUD 권한(2차, 정밀 게이트)**: `@TenantGuard(action=..., menuUrl=...)`가 붙은 컨트롤러 메서드는 `TenantGuardAspect`가 가로채서 (a) 요청의 `sysId`가 로그인한 관리자의 실제 소속과 일치하는지(불일치 시 403, `S001`/`SUPR`/`CORE`의 `A001`만 예외적으로 다른 테넌트 지정 가능), (b) `TN_MNU_M001.menu_url`로 그 테넌트의 실제 `menu_id`(+`sensitive_yn`)를 찾아 `TN_ATH_M001`의 조회/등록·수정/삭제 플래그를 만족하는지 검사한다. `SUPR`은 민감 메뉴 포함 항상 통과, `S001`은 `sensitive_yn='N'`인 메뉴만 무조건 통과하고 `sensitive_yn='Y'`인 메뉴는 다른 역할과 동일하게 매트릭스를 실제로 확인받는다(2026-07-25 이전엔 `S001`이 모든 메뉴를 예외 없이 통과했음). 프론트의 `menuAuth`(UI 힌트)와 별개로 서버에서 강제되는 실제 권한 경계는 이쪽.
-4. 새 관리자 도메인을 추가할 때는 컨트롤러 메서드에 `@TenantGuard`를 붙이고 해당 화면의 `menu_url`을 지정하기만 하면 이 두 검사가 자동으로 적용된다 (`admin/user/controller/AdminUserController`가 그 예).
+3. **테넌트 격리 + 메뉴별 CRUD 권한(2차, 정밀 게이트)**: `@TenantGuard(action=..., menuId=...)`가 붙은 컨트롤러 메서드는 `TenantGuardAspect`가 가로채서 (a) 요청의 `sysId`가 로그인한 관리자의 실제 소속과 일치하는지(불일치 시 403, `S001`/`SUPR`/`CORE`의 `A001`만 예외적으로 다른 테넌트 지정 가능), (b) `TN_MNU_M001.menu_id`(불변 키)로 그 테넌트에 해당 메뉴가 실제 사용 중인지(+`sensitive_yn`)를 확인하고 `TN_ATH_M001`의 조회/등록·수정/삭제 플래그를 만족하는지 검사한다. `SUPR`은 민감 메뉴 포함 항상 통과, `S001`은 `sensitive_yn='N'`인 메뉴만 무조건 통과하고 `sensitive_yn='Y'`인 메뉴는 다른 역할과 동일하게 매트릭스를 실제로 확인받는다(2026-07-25 이전엔 `S001`이 모든 메뉴를 예외 없이 통과했음). 프론트의 `menuAuth`(UI 힌트)와 별개로 서버에서 강제되는 실제 권한 경계는 이쪽.
+4. 새 관리자 도메인을 추가할 때는 컨트롤러 메서드에 `@TenantGuard`를 붙이고 해당 화면의 `menu_id`(예: `"MNU_USER_01"`)를 지정하기만 하면 이 두 검사가 자동으로 적용된다 (`admin/user/controller/AdminUserController`가 그 예).
 5. **권한 레벨(`athrty_level`) 변경 관련 서버측 검증**: `AdminAuthController`의 `role/save`/`role/delete`/`role/level/save`는 클라이언트가 보낸 레벨 관련 값을 신뢰하지 않고 `SecurityContextHolder`의 `AdminPrincipal.getAthrtyLevel()`을 서버에서 직접 읽어 덮어쓴다(과거엔 프론트 `sessionStorage`값을 그대로 믿는 취약점이 있었음 — 2026-07-25 수정). 신규 역할 등록은 항상 최저 등급(99)으로 고정 생성되고, 이후 레벨 조정은 `AuthManage.jsx` 목록의 ▲▼ 버튼 + `role/level/save` 일괄 저장으로만 가능. `athrty_com_cd`가 `S`로 시작하는 역할은 `sys_id='CORE'`가 아니면 생성/개명이 서버에서 거부된다.
+
+### 화면 권한 체크는 URL이 아니라 menu_id로 한다 (2026-07-28)
+
+`TN_MNU_M001.menu_url`은 **사이드바 네비게이션 목적지** 하나의 역할만 한다. 예전에는 이 값을 백엔드 `@TenantGuard(menuUrl=...)`의 exact-match 키, 프론트 `useMenuAuth()`의 prefix-match 키로도 같이 썼는데, 리스트/상세 화면을 URL 모양이 어긋나게 분리하면(상세 경로가 리스트 경로보다 짧아지는 등) 사이드바 링크와 권한 체크가 서로 다른 가정을 하게 되어 깨졌다 (투표 결과 관리 화면이 완전히 안 보이는 사고로 발현, 근본 원인은 하드코딩된 라우트 경로 · DB `menu_url` · 백엔드 어노테이션 문자열 세 곳이 우연히 맞아떨어져야만 하는 구조였음).
+
+- **백엔드**: `@TenantGuard(menuId = "MNU_XXX")`로 `TN_MNU_M001.menu_id`를 직접 지정한다. `TenantGuardAspect`는 `sys_id + menu_id`로 정확히 조회하므로 URL 모양과 완전히 무관하다.
+- **프론트**: 화면이 자신이 속한 menu_id를 `admin/menuIds.js`의 `MENU_IDS` 상수로 명시하고 `useMenuAuth(MENU_IDS.XXX)`를 호출한다. `useMenuAuth`는 `menuAuths.find(m => m.menuId === menuId)`로 바로 찾는다.
+- **예외**: 동적 게시판(`AdminDynamicBoardList/Detail/Write.jsx`)처럼 화면 하나가 여러 `menu_id`(게시판마다 다름)를 오가는 경우는 menu_id를 하드코딩할 수 없어 `useMenuAuth()`를 인자 없이 호출하는 레거시 prefix-매칭 경로를 그대로 쓴다. 이 경로를 쓰려면 상세/쓰기 라우트가 반드시 목록 라우트의 하위 경로(`.../write`, `.../detail` 등)여야 한다 — 형제 경로나 더 짧은 경로로 만들면 다시 깨진다.
+- 새 화면을 추가할 때: 목록/상세가 완전히 분리된 별도 메뉴라면 반드시 각각 명시적 `menu_id`를 선언한다. 절대로 URL 문자열 관계에 의존해서 권한을 추측하지 않는다.
 
 ## 감사 로그 (AOP)
 
