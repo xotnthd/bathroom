@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.prdsup.mapper.AdminPrdSupMapper">
+
+    <select id="selectSupplierList" parameterType="String" resultType="java.util.Map">
+        SELECT idx AS "idx", sys_id AS "sysId", sup_nm AS "supNm", biz_no AS "bizNo", mgr_nm AS "mgrNm",
+               telno AS "telno", addr AS "addr", rmrk AS "rmrk", use_yn AS "useYn"
+        FROM TN_PRD_SUP_M001 WHERE sys_id = #{sysId} AND del_yn = 'N' ORDER BY sup_nm ASC
+    </select>
+
+    <select id="selectSupplierByIdx" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT idx AS "idx", sys_id AS "sysId", sup_nm AS "supNm", biz_no AS "bizNo", mgr_nm AS "mgrNm",
+               telno AS "telno", addr AS "addr", rmrk AS "rmrk", use_yn AS "useYn"
+        FROM TN_PRD_SUP_M001 WHERE sys_id = #{sysId} AND idx = #{idx} AND del_yn = 'N'
+    </select>
+
+    <insert id="insertSupplier" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_PRD_SUP_M001 (sys_id, sup_nm, biz_no, mgr_nm, telno, addr, rmrk, use_yn, del_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{supNm}, #{bizNo}, #{mgrNm}, #{telno}, #{addr}, #{rmrk}, #{useYn}, 'N', #{userId}, NOW())
+    </insert>
+
+    <update id="updateSupplier" parameterType="java.util.Map">
+        UPDATE TN_PRD_SUP_M001
+        SET sup_nm = #{supNm}, biz_no = #{bizNo}, mgr_nm = #{mgrNm}, telno = #{telno}, addr = #{addr}, rmrk = #{rmrk},
+            use_yn = #{useYn}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx} AND sys_id = #{sysId}
+    </update>
+
+    <update id="logicalDeleteSupplier">
+        UPDATE TN_PRD_SUP_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND idx = #{idx}
+    </update>
+
+</mapper>

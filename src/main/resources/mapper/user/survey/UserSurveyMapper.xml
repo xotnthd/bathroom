@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.user.survey.mapper.UserSurveyMapper">
+
+    <insert id="insertSurveyResponseMaster" parameterType="java.util.Map">
+        INSERT INTO TN_SURVEY_P001 (
+            sys_id, surv_id, resp_id, user_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{survId}, #{respId}, #{userId}, NOW()
+        )
+    </insert>
+
+    <insert id="insertSurveyResponseDetail" parameterType="java.util.Map">
+        INSERT INTO TN_SURVEY_P002 (
+            sys_id, surv_id, resp_id, qstn_sn, ans_sn, opt_sn, ans_txt
+        ) VALUES (
+            #{sysId}, #{survId}, #{respId}, #{qstnSn}, #{ansSn}, #{optSn}, #{ansTxt}
+        )
+    </insert>
+
+</mapper>

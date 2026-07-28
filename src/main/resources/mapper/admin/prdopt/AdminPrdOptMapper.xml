@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.prdopt.mapper.AdminPrdOptMapper">
+
+    <!-- ================= 옵션 그룹 ================= -->
+    <select id="selectGroupList" parameterType="String" resultType="java.util.Map">
+        SELECT idx AS "idx", sys_id AS "sysId", opt_grp_nm AS "optGrpNm", sort_ord AS "sortOrd", use_yn AS "useYn"
+        FROM TN_PRD_OPT_G001 WHERE sys_id = #{sysId} AND del_yn = 'N' ORDER BY sort_ord ASC, idx ASC
+    </select>
+
+    <insert id="insertGroup" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_PRD_OPT_G001 (sys_id, opt_grp_nm, sort_ord, use_yn, del_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{optGrpNm}, #{sortOrd}, #{useYn}, 'N', #{userId}, NOW())
+    </insert>
+
+    <update id="updateGroup" parameterType="java.util.Map">
+        UPDATE TN_PRD_OPT_G001 SET opt_grp_nm = #{optGrpNm}, sort_ord = #{sortOrd}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx} AND sys_id = #{sysId}
+    </update>
+
+    <update id="logicalDeleteGroup">
+        UPDATE TN_PRD_OPT_G001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND idx = #{idx}
+    </update>
+
+    <!-- ================= 옵션 값 ================= -->
+    <select id="selectValueList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT idx AS "idx", opt_grp_idx AS "optGrpIdx", opt_val_nm AS "optValNm", sort_ord AS "sortOrd", use_yn AS "useYn"
+        FROM TN_PRD_OPT_D001 WHERE opt_grp_idx = #{optGrpIdx} ORDER BY sort_ord ASC, idx ASC
+    </select>
+
+    <insert id="insertValue" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_PRD_OPT_D001 (opt_grp_idx, opt_val_nm, sort_ord, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{optGrpIdx}, #{optValNm}, #{sortOrd}, #{useYn}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateValue" parameterType="java.util.Map">
+        UPDATE TN_PRD_OPT_D001 SET opt_val_nm = #{optValNm}, sort_ord = #{sortOrd}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx}
+    </update>
+
+    <delete id="deleteValue">
+        DELETE FROM TN_PRD_OPT_D001 WHERE idx = #{idx}
+    </delete>
+
+</mapper>

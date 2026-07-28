@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.community.bathroom.comn.code.mapper.CommonCodeMapper">
+    <select id="selectCommonCodeList" resultType="java.util.Map">
+        SELECT
+            com_cd AS "comCd",
+            cd_nm AS "cdNm",
+            cd_expl AS "cdExpl",
+            sort_ord AS "sortOrd"
+        FROM tn_com_c002
+        WHERE sys_id = #{sysId}
+          AND grp_cd = #{grpCd}
+          AND use_yn = 'Y'
+        <if test="uprComCd != null and uprComCd != ''">
+          AND upr_com_cd = #{uprComCd}
+        </if>
+        ORDER BY sort_ord ASC, com_cd ASC
+    </select>
+</mapper>

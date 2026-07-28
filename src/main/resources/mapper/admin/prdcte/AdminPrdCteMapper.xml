@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.prdcte.mapper.AdminPrdCteMapper">
+
+    <select id="selectChildList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT idx AS "idx", sys_id AS "sysId", upr_cte_idx AS "uprCteIdx", cte_nm AS "cteNm",
+               cte_expl AS "cteExpl", sort_ord AS "sortOrd", use_yn AS "useYn"
+        FROM TN_PRD_CTE_M001
+        WHERE sys_id = #{sysId} AND del_yn = 'N'
+        <if test="uprCteIdx != null">AND upr_cte_idx = #{uprCteIdx}</if>
+        <if test="uprCteIdx == null">AND upr_cte_idx IS NULL</if>
+        ORDER BY sort_ord ASC, idx ASC
+    </select>
+
+    <insert id="insertCategory" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_PRD_CTE_M001 (
+            sys_id, upr_cte_idx, cte_nm, cte_expl, sort_ord, use_yn, del_yn, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{uprCteIdx}, #{cteNm}, #{cteExpl}, #{sortOrd}, #{useYn}, 'N', #{userId}, NOW()
+        )
+    </insert>
+
+    <update id="updateCategory" parameterType="java.util.Map">
+        UPDATE TN_PRD_CTE_M001
+        SET cte_nm = #{cteNm}, cte_expl = #{cteExpl}, sort_ord = #{sortOrd}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx} AND sys_id = #{sysId}
+    </update>
+
+    <update id="logicalDeleteCategory">
+        UPDATE TN_PRD_CTE_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND idx = #{idx}
+    </update>
+
+    <update id="logicalDeleteChildCategories">
+        UPDATE TN_PRD_CTE_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND upr_cte_idx = #{idx}
+    </update>
+
+    <update id="updateSortOrder">
+        UPDATE TN_PRD_CTE_M001 SET sort_ord = #{sortOrd} WHERE sys_id = #{sysId} AND idx = #{idx}
+    </update>
+
+    <!-- 제품 등록 화면의 리프 카테고리 선택용: 3뎁스(자식이 없는) 카테고리만 -->
+    <select id="selectLeafCategoryList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT C.idx AS "idx", C.cte_nm AS "cteNm", C.upr_cte_idx AS "uprCteIdx"
+        FROM TN_PRD_CTE_M001 C
+        WHERE C.sys_id = #{sysId} AND C.del_yn = 'N' AND C.use_yn = 'Y'
+          AND NOT EXISTS (SELECT 1 FROM TN_PRD_CTE_M001 CH WHERE CH.upr_cte_idx = C.idx AND CH.del_yn = 'N')
+        ORDER BY C.idx ASC
+    </select>
+
+</mapper>

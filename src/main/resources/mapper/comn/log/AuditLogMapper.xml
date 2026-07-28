@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.comn.log.mapper.AuditLogMapper">
+
+    <insert id="insertAuditLog" parameterType="java.util.Map">
+        INSERT INTO tn_com_l001 (
+            sys_id, user_id, fnctn_nm, req_url, oprtn_ip, log_cn, reg_dt
+        ) VALUES (
+                     #{sysId}, #{userId}, #{fnctnNm}, #{reqUrl}, #{oprtnIp}, #{logCn}, NOW()
+                 )
+    </insert>
+
+</mapper>

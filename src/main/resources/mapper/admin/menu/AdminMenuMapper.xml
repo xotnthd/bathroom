@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.menu.mapper.AdminMenuMapper">
+
+    <select id="selectHierarchicalMenuList" resultType="java.util.Map">
+        SELECT
+            sys_id AS "sysId", menu_id AS "menuId", upr_menu_id AS "uprMenuId", sys_sect_cd AS "sysSectCd",
+            menu_nm AS "menuNm", menu_url AS "menuUrl", comp_path AS "compPath", brd_id AS "brdId",
+            menu_icon AS "menuIcon", menu_kwd AS "menuKwd", sort_ord AS "sortOrd", use_yn AS "useYn", del_yn AS "delYn",
+            sensitive_yn AS "sensitiveYn"
+        FROM TN_MNU_M001
+        WHERE sys_id = #{sysId}
+          AND sys_sect_cd = #{sysSectCd}
+          AND upr_menu_id = #{uprMenuId}
+          AND del_yn = 'N'
+        <if test="callerIsTrueSuper == null or callerIsTrueSuper != true">
+            AND sensitive_yn != 'Y'
+        </if>
+        ORDER BY sort_ord ASC, menu_id ASC
+    </select>
+
+    <select id="checkMenuExists" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM TN_MNU_M001 WHERE sys_id = #{sysId} AND menu_id = #{menuId}
+    </select>
+
+    <select id="selectMenuSensitiveYn" resultType="String">
+        SELECT sensitive_yn FROM TN_MNU_M001 WHERE sys_id = #{sysId} AND menu_id = #{menuId}
+    </select>
+
+    <insert id="insertMenu" parameterType="java.util.Map">
+        INSERT INTO TN_MNU_M001 (
+            sys_id, menu_id, upr_menu_id, sys_sect_cd, menu_nm, menu_url, comp_path, brd_id, menu_icon, menu_kwd, sort_ord, use_yn, del_yn, sensitive_yn, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+                     #{sysId}, #{menuId}, #{uprMenuId}, #{sysSectCd}, #{menuNm}, #{menuUrl}, #{compPath}, #{brdId}, #{menuIcon}, #{menuKwd}, #{sortOrd}, #{useYn}, 'N', #{sensitiveYn}, #{userId}, NOW()
+                 )
+    </insert>
+
+    <update id="updateMenu" parameterType="java.util.Map">
+        UPDATE TN_MNU_M001
+        SET
+            menu_nm = #{menuNm},
+            menu_url = #{menuUrl},
+            comp_path = #{compPath},
+            brd_id = #{brdId},
+            menu_icon = #{menuIcon},
+            menu_kwd = #{menuKwd},
+            sort_ord = #{sortOrd},
+            use_yn = #{useYn},
+            sensitive_yn = #{sensitiveYn},
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND menu_id = #{menuId}
+    </update>
+
+    <update id="logicalDeleteMenu">
+        UPDATE TN_MNU_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND menu_id = #{menuId}
+    </update>
+
+    <update id="updateMenuSortOrder">
+        UPDATE TN_MNU_M001 SET sort_ord = #{sortOrd} WHERE sys_id = #{sysId} AND menu_id = #{menuId}
+    </update>
+
+    <update id="logicalDeleteChildMenus">
+        UPDATE TN_MNU_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND upr_menu_id = #{menuId}
+    </update>
+
+    <select id="selectSidebarMenuList" resultType="java.util.Map">
+        <if test='athrtyCd == "SUPR"'>
+            <!-- 진짜 최고관리자: 민감 메뉴 포함 무조건 전체 노출 -->
+            SELECT
+                M.menu_id AS "menuId",
+                M.upr_menu_id AS "uprMenuId",
+                M.menu_nm AS "menuNm",
+                M.menu_url AS "menuUrl",
+                M.menu_icon AS "menuIcon",
+                'Y' AS "menuShowYn",
+                'Y' AS "inqireYn",
+                'Y' AS "rgstYn",
+                'Y' AS "mdfcnYn",
+                'N' AS "delYn"
+            FROM TN_MNU_M001 M
+            WHERE M.sys_id = #{sysId}
+              AND M.sys_sect_cd = #{sysSectCd}
+              AND M.use_yn = 'Y'
+              AND M.del_yn = 'N'
+            ORDER BY M.upr_menu_id ASC, M.sort_ord ASC
+        </if>
+        <if test='athrtyCd == "S001"'>
+            <!-- S001: 민감하지 않은 메뉴는 기존처럼 무조건 노출, 민감 메뉴는 TN_ATH_M001에 실제로 부여된 경우만 노출 -->
+            SELECT
+                M.menu_id AS "menuId",
+                M.upr_menu_id AS "uprMenuId",
+                M.menu_nm AS "menuNm",
+                M.menu_url AS "menuUrl",
+                M.menu_icon AS "menuIcon",
+                'Y' AS "menuShowYn",
+                'Y' AS "inqireYn",
+                'Y' AS "rgstYn",
+                'Y' AS "mdfcnYn",
+                'N' AS "delYn"
+            FROM TN_MNU_M001 M
+            LEFT JOIN TN_ATH_M001 A ON M.sys_id = A.sys_id AND M.menu_id = A.menu_id AND A.athrty_com_cd = 'S001' AND A.use_yn = 'Y'
+            WHERE M.sys_id = #{sysId}
+              AND M.sys_sect_cd = #{sysSectCd}
+              AND M.use_yn = 'Y'
+              AND M.del_yn = 'N'
+              AND (M.sensitive_yn != 'Y' OR A.menu_id IS NOT NULL)
+            ORDER BY M.upr_menu_id ASC, M.sort_ord ASC
+        </if>
+        <if test='athrtyCd != "S001" and athrtyCd != "SUPR"'>
+            SELECT
+                M.menu_id AS "menuId",
+                M.upr_menu_id AS "uprMenuId",
+                M.menu_nm AS "menuNm",
+                M.menu_url AS "menuUrl",
+                M.menu_icon AS "menuIcon",
+                A.menu_show_yn AS "menuShowYn",
+                A.inqire_yn AS "inqireYn",
+                A.rgst_yn AS "rgstYn",
+                A.mdfcn_yn AS "mdfcnYn",
+                A.del_yn AS "delYn"
+            FROM TN_MNU_M001 M
+            JOIN TN_ATH_M001 A ON M.sys_id = A.sys_id AND M.menu_id = A.menu_id AND A.athrty_com_cd = #{athrtyCd}
+            WHERE M.sys_id = #{sysId}
+              AND M.sys_sect_cd = #{sysSectCd}
+              AND A.use_yn = 'Y'
+              AND M.use_yn = 'Y'
+              AND M.del_yn = 'N'
+            ORDER BY M.upr_menu_id ASC, M.sort_ord ASC
+        </if>
+    </select>
+
+    <insert id="upsertMenuAuthority" parameterType="java.util.Map">
+        INSERT INTO TN_ATH_M001 (
+            sys_id, athrty_com_cd, menu_id, menu_show_yn, inqire_yn, rgst_yn, mdfcn_yn, del_yn, use_yn, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{role}, #{menuId}, 'Y', 'Y', 'Y', 'Y', 'N', 'Y', #{userId}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            menu_show_yn = 'Y', inqire_yn = 'Y', rgst_yn = 'Y', mdfcn_yn = 'Y', use_yn = 'Y', del_yn = 'N', last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+    </insert>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.comn.security.mapper.SecurityMapper">
+
+    <!-- 로그인 검증용 데이터 풀링 (통합 회원 테이블 사용) -->
+    <select id="selectAdminById" resultType="java.util.Map">
+        SELECT
+            M.user_id AS "loginId",
+            M.pswd AS "loginPw",
+            M.athrty_cd AS "role",
+            M.sys_id AS "sysId",
+            IFNULL(A.athrty_level, 99) AS "athrtyLevel",
+            M2.resign_dt AS "resignDt"
+        FROM tn_mem_m001 M
+        LEFT JOIN tn_ath_a001 A ON M.sys_id = A.sys_id AND M.athrty_cd = A.athrty_com_cd
+        LEFT JOIN tn_mem_m002 M2 ON M.idx = M2.user_idx
+        WHERE M.user_id = #{loginId}
+    </select>
+
+    <!-- 일반 유저 로그인 검증용 데이터 풀링 -->
+    <select id="selectUserById" resultType="java.util.Map">
+        SELECT
+            user_id AS "loginId",
+            user_pw AS "loginPw"
+        FROM TN_USR_M001
+        WHERE user_id = #{loginId} AND use_yn = 'Y' AND del_yn = 'N'
+    </select>
+
+    <!-- 권한 코드가 관리자(MG) 메뉴에 매핑되어 있는지 확인 -->
+    <select id="countAdminMenuByRole" resultType="int">
+        SELECT COUNT(*)
+        FROM TN_ATH_M001 A
+        JOIN TN_MNU_M001 M ON A.sys_id = M.sys_id AND A.menu_id = M.menu_id
+        WHERE A.athrty_com_cd = #{role}
+          AND M.sys_sect_cd = 'MG'
+          AND A.menu_show_yn = 'Y'
+          AND A.use_yn = 'Y'
+          AND M.use_yn = 'Y'
+          AND M.del_yn = 'N'
+    </select>
+
+    <!-- TenantGuardAspect: sys_id + 프론트 라우트(menu_url)로 그 테넌트의 실제 menu_id 조회 -->
+    <select id="selectMenuIdBySysIdAndUrl" resultType="java.util.Map">
+        SELECT menu_id AS "menuId", sensitive_yn AS "sensitiveYn"
+        FROM TN_MNU_M001
+        WHERE sys_id = #{sysId}
+          AND menu_url = #{menuUrl}
+          AND use_yn = 'Y'
+          AND del_yn = 'N'
+        LIMIT 1
+    </select>
+
+    <!-- TenantGuardAspect: sys_id + 권한코드 + menu_id로 CRUD 플래그 조회 -->
+    <select id="selectMenuPermission" resultType="java.util.Map">
+        SELECT
+            menu_show_yn AS "menuShowYn",
+            inqire_yn    AS "inqireYn",
+            rgst_yn      AS "rgstYn",
+            mdfcn_yn     AS "mdfcnYn",
+            del_yn       AS "delYn"
+        FROM TN_ATH_M001
+        WHERE sys_id = #{sysId}
+          AND athrty_com_cd = #{athrtyComCd}
+          AND menu_id = #{menuId}
+          AND use_yn = 'Y'
+    </select>
+
+    <!-- TenantGuardAspect: sys_id의 서비스 종료일 (만료 시 조회 외 기능 차단용) -->
+    <select id="selectServiceEnddeBySysId" resultType="java.time.LocalDate">
+        SELECT service_endde FROM TN_SYS_M001 WHERE sys_id = #{sysId}
+    </select>
+
+</mapper>

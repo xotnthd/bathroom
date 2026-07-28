@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.authtpl.mapper.AdminAuthTplMapper">
+
+    <!-- ================= 권한 템플릿 (Tpl) ================= -->
+    <select id="selectTplList" resultType="java.util.Map">
+        SELECT idx AS "idx", tpl_cd AS "tplCd", tpl_nm AS "tplNm", tpl_expl AS "tplExpl",
+               sort_ord AS "sortOrd", use_yn AS "useYn"
+        FROM TN_ATH_TPL_P001
+        ORDER BY sort_ord ASC, tpl_cd ASC
+    </select>
+
+    <select id="checkTplExists" resultType="int">
+        SELECT COUNT(*) FROM TN_ATH_TPL_P001 WHERE tpl_cd = #{tplCd}
+    </select>
+
+    <insert id="insertTpl">
+        INSERT INTO TN_ATH_TPL_P001 (tpl_cd, tpl_nm, tpl_expl, sort_ord, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{tplCd}, #{tplNm}, #{tplExpl}, #{sortOrd}, #{useYn}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateTpl">
+        UPDATE TN_ATH_TPL_P001
+        SET tpl_nm = #{tplNm}, tpl_expl = #{tplExpl}, sort_ord = #{sortOrd}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE tpl_cd = #{tplCd}
+    </update>
+
+    <delete id="deleteTplRow">
+        DELETE FROM TN_ATH_TPL_P001 WHERE tpl_cd = #{tplCd}
+    </delete>
+
+    <delete id="deleteDeptByTplCd">
+        DELETE FROM TN_ATH_TPL_D001
+        WHERE tpl_idx = (SELECT idx FROM TN_ATH_TPL_P001 WHERE tpl_cd = #{tplCd})
+    </delete>
+
+    <delete id="deleteRoleByTplCd">
+        DELETE FROM TN_ATH_TPL_A001
+        WHERE dept_idx IN (
+            SELECT idx FROM TN_ATH_TPL_D001 WHERE tpl_idx = (SELECT idx FROM TN_ATH_TPL_P001 WHERE tpl_cd = #{tplCd})
+        )
+    </delete>
+
+    <delete id="deleteMenuMapByTplCd">
+        DELETE FROM TN_ATH_TPL_M001
+        WHERE athrty_idx IN (
+            SELECT idx FROM TN_ATH_TPL_A001 WHERE dept_idx IN (
+                SELECT idx FROM TN_ATH_TPL_D001 WHERE tpl_idx = (SELECT idx FROM TN_ATH_TPL_P001 WHERE tpl_cd = #{tplCd})
+            )
+        )
+    </delete>
+
+    <!-- ================= 부서 템플릿 (Dept) ================= -->
+    <select id="selectDeptList" resultType="java.util.Map">
+        SELECT idx AS "idx", tpl_idx AS "tplIdx", dept_tpl_cd AS "deptTplCd", dept_tpl_nm AS "deptTplNm",
+               dept_expl AS "deptExpl", sort_ord AS "sortOrd", use_yn AS "useYn"
+        FROM TN_ATH_TPL_D001
+        WHERE tpl_idx = #{tplIdx}
+        ORDER BY sort_ord ASC, dept_tpl_cd ASC
+    </select>
+
+    <select id="checkDeptExists" resultType="int">
+        SELECT COUNT(*) FROM TN_ATH_TPL_D001 WHERE tpl_idx = #{tplIdx} AND dept_tpl_cd = #{deptTplCd}
+    </select>
+
+    <insert id="insertDept">
+        INSERT INTO TN_ATH_TPL_D001 (tpl_idx, dept_tpl_cd, dept_tpl_nm, dept_expl, sort_ord, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{tplIdx}, #{deptTplCd}, #{deptTplNm}, #{deptExpl}, #{sortOrd}, #{useYn}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateDept">
+        UPDATE TN_ATH_TPL_D001
+        SET dept_tpl_nm = #{deptTplNm}, dept_expl = #{deptExpl}, sort_ord = #{sortOrd}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx}
+    </update>
+
+    <delete id="deleteDeptRow">
+        DELETE FROM TN_ATH_TPL_D001 WHERE idx = #{deptIdx}
+    </delete>
+
+    <delete id="deleteRoleByDeptIdx">
+        DELETE FROM TN_ATH_TPL_A001 WHERE dept_idx = #{deptIdx}
+    </delete>
+
+    <delete id="deleteMenuMapByDeptIdx">
+        DELETE FROM TN_ATH_TPL_M001
+        WHERE athrty_idx IN (SELECT idx FROM TN_ATH_TPL_A001 WHERE dept_idx = #{deptIdx})
+    </delete>
+
+    <!-- ================= 역할 템플릿 (Role) ================= -->
+    <select id="selectRoleList" resultType="java.util.Map">
+        SELECT idx AS "idx", dept_idx AS "deptIdx", athrty_tpl_cd AS "athrtyTplCd", sys_se_cd AS "sysSeCd",
+               athrty_nm AS "athrtyNm", cd_expl AS "cdExpl", athrty_level AS "athrtyLevel", use_yn AS "useYn"
+        FROM TN_ATH_TPL_A001
+        WHERE dept_idx = #{deptIdx}
+        ORDER BY athrty_level ASC, athrty_tpl_cd ASC
+    </select>
+
+    <select id="checkRoleExists" resultType="int">
+        SELECT COUNT(*) FROM TN_ATH_TPL_A001 WHERE dept_idx = #{deptIdx} AND athrty_tpl_cd = #{athrtyTplCd}
+    </select>
+
+    <!-- 같은 템플릿(tpl_idx) 트리 안에서(부서 무관) 이미 쓰이고 있는 역할코드인지 검증 -->
+    <select id="checkRoleCodeExistsInTpl" resultType="int">
+        SELECT COUNT(*) FROM TN_ATH_TPL_A001 A
+        JOIN TN_ATH_TPL_D001 D ON A.dept_idx = D.idx
+        WHERE D.tpl_idx = (SELECT tpl_idx FROM TN_ATH_TPL_D001 WHERE idx = #{deptIdx})
+          AND A.athrty_tpl_cd = #{athrtyTplCd}
+    </select>
+
+    <!-- 같은 부서 템플릿 안의 기존 역할 중 최대 레벨 조회 - 신규 등록 시 이 값+1로 서버가 자동 배정 -->
+    <select id="selectMaxRoleLevelInDept" resultType="java.lang.Integer">
+        SELECT MAX(athrty_level) FROM TN_ATH_TPL_A001 WHERE dept_idx = #{deptIdx}
+    </select>
+
+    <insert id="insertRole" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_ATH_TPL_A001 (dept_idx, athrty_tpl_cd, sys_se_cd, athrty_nm, cd_expl, athrty_level, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{deptIdx}, #{athrtyTplCd}, #{sysSeCd}, #{athrtyNm}, #{cdExpl}, #{athrtyLevel}, #{useYn}, #{userId}, NOW())
+    </insert>
+
+    <!-- 신규 역할 템플릿 등록 시, 맵핑된 CORE 실제 역할(athrty_tpl_cd)의 현재 메뉴 CRUD 권한을 그대로 복사해서 초기값으로 저장 -->
+    <insert id="copyMenuMapFromCoreRole">
+        INSERT INTO TN_ATH_TPL_M001 (athrty_idx, menu_id, menu_show_yn, inqire_yn, rgst_yn, mdfcn_yn, del_yn, use_yn, frst_rgstr_id, frst_reg_dt)
+        SELECT #{athrtyIdx}, A.menu_id, A.menu_show_yn, A.inqire_yn, A.rgst_yn, A.mdfcn_yn, A.del_yn, A.use_yn, #{userId}, NOW()
+        FROM TN_ATH_M001 A
+        JOIN TN_MNU_M001 M ON M.sys_id = A.sys_id AND M.menu_id = A.menu_id
+        WHERE A.sys_id = 'CORE' AND A.athrty_com_cd = #{athrtyTplCd} AND A.use_yn = 'Y' AND M.core_only_yn = 'N'
+    </insert>
+
+    <!-- athrty_level은 등록 시 서버가 한 번만 자동 배정하고 이후엔 고정 - 여기서 건드리지 않음(사람이 잘못 고쳐 쓸 여지 차단) -->
+    <update id="updateRole">
+        UPDATE TN_ATH_TPL_A001
+        SET sys_se_cd = #{sysSeCd}, athrty_nm = #{athrtyNm}, cd_expl = #{cdExpl}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx}
+    </update>
+
+    <delete id="deleteRoleRow">
+        DELETE FROM TN_ATH_TPL_A001 WHERE idx = #{athrtyIdx}
+    </delete>
+
+    <delete id="deleteMenuMapByAthrtyIdx">
+        DELETE FROM TN_ATH_TPL_M001 WHERE athrty_idx = #{athrtyIdx}
+    </delete>
+
+    <!-- ================= 역할별 메뉴 CRUD 매핑 ================= -->
+    <select id="selectMenuMap" resultType="java.util.Map">
+        SELECT
+            #{athrtyIdx} AS "athrtyIdx",
+            M.menu_id AS "menuId", M.upr_menu_id AS "uprMenuId", M.menu_nm AS "menuNm", M.sys_sect_cd AS "sysSectCd",
+            IFNULL(T.menu_show_yn, 'N') AS "menuShowYn",
+            IFNULL(T.inqire_yn, 'N') AS "inqireYn",
+            IFNULL(T.rgst_yn, 'N') AS "rgstYn",
+            IFNULL(T.mdfcn_yn, 'N') AS "mdfcnYn",
+            IFNULL(T.del_yn, 'N') AS "delYn"
+        FROM TN_MNU_M001 M
+        LEFT JOIN TN_ATH_TPL_M001 T ON T.menu_id = M.menu_id AND T.athrty_idx = #{athrtyIdx}
+        WHERE M.sys_id = 'CORE' AND M.sys_sect_cd = #{sysSectCd} AND M.use_yn = 'Y' AND M.del_yn = 'N'
+              AND M.core_only_yn = 'N'
+        ORDER BY M.upr_menu_id ASC, M.sort_ord ASC
+    </select>
+
+    <select id="countCoreOnlyMenus" resultType="int">
+        SELECT COUNT(*) FROM TN_MNU_M001
+        WHERE core_only_yn = 'Y'
+        AND menu_id IN
+        <foreach collection="menuIds" item="menuId" open="(" separator="," close=")">
+            #{menuId}
+        </foreach>
+    </select>
+
+    <insert id="upsertMenuMap">
+        INSERT INTO TN_ATH_TPL_M001 (athrty_idx, menu_id, menu_show_yn, inqire_yn, rgst_yn, mdfcn_yn, del_yn, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{athrtyIdx}, #{menuId}, #{menuShowYn}, #{inqireYn}, #{rgstYn}, #{mdfcnYn}, #{delYn}, 'Y', #{userId}, NOW())
+        ON DUPLICATE KEY UPDATE
+            menu_show_yn = #{menuShowYn}, inqire_yn = #{inqireYn}, rgst_yn = #{rgstYn}, mdfcn_yn = #{mdfcnYn}, del_yn = #{delYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+    </insert>
+
+</mapper>

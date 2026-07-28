@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.survey.mapper.AdminSurveyMapper">
+
+    <select id="selectSurveyList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            M.sys_id AS "sysId", M.surv_id AS "survId", M.sys_se_cd AS "sysSeCd", M.surv_nm AS "survNm",
+            M.surv_ver AS "survVer", M.template_yn AS "templateYn", M.use_yn AS "useYn",
+            M.start_dt AS "startDt", M.end_dt AS "endDt",
+            M.frst_rgstr_id AS "frstRgstrId", M.frst_reg_dt AS "frstRegDt",
+            (SELECT user_nm FROM TN_MEM_M001 U WHERE U.sys_id = M.sys_id AND U.user_id = M.frst_rgstr_id) AS "frstRgstrNm"
+        FROM TN_SURVEY_M001 M
+        WHERE M.sys_id = #{sysId} AND M.del_yn = 'N'
+        <if test="templateYn != null and templateYn != ''">
+            AND M.template_yn = #{templateYn}
+        </if>
+        <if test="survNm != null and survNm != ''">
+            AND M.surv_nm LIKE CONCAT('%', #{survNm}, '%')
+        </if>
+        <if test="survIdSearch != null and survIdSearch != ''">
+            AND M.surv_id LIKE CONCAT('%', #{survIdSearch}, '%')
+        </if>
+        ORDER BY M.surv_id DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="selectSurveyCount" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*)
+        FROM TN_SURVEY_M001 M
+        WHERE M.sys_id = #{sysId} AND M.del_yn = 'N'
+        <if test="templateYn != null and templateYn != ''">
+            AND M.template_yn = #{templateYn}
+        </if>
+        <if test="survNm != null and survNm != ''">
+            AND M.surv_nm LIKE CONCAT('%', #{survNm}, '%')
+        </if>
+        <if test="survIdSearch != null and survIdSearch != ''">
+            AND M.surv_id LIKE CONCAT('%', #{survIdSearch}, '%')
+        </if>
+    </select>
+
+    <select id="selectSurveyMaster" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            sys_id AS "sysId", surv_id AS "survId", sys_se_cd AS "sysSeCd", surv_nm AS "survNm", surv_expl AS "survExpl",
+            surv_ver AS "survVer", template_yn AS "templateYn", use_yn AS "useYn",
+            start_dt AS "startDt", end_dt AS "endDt"
+        FROM TN_SURVEY_M001
+        WHERE sys_id = #{sysId} AND surv_id = #{survId} AND del_yn = 'N'
+    </select>
+
+    <select id="selectSurveyQuestions" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            sys_id AS "sysId", surv_id AS "survId", qstn_sn AS "qstnSn",
+            qstn_type AS "qstnType", qstn_txt AS "qstnTxt", req_yn AS "reqYn", ord_no AS "ordNo"
+        FROM TN_SURVEY_M002
+        WHERE sys_id = #{sysId} AND surv_id = #{survId}
+        ORDER BY ord_no ASC, qstn_sn ASC
+    </select>
+
+    <select id="selectSurveyOptions" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            sys_id AS "sysId", surv_id AS "survId", qstn_sn AS "qstnSn",
+            opt_sn AS "optSn", opt_txt AS "optTxt", ord_no AS "ordNo"
+        FROM TN_SURVEY_M003
+        WHERE sys_id = #{sysId} AND surv_id = #{survId}
+        <if test="qstnSn != null">
+            AND qstn_sn = #{qstnSn}
+        </if>
+        ORDER BY qstn_sn ASC, ord_no ASC, opt_sn ASC
+    </select>
+
+    <insert id="insertSurveyMaster" parameterType="java.util.Map">
+        INSERT INTO TN_SURVEY_M001 (
+            sys_id, surv_id, sys_se_cd, surv_nm, surv_expl, surv_ver, template_yn, use_yn, del_yn,
+            start_dt, end_dt, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{survId}, #{sysSeCd}, #{survNm}, #{survExpl}, #{survVer}, #{templateYn}, #{useYn}, 'N',
+            <choose><when test="startDt != null and startDt != ''">#{startDt}</when><otherwise>NULL</otherwise></choose>,
+            <choose><when test="endDt != null and endDt != ''">#{endDt}</when><otherwise>NULL</otherwise></choose>,
+            #{userId}, NOW()
+        )
+    </insert>
+
+    <update id="updateSurveyMaster" parameterType="java.util.Map">
+        UPDATE TN_SURVEY_M001
+        SET surv_nm = #{survNm}, surv_expl = #{survExpl}, use_yn = #{useYn}, sys_se_cd = #{sysSeCd},
+            start_dt = <choose><when test="startDt != null and startDt != ''">#{startDt}</when><otherwise>NULL</otherwise></choose>,
+            end_dt = <choose><when test="endDt != null and endDt != ''">#{endDt}</when><otherwise>NULL</otherwise></choose>,
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND surv_id = #{survId}
+    </update>
+
+    <update id="logicalDeleteSurveyMaster" parameterType="java.util.Map">
+        UPDATE TN_SURVEY_M001
+        SET del_yn = 'Y', last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND surv_id = #{survId}
+    </update>
+
+    <insert id="insertSurveyQuestion" parameterType="java.util.Map">
+        INSERT INTO TN_SURVEY_M002 (
+            sys_id, surv_id, qstn_sn, qstn_type, qstn_txt, req_yn, ord_no
+        ) VALUES (
+            #{sysId}, #{survId}, #{qstnSn}, #{qstnType}, #{qstnTxt}, #{reqYn}, #{ordNo}
+        )
+    </insert>
+
+    <delete id="deleteSurveyQuestions" parameterType="java.util.Map">
+        DELETE FROM TN_SURVEY_M002 WHERE sys_id = #{sysId} AND surv_id = #{survId}
+    </delete>
+
+    <insert id="insertSurveyOption" parameterType="java.util.Map">
+        INSERT INTO TN_SURVEY_M003 (
+            sys_id, surv_id, qstn_sn, opt_sn, opt_txt, ord_no
+        ) VALUES (
+            #{sysId}, #{survId}, #{qstnSn}, #{optSn}, #{optTxt}, #{ordNo}
+        )
+    </insert>
+
+    <delete id="deleteSurveyOptions" parameterType="java.util.Map">
+        DELETE FROM TN_SURVEY_M003 WHERE sys_id = #{sysId} AND surv_id = #{survId}
+    </delete>
+
+    <!-- Survey Results -->
+    <select id="selectSurveyResultList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            M.sys_id AS "sysId", M.surv_id AS "survId", M.sys_se_cd AS "sysSeCd", M.surv_nm AS "survNm",
+            M.use_yn AS "useYn", M.start_dt AS "startDt", M.end_dt AS "endDt",
+            M.frst_rgstr_id AS "frstRgstrId", M.frst_reg_dt AS "frstRegDt",
+            (SELECT COUNT(*) FROM TN_SURVEY_P001 P WHERE P.sys_id = M.sys_id AND P.surv_id = M.surv_id) AS "respCnt"
+        FROM TN_SURVEY_M001 M
+        WHERE M.sys_id = #{sysId} AND M.template_yn = 'N' AND M.del_yn = 'N'
+        <if test="sysSeCd != null and sysSeCd != ''">
+            AND M.sys_se_cd = #{sysSeCd}
+        </if>
+        <if test="survNm != null and survNm != ''">
+            AND M.surv_nm LIKE CONCAT('%', #{survNm}, '%')
+        </if>
+        <if test="survIdSearch != null and survIdSearch != ''">
+            AND M.surv_id LIKE CONCAT('%', #{survIdSearch}, '%')
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND M.use_yn = #{useYn}
+        </if>
+        <if test="startDt != null and startDt != ''">
+            <![CDATA[ AND M.start_dt >= #{startDt} ]]>
+        </if>
+        <if test="endDt != null and endDt != ''">
+            <![CDATA[ AND M.end_dt <= #{endDt} ]]>
+        </if>
+        ORDER BY M.surv_id DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="selectSurveyResultCount" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*)
+        FROM TN_SURVEY_M001 M
+        WHERE M.sys_id = #{sysId} AND M.template_yn = 'N' AND M.del_yn = 'N'
+        <if test="sysSeCd != null and sysSeCd != ''">
+            AND M.sys_se_cd = #{sysSeCd}
+        </if>
+        <if test="survNm != null and survNm != ''">
+            AND M.surv_nm LIKE CONCAT('%', #{survNm}, '%')
+        </if>
+        <if test="survIdSearch != null and survIdSearch != ''">
+            AND M.surv_id LIKE CONCAT('%', #{survIdSearch}, '%')
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND M.use_yn = #{useYn}
+        </if>
+        <if test="startDt != null and startDt != ''">
+            <![CDATA[ AND M.start_dt >= #{startDt} ]]>
+        </if>
+        <if test="endDt != null and endDt != ''">
+            <![CDATA[ AND M.end_dt <= #{endDt} ]]>
+        </if>
+    </select>
+
+    <select id="selectSurveyRespondents" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            sys_id AS "sysId", surv_id AS "survId", resp_id AS "respId",
+            user_id AS "userId", frst_reg_dt AS "frstRegDt"
+        FROM TN_SURVEY_P001
+        WHERE sys_id = #{sysId} AND surv_id = #{survId}
+        ORDER BY frst_reg_dt DESC
+    </select>
+
+    <select id="selectSurveyRespondentAnswers" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            A.sys_id AS "sysId", A.surv_id AS "survId", A.resp_id AS "respId",
+            A.qstn_sn AS "qstnSn", A.ans_sn AS "ansSn", A.opt_sn AS "optSn", A.ans_txt AS "ansTxt",
+            Q.qstn_type AS "qstnType", Q.qstn_txt AS "qstnTxt",
+            O.opt_txt AS "optTxt"
+        FROM TN_SURVEY_P002 A
+        JOIN TN_SURVEY_M002 Q ON A.sys_id = Q.sys_id AND A.surv_id = Q.surv_id AND A.qstn_sn = Q.qstn_sn
+        LEFT JOIN TN_SURVEY_M003 O ON A.sys_id = O.sys_id AND A.surv_id = O.surv_id AND A.qstn_sn = O.qstn_sn AND A.opt_sn = O.opt_sn
+        WHERE A.sys_id = #{sysId} AND A.surv_id = #{survId} AND A.resp_id = #{respId}
+        ORDER BY A.qstn_sn ASC, A.ans_sn ASC
+    </select>
+
+    <select id="selectSurveyStatistics" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            Q.qstn_sn AS "qstnSn", Q.qstn_txt AS "qstnTxt", Q.qstn_type AS "qstnType",
+            O.opt_sn AS "optSn", O.opt_txt AS "optTxt",
+            (
+                SELECT COUNT(*) 
+                FROM TN_SURVEY_P002 A 
+                WHERE A.sys_id = Q.sys_id AND A.surv_id = Q.surv_id AND A.qstn_sn = Q.qstn_sn 
+                  AND (A.opt_sn = O.opt_sn OR (O.opt_sn IS NULL))
+            ) AS "ansCnt"
+        FROM TN_SURVEY_M002 Q
+        LEFT JOIN TN_SURVEY_M003 O ON Q.sys_id = O.sys_id AND Q.surv_id = O.surv_id AND Q.qstn_sn = O.qstn_sn
+        WHERE Q.sys_id = #{sysId} AND Q.surv_id = #{survId}
+        ORDER BY Q.qstn_sn ASC, O.ord_no ASC
+    </select>
+
+</mapper>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.sys.mapper.AdminSystemMapper">
+
+    <select id="selectSystemList" resultType="java.util.Map">
+        SELECT
+            S.sys_id AS "sysId",
+            S.sys_nm AS "sysNm",
+            S.use_yn AS "useYn",
+            DATE_FORMAT(S.service_bgnde, '%Y-%m-%d') AS "serviceBgnde",
+            DATE_FORMAT(S.service_endde, '%Y-%m-%d') AS "serviceEndde",
+            S.logo_file_grp_id AS "logoFileGrpId",
+            S.admin_theme_cd AS "adminThemeCd",
+            S.user_theme_cd AS "userThemeCd",
+            S.frst_reg_dt AS "frstRegDt",
+            S.current_pay_idx AS "currentPayIdx",
+            P.pay_plan_nm AS "currentPayPlanNm",
+            P.pay_se_cd AS "currentPaySeCd",
+            C.cd_nm AS "currentPaySeCdNm"
+        FROM TN_SYS_M001 S
+        LEFT JOIN TN_PAY_M001 P ON S.current_pay_idx = P.idx
+        LEFT JOIN tn_com_c002 C ON C.sys_id = 'CORE' AND C.grp_cd = 'PAY_SE_CD' AND C.com_cd = P.pay_se_cd
+        <where>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND S.sys_nm LIKE CONCAT('%', #{searchKeyword}, '%')
+            </if>
+            <if test="payIdx != null and payIdx != ''">
+                AND S.current_pay_idx = #{payIdx}
+            </if>
+        </where>
+        ORDER BY S.frst_reg_dt DESC
+    </select>
+
+    <select id="selectSystemById" resultType="java.util.Map">
+        SELECT
+            A.sys_id AS "sysId",
+            A.sys_nm AS "sysNm",
+            A.use_yn AS "useYn",
+            DATE_FORMAT(A.service_bgnde, '%Y-%m-%d') AS "serviceBgnde",
+            DATE_FORMAT(A.service_endde, '%Y-%m-%d') AS "serviceEndde",
+            A.logo_file_grp_id AS "logoFileGrpId",
+            A.admin_theme_cd AS "adminThemeCd",
+            A.user_theme_cd AS "userThemeCd",
+            A.position_scheme_cd AS "positionSchemeCd",
+            A.dept_scheme_cd AS "deptSchemeCd",
+            A.current_pay_idx AS "currentPayIdx",
+            P.pay_plan_nm AS "currentPayPlanNm",
+            (SELECT file_sn FROM TN_COM_F001 WHERE file_grp_id = A.logo_file_grp_id AND del_yn = 'N' ORDER BY file_sn DESC LIMIT 1) AS "logoFileSn",
+            (SELECT user_id FROM TN_MEM_M001 WHERE sys_id = A.sys_id AND athrty_cd = 'A001' ORDER BY idx ASC LIMIT 1) AS "masterId",
+            (SELECT user_nm FROM TN_MEM_M001 WHERE sys_id = A.sys_id AND athrty_cd = 'A001' ORDER BY idx ASC LIMIT 1) AS "masterNm",
+            (SELECT M2.email FROM TN_MEM_M001 M1 JOIN TN_MEM_M002 M2 ON M1.idx = M2.user_idx WHERE M1.sys_id = A.sys_id AND M1.athrty_cd = 'A001' ORDER BY M1.idx ASC LIMIT 1) AS "masterEmail"
+        FROM TN_SYS_M001 A
+        LEFT JOIN TN_PAY_M001 P ON A.current_pay_idx = P.idx
+        WHERE A.sys_id = #{sysId}
+    </select>
+
+    <select id="selectSystemMenuIds" resultType="java.lang.String">
+        SELECT menu_id
+        FROM TN_ATH_M001
+        WHERE sys_id = #{sysId} AND athrty_com_cd = 'A001' AND menu_show_yn = 'Y' AND del_yn = 'N'
+    </select>
+
+    <update id="updateSystemConfig">
+        UPDATE TN_SYS_M001
+        SET
+            sys_nm = #{sysNm},
+            use_yn = #{useYn},
+            service_bgnde = #{serviceBgnde},
+            service_endde = #{serviceEndde},
+            <if test="logoFileGrpId != null and logoFileGrpId != ''">
+                logo_file_grp_id = #{logoFileGrpId},
+            </if>
+            admin_theme_cd = #{adminThemeCd},
+            user_theme_cd = #{userThemeCd},
+            <if test="positionSchemeCd != null and positionSchemeCd != ''">
+                position_scheme_cd = #{positionSchemeCd},
+            </if>
+            <if test="deptSchemeCd != null and deptSchemeCd != ''">
+                dept_scheme_cd = #{deptSchemeCd},
+            </if>
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId}
+    </update>
+
+    <update id="updateMasterUser">
+        UPDATE TN_MEM_M001
+        SET
+            <if test="masterPw != null and masterPw != ''">
+                pswd = #{masterPw},
+            </if>
+            user_nm = #{masterNm},
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND user_id = #{masterId} AND athrty_cd = 'A001'
+    </update>
+
+    <update id="updateMasterUserDetail">
+        UPDATE TN_MEM_M002
+        SET
+            email = #{masterEmail}
+        WHERE user_idx = (SELECT idx FROM TN_MEM_M001 WHERE sys_id = #{sysId} AND user_id = #{masterId} AND athrty_cd = 'A001' LIMIT 1)
+    </update>
+
+    <!-- 기존 A001 시스템 메뉴 권한 모두 삭제 -->
+    <delete id="deleteMenuAuthoritiesBySysId">
+        DELETE FROM TN_ATH_M001
+        WHERE sys_id = #{sysId} AND athrty_com_cd = 'A001'
+    </delete>
+
+    <!-- 사용자 ID 중복 체크 -->
+    <select id="checkUserIdExists" resultType="int">
+        SELECT COUNT(*) FROM TN_MEM_M001 WHERE user_id = #{userId}
+    </select>
+
+    <!-- 신규 시스템 마스터 등록 -->
+    <insert id="insertSystem">
+        INSERT INTO TN_SYS_M001 (
+            sys_id, sys_nm, use_yn, service_bgnde, service_endde,
+            admin_theme_cd, user_theme_cd, position_scheme_cd, dept_scheme_cd, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{sysNm}, #{useYn}, #{serviceBgnde}, #{serviceEndde},
+            #{adminThemeCd}, #{userThemeCd},
+            <choose><when test="positionSchemeCd != null and positionSchemeCd != ''">#{positionSchemeCd}</when><otherwise>'GENERAL'</otherwise></choose>,
+            <choose><when test="deptSchemeCd != null and deptSchemeCd != ''">#{deptSchemeCd}</when><otherwise>'STANDARD'</otherwise></choose>,
+            #{creatorId}, NOW()
+        )
+    </insert>
+
+    <!-- 관리자 메뉴 복제 (CORE 전용 메뉴는 제외 - core_only_yn='Y') -->
+    <insert id="copyAdminMenus">
+        INSERT INTO TN_MNU_M001 (
+            sys_id, menu_id, upr_menu_id, sys_sect_cd, menu_nm, menu_url,
+            comp_path, brd_id, menu_icon, menu_kwd, sort_ord, use_yn,
+            del_yn, frst_rgstr_id, frst_reg_dt
+        )
+        SELECT
+            #{sysId}, menu_id, upr_menu_id, sys_sect_cd, menu_nm, menu_url,
+            comp_path, brd_id, menu_icon, menu_kwd, sort_ord, use_yn,
+            del_yn, 'admin', NOW()
+        FROM TN_MNU_M001
+        WHERE sys_id = 'CORE' AND core_only_yn = 'N'
+    </insert>
+
+    <!-- 게시판 복제 -->
+    <insert id="copyBoards">
+        INSERT INTO TN_BRD_M001 (
+            sys_id, brd_id, brd_nm, brd_expl, brd_type, use_yn, del_yn,
+            frst_rgstr_id, frst_reg_dt
+        )
+        SELECT 
+            #{sysId}, brd_id, brd_nm, brd_expl, brd_type, use_yn, del_yn,
+            'admin', NOW()
+        FROM TN_BRD_M001
+        WHERE sys_id = 'CORE'
+    </insert>
+
+    <!-- 게시판 상세 설정 복제 -->
+    <insert id="copyBoardDetails">
+        INSERT INTO TN_BRD_M002 (
+            sys_id, brd_id, user_write_yn, user_reply_yn, rereply_yn, rereply_depth,
+            atch_file_yn, secret_use_yn, cmt_atch_file_yn,
+            frst_rgstr_id, frst_reg_dt
+        )
+        SELECT 
+            #{sysId}, brd_id, user_write_yn, user_reply_yn, rereply_yn, rereply_depth,
+            atch_file_yn, secret_use_yn, cmt_atch_file_yn,
+            'admin', NOW()
+        FROM TN_BRD_M002
+        WHERE sys_id = 'CORE'
+    </insert>
+
+    <!-- 선택된 요금제가 가리키는 권한 템플릿(부서×역할) 전체를 신규 시스템의 실 권한그룹으로 복제 -->
+    <insert id="copyAuthorityGroups">
+        INSERT INTO TN_ATH_A001 (
+            sys_id, sys_se_cd, athrty_com_cd, athrty_nm, cd_expl, use_yn, athrty_level,
+            frst_rgstr_id, frst_reg_dt
+        )
+        SELECT
+            #{sysId}, A.sys_se_cd, A.athrty_tpl_cd, A.athrty_nm, A.cd_expl, A.use_yn, A.athrty_level,
+            'admin', NOW()
+        FROM TN_ATH_TPL_A001 A
+        JOIN TN_ATH_TPL_D001 D ON A.dept_idx = D.idx
+        JOIN TN_ATH_TPL_P001 P ON D.tpl_idx = P.idx
+        WHERE P.tpl_cd = #{tplCd} AND A.use_yn = 'Y'
+    </insert>
+
+    <!-- 선택된 요금제가 가리키는 템플릿 메뉴 CRUD 매핑을 신규 시스템의 실 메뉴 권한으로 복제 -->
+    <insert id="copyAuthorityMenuMappings">
+        INSERT INTO TN_ATH_M001 (
+            sys_id, athrty_com_cd, menu_id, menu_show_yn, inqire_yn, rgst_yn, mdfcn_yn, del_yn, use_yn,
+            frst_rgstr_id, frst_reg_dt
+        )
+        SELECT
+            #{sysId}, A.athrty_tpl_cd, T.menu_id, T.menu_show_yn, T.inqire_yn, T.rgst_yn, T.mdfcn_yn, T.del_yn, T.use_yn,
+            'admin', NOW()
+        FROM TN_ATH_TPL_M001 T
+        JOIN TN_ATH_TPL_A001 A ON T.athrty_idx = A.idx
+        JOIN TN_ATH_TPL_D001 D ON A.dept_idx = D.idx
+        JOIN TN_ATH_TPL_P001 P ON D.tpl_idx = P.idx
+        WHERE P.tpl_cd = #{tplCd} AND T.use_yn = 'Y'
+    </insert>
+
+    <!-- 부여된 메뉴 권한 등록 (A001에게) -->
+    <insert id="insertMenuAuthorities">
+        INSERT INTO TN_ATH_M001 (
+            sys_id, athrty_com_cd, menu_id, menu_show_yn, inqire_yn, rgst_yn, mdfcn_yn, del_yn, use_yn,
+            frst_rgstr_id, frst_reg_dt
+        ) VALUES
+        <foreach collection="menuIds" item="menuId" separator=",">
+            (#{sysId}, 'A001', #{menuId}, 'Y', 'Y', 'Y', 'Y', 'N', 'Y', #{userId}, NOW())
+        </foreach>
+    </insert>
+
+    <!-- 마스터 계정 등록 (TN_MEM_M001) -->
+    <insert id="insertMasterUser" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_MEM_M001 (
+            user_id, sys_id, pswd, user_nm, athrty_cd, join_ymd, user_stat_cd, 
+            frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{masterId}, #{sysId}, #{encodedPw}, #{masterNm}, 'A001', DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'), 'ACTV',
+            #{creatorId}, NOW()
+        )
+    </insert>
+
+    <!-- 마스터 계정 상세 등록 (TN_MEM_M002) -->
+    <insert id="insertMasterUserDetail">
+        INSERT INTO TN_MEM_M002 (
+            user_idx, email,
+            frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{idx}, #{masterEmail},
+            #{creatorId}, NOW()
+        )
+    </insert>
+
+</mapper>

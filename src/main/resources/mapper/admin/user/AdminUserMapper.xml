@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.user.mapper.AdminUserMapper">
+
+    <select id="selectSearchUserList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        M1.idx AS "idx",
+        M1.sys_id AS "sysId",
+        M1.user_id AS "userId",
+        M1.user_nm AS "userNm",
+        M1.athrty_cd AS "athrtyCd",
+        M1.join_ymd AS "joinYmd",
+        M1.user_stat_cd AS "userStatCd",
+        M1.rgst_bgng_dt AS "rgstBgngDt",
+        M1.rgst_end_dt AS "rgstEndDt",
+        IFNULL(A.athrty_level, 99) AS "athrtyLevel",
+        M2.email AS "email",
+        M2.mbl_telno AS "mblTelno",
+        M2.zip_cd AS "zipCd",
+        M2.base_addr AS "baseAddr",
+        M2.dtl_addr AS "dtlAddr",
+        M2.img_file_sn AS "imgFileSn",
+        M2.rmrk AS "rmrk",
+        M2.emp_no AS "empNo",
+        M2.dept_cd AS "deptCd",
+        M2.position_cd AS "positionCd",
+        M2.emp_stat_cd AS "empStatCd",
+        M2.hire_dt AS "hireDt",
+        M2.resign_dt AS "resignDt"
+        FROM TN_MEM_M001 M1
+        LEFT OUTER JOIN TN_ATH_A001 A ON M1.sys_id = A.sys_id AND M1.athrty_cd = A.athrty_com_cd
+        LEFT OUTER JOIN TN_MEM_M002 M2 ON M1.idx = M2.user_idx
+        WHERE M1.sys_id = #{sysId}
+
+        <if test="callerIsTrueSuper == null or callerIsTrueSuper != true">
+            AND M1.athrty_cd != 'SUPR'
+        </if>
+
+        <if test="currentAthrtyLevel != null">
+            AND IFNULL(A.athrty_level, 99) >= #{currentAthrtyLevel}
+        </if>
+
+        <if test="athrtyCd != null and athrtyCd != ''">
+            AND M1.athrty_cd = #{athrtyCd}
+        </if>
+
+        <if test="searchUserId != null and searchUserId != ''">
+            AND M1.user_id LIKE CONCAT('%', #{searchUserId}, '%')
+        </if>
+        <if test="searchUserNm != null and searchUserNm != ''">
+            AND M1.user_nm LIKE CONCAT('%', #{searchUserNm}, '%')
+        </if>
+        <if test="searchUserStatCd != null and searchUserStatCd != ''">
+            AND M1.user_stat_cd = #{searchUserStatCd}
+        </if>
+
+        ORDER BY M1.idx DESC
+    </select>
+
+    <select id="selectUserDetail" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        M1.idx AS "idx",
+        M1.sys_id AS "sysId",
+        M1.user_id AS "userId",
+        M1.user_nm AS "userNm",
+        M1.athrty_cd AS "athrtyCd",
+        M1.join_ymd AS "joinYmd",
+        M1.user_stat_cd AS "userStatCd",
+        M1.rgst_bgng_dt AS "rgstBgngDt",
+        M1.rgst_end_dt AS "rgstEndDt",
+        IFNULL(A.athrty_level, 99) AS "athrtyLevel",
+        M2.email AS "email",
+        M2.mbl_telno AS "mblTelno",
+        M2.zip_cd AS "zipCd",
+        M2.base_addr AS "baseAddr",
+        M2.dtl_addr AS "dtlAddr",
+        M2.img_file_sn AS "imgFileSn",
+        M2.rmrk AS "rmrk",
+        M2.emp_no AS "empNo",
+        M2.dept_cd AS "deptCd",
+        M2.position_cd AS "positionCd",
+        M2.emp_stat_cd AS "empStatCd",
+        M2.hire_dt AS "hireDt",
+        M2.resign_dt AS "resignDt"
+        FROM TN_MEM_M001 M1
+        LEFT OUTER JOIN TN_ATH_A001 A ON M1.sys_id = A.sys_id AND M1.athrty_cd = A.athrty_com_cd
+        LEFT OUTER JOIN TN_MEM_M002 M2 ON M1.idx = M2.user_idx
+        WHERE M1.sys_id = #{sysId} AND M1.user_id = #{userId}
+        <if test="callerIsTrueSuper == null or callerIsTrueSuper != true">
+            AND M1.athrty_cd != 'SUPR'
+        </if>
+    </select>
+
+    <select id="selectUserById" resultType="java.util.Map">
+        SELECT 
+            M1.idx, 
+            M1.user_id AS "userId",
+            IFNULL(A.athrty_level, 99) AS "athrtyLevel"
+        FROM TN_MEM_M001 M1
+        LEFT OUTER JOIN TN_ATH_A001 A ON M1.sys_id = A.sys_id AND M1.athrty_cd = A.athrty_com_cd
+        WHERE M1.sys_id = #{sysId} AND M1.user_id = #{userId}
+    </select>
+
+    <select id="selectAuthorityLevelByCd" resultType="java.util.Map">
+        SELECT 
+            athrty_level AS "athrtyLevel"
+        FROM TN_ATH_A001
+        WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyCd}
+    </select>
+
+    <select id="checkUserExists" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM TN_MEM_M001 WHERE sys_id = #{sysId} AND user_id = #{userId}
+    </select>
+
+    <insert id="insertUserMaster" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_MEM_M001 (
+            sys_id, user_id, pswd, user_nm, athrty_cd, join_ymd, user_stat_cd, rgst_bgng_dt, rgst_end_dt, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+                     #{sysId}, #{userId}, #{pswd}, #{userNm}, #{athrtyCd}, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'), #{userStatCd}, 
+                     CASE WHEN #{rgstBgngDt} = '' THEN NULL ELSE #{rgstBgngDt} END, 
+                     CASE WHEN #{rgstEndDt} = '' THEN NULL ELSE #{rgstEndDt} END, 
+                     #{registerId}, NOW()
+                 )
+    </insert>
+
+    <update id="updateUserMaster" parameterType="java.util.Map">
+        UPDATE TN_MEM_M001
+        SET
+        user_nm = #{userNm},
+        athrty_cd = #{athrtyCd},
+        user_stat_cd = #{userStatCd},
+        rgst_bgng_dt = CASE WHEN #{rgstBgngDt} = '' THEN NULL ELSE #{rgstBgngDt} END,
+        rgst_end_dt = CASE WHEN #{rgstEndDt} = '' THEN NULL ELSE #{rgstEndDt} END,
+        <if test="pswd != null and pswd != ''">
+            pswd = #{pswd},
+        </if>
+        last_mdfr_id = #{registerId},
+        last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteUserMaster">
+        DELETE FROM TN_MEM_M001 WHERE sys_id = #{sysId} AND user_id = #{userId}
+    </delete>
+
+    <insert id="insertUserDetail" parameterType="java.util.Map">
+        INSERT INTO TN_MEM_M002 (
+            user_idx, sys_id, email, mbl_telno, zip_cd, base_addr, dtl_addr, img_file_sn, rmrk,
+            emp_no, dept_cd, position_cd, emp_stat_cd, hire_dt, resign_dt, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+                     #{userIdx}, #{sysId}, #{email}, #{mblTelno}, #{zipCd}, #{baseAddr}, #{dtlAddr}, #{imgFileSn}, #{rmrk},
+                     CASE WHEN #{empNo} = '' THEN NULL ELSE #{empNo} END,
+                     CASE WHEN #{deptCd} = '' THEN NULL ELSE #{deptCd} END,
+                     CASE WHEN #{positionCd} = '' THEN NULL ELSE #{positionCd} END,
+                     CASE WHEN #{empStatCd} = '' THEN NULL ELSE #{empStatCd} END,
+                     CASE WHEN #{hireDt} = '' THEN NULL ELSE #{hireDt} END,
+                     CASE WHEN #{resignDt} = '' THEN NULL ELSE #{resignDt} END,
+                     #{registerId}, NOW()
+                 )
+    </insert>
+
+    <update id="updateUserDetail" parameterType="java.util.Map">
+        UPDATE TN_MEM_M002
+        SET
+            email = #{email},
+            mbl_telno = #{mblTelno},
+            zip_cd = #{zipCd},
+            base_addr = #{baseAddr},
+            dtl_addr = #{dtlAddr},
+            img_file_sn = #{imgFileSn},
+            rmrk = #{rmrk},
+            emp_no = CASE WHEN #{empNo} = '' THEN NULL ELSE #{empNo} END,
+            dept_cd = CASE WHEN #{deptCd} = '' THEN NULL ELSE #{deptCd} END,
+            position_cd = CASE WHEN #{positionCd} = '' THEN NULL ELSE #{positionCd} END,
+            emp_stat_cd = CASE WHEN #{empStatCd} = '' THEN NULL ELSE #{empStatCd} END,
+            hire_dt = CASE WHEN #{hireDt} = '' THEN NULL ELSE #{hireDt} END,
+            resign_dt = CASE WHEN #{resignDt} = '' THEN NULL ELSE #{resignDt} END,
+            last_mdfr_id = #{registerId},
+            last_mdfcn_dt = NOW()
+        WHERE user_idx = (SELECT idx FROM TN_MEM_M001 WHERE sys_id = #{sysId} AND user_id = #{userId})
+    </update>
+
+    <delete id="deleteUserDetail">
+        DELETE FROM TN_MEM_M002 WHERE user_idx = #{userIdx}
+    </delete>
+
+    <!-- 사번 자동 채번: {sysId}-100000001 부터 시작해 1씩 증가 -->
+    <select id="selectMaxEmpNoSeq" resultType="java.lang.Long">
+        SELECT MAX(CAST(SUBSTRING_INDEX(M2.emp_no, '-', -1) AS UNSIGNED))
+        FROM TN_MEM_M002 M2
+        WHERE M2.emp_no LIKE CONCAT(#{sysId}, '-%')
+    </select>
+
+    <select id="checkEmpNoExists" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM TN_MEM_M002 WHERE sys_id = #{sysId} AND emp_no = #{empNo} AND user_idx != #{excludeUserIdx}
+    </select>
+
+</mapper>

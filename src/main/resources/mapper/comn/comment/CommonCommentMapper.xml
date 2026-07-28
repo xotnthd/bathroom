@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.comn.comment.mapper.CommonCommentMapper">
+
+    <select id="selectCommentList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            c.cmt_idx AS "cmtIdx",
+            c.sys_id AS "sysId",
+            c.brd_id AS "brdId",
+            c.post_idx AS "postIdx",
+            c.parent_cmt_idx AS "parentCmtIdx",
+            c.cmt_grp_idx AS "cmtGrpIdx",
+            c.cmt_depth AS "cmtDepth",
+            c.sort_ord AS "sortOrd",
+            c.cmt_content AS "cmtContent",
+            c.wrtr_idx AS "wrtrIdx",
+            c.wrtr_nm AS "wrtrNm",
+            c.secret_yn AS "secretYn",
+            c.del_yn AS "delYn",
+            c.atch_file_grp_id AS "atchFileGrpId",
+            c.frst_reg_dt AS "frstRegDt"
+        FROM TN_BRD_C001 c
+        WHERE c.sys_id = #{sysId} AND c.brd_id = #{brdId} AND c.post_idx = #{postIdx}
+        ORDER BY c.cmt_grp_idx ASC, c.sort_ord ASC
+    </select>
+
+    <select id="selectCommentById" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT 
+            cmt_idx AS "cmtIdx",
+            sys_id AS "sysId",
+            brd_id AS "brdId",
+            post_idx AS "postIdx",
+            parent_cmt_idx AS "parentCmtIdx",
+            cmt_grp_idx AS "cmtGrpIdx",
+            cmt_depth AS "cmtDepth",
+            sort_ord AS "sortOrd"
+        FROM TN_BRD_C001 
+        WHERE cmt_idx = #{cmtIdx}
+    </select>
+
+    <insert id="insertComment" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="cmtIdx">
+        INSERT INTO TN_BRD_C001 (
+            sys_id, brd_id, post_idx, parent_cmt_idx, cmt_grp_idx, cmt_depth, sort_ord,
+            cmt_content, wrtr_idx, wrtr_nm, secret_yn, del_yn, atch_file_grp_id,
+            frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{brdId}, #{postIdx}, #{parentCmtIdx}, 
+            <choose>
+                <when test="cmtGrpIdx != null">#{cmtGrpIdx}</when>
+                <otherwise>0</otherwise>
+            </choose>, 
+            #{cmtDepth}, #{sortOrd},
+            #{cmtContent}, #{wrtrIdx}, #{wrtrNm}, #{secretYn}, 'N', #{atchFileGrpId},
+            #{userId}, NOW()
+        )
+    </insert>
+
+    <update id="updateComment" parameterType="java.util.Map">
+        UPDATE TN_BRD_C001
+        <set>
+            <if test="cmtContent != null">cmt_content = #{cmtContent},</if>
+            <if test="secretYn != null">secret_yn = #{secretYn},</if>
+            <if test="atchFileGrpId != null">atch_file_grp_id = #{atchFileGrpId},</if>
+            <if test="cmtGrpIdx != null and cmtGrpIdx != 0">cmt_grp_idx = #{cmtGrpIdx},</if>
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+        </set>
+        WHERE cmt_idx = #{cmtIdx}
+    </update>
+
+    <update id="logicalDeleteComment" parameterType="java.lang.Long">
+        UPDATE TN_BRD_C001
+        SET del_yn = 'Y', last_mdfcn_dt = NOW()
+        WHERE cmt_idx = #{cmtIdx}
+    </update>
+
+</mapper>

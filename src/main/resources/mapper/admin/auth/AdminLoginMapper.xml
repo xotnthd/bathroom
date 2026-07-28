@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.auth.mapper.AdminLoginMapper">
+
+    <select id="selectAdminUserInfo" parameterType="String" resultType="java.util.Map">
+        SELECT
+            idx,
+            sys_id AS sysId,
+            user_id,
+            pswd,
+            user_nm,
+            athrty_cd,
+            user_stat_cd
+        FROM TN_MEM_M001
+        WHERE user_id = #{userId}
+          AND athrty_cd = 'ROLE_ADMIN' -- 관리자 권한을 가진 사람만 조회되도록 방어 로직
+          AND user_stat_cd = 'ACTV'
+    </select>
+
+</mapper>

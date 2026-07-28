@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.auth.mapper.AdminAuthMapper">
+    <select id="selectRoleList" resultType="map">
+        SELECT sys_id AS "sysId", sys_se_cd AS "sysSeCd", athrty_com_cd AS "athrtyComCd", athrty_nm AS "athrtyNm", cd_expl AS "cdExpl", use_yn AS "useYn", athrty_level AS "athrtyLevel"
+        FROM TN_ATH_A001 WHERE sys_id = #{sysId} AND sys_se_cd = #{sysSeCd} AND del_yn = 'N'
+        <if test="callerIsTrueSuper == null or callerIsTrueSuper != true">
+            AND athrty_com_cd != 'SUPR'
+            <if test="currentUserLevel != null">
+                AND athrty_level >= #{currentUserLevel}
+            </if>
+        </if>
+        ORDER BY athrty_level ASC, athrty_com_cd ASC
+    </select>
+
+    <select id="checkRoleExists" resultType="int">
+        SELECT COUNT(*) FROM TN_ATH_A001 WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd}
+    </select>
+
+    <select id="selectRoleLevel" resultType="java.lang.Integer">
+        SELECT athrty_level FROM TN_ATH_A001 WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd}
+    </select>
+
+    <insert id="insertRole">
+        INSERT INTO TN_ATH_A001 (sys_id, sys_se_cd, athrty_com_cd, athrty_nm, cd_expl, use_yn, del_yn, athrty_level, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{sysSeCd}, #{athrtyComCd}, #{athrtyNm}, #{cdExpl}, #{useYn}, 'N', #{athrtyLevel}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateRole">
+        UPDATE TN_ATH_A001 SET sys_se_cd = #{sysSeCd}, athrty_nm = #{athrtyNm}, cd_expl = #{cdExpl}, use_yn = #{useYn}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd}
+    </update>
+
+    <update id="updateRoleLevel">
+        UPDATE TN_ATH_A001 SET athrty_level = #{athrtyLevel}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd}
+    </update>
+
+    <update id="updateRoleCodeCascadeA001">
+        UPDATE TN_ATH_A001 SET sys_se_cd = #{sysSeCd}, athrty_com_cd = #{athrtyComCd}, athrty_nm = #{athrtyNm}, cd_expl = #{cdExpl}, use_yn = #{useYn}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND athrty_com_cd = #{oldAthrtyComCd}
+    </update>
+
+    <update id="updateRoleCodeCascadeM001">
+        UPDATE TN_ATH_M001 SET athrty_com_cd = #{athrtyComCd}
+        WHERE sys_id = #{sysId} AND athrty_com_cd = #{oldAthrtyComCd}
+    </update>
+
+    <delete id="deleteAuthMenuMappingByRole">
+        DELETE FROM TN_ATH_M001 WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd}
+    </delete>
+
+    <update id="updateRoleCodeCascadeUser">
+        UPDATE TN_MEM_M001 SET athrty_cd = #{athrtyComCd}
+        WHERE sys_id = #{sysId} AND athrty_cd = #{oldAthrtyComCd}
+    </update>
+
+    <update id="logicalDeleteRole">
+        UPDATE TN_ATH_A001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd}
+    </update>
+
+    <insert id="insertAuthHistory">
+        INSERT INTO TN_ATH_H001 (sys_id, old_athrty_com_cd, new_athrty_com_cd, old_athrty_nm, new_athrty_nm, chg_type, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{oldAthrtyComCd}, #{athrtyComCd}, #{oldAthrtyNm}, #{athrtyNm}, #{chgType}, #{userId}, NOW())
+    </insert>
+
+    <select id="selectAuthMenuMatrix" resultType="map">
+        SELECT M.sys_id AS "sysId", #{athrtyComCd} AS "athrtyComCd", M.sys_sect_cd AS "sysSectCd", M.upr_menu_id AS "uprMenuId", M.menu_id AS "menuId", M.menu_nm AS "menuNm",
+               IFNULL(A.menu_show_yn, 'N') AS "menuShowYn", IFNULL(A.inqire_yn, 'N') AS "inqireYn",
+               IFNULL(A.rgst_yn, 'N') AS "rgstYn", IFNULL(A.mdfcn_yn, 'N') AS "mdfcnYn", IFNULL(A.del_yn, 'N') AS "delYn"
+        FROM TN_MNU_M001 M
+                 LEFT OUTER JOIN TN_ATH_M001 A ON M.sys_id = A.sys_id AND M.menu_id = A.menu_id AND A.athrty_com_cd = #{athrtyComCd}
+        WHERE M.sys_id = #{sysId} AND M.del_yn = 'N' AND M.use_yn = 'Y'
+        <if test="athrtyComCd != 'SUPR' and athrtyComCd != 'S001'">
+            AND M.core_only_yn = 'N'
+        </if>
+        ORDER BY M.upr_menu_id ASC, M.sort_ord ASC
+    </select>
+
+    <select id="countCoreOnlyMenus" resultType="int">
+        SELECT COUNT(*) FROM TN_MNU_M001
+        WHERE core_only_yn = 'Y'
+        AND menu_id IN
+        <foreach collection="menuIds" item="menuId" open="(" separator="," close=")">
+            #{menuId}
+        </foreach>
+    </select>
+
+    <select id="checkAuthMenuMappingExists" resultType="int">
+        SELECT COUNT(*) FROM TN_ATH_M001 WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd} AND menu_id = #{menuId}
+    </select>
+
+    <insert id="insertAuthMenuMapping">
+        INSERT INTO TN_ATH_M001 (sys_id, athrty_com_cd, menu_id, menu_show_yn, inqire_yn, rgst_yn, mdfcn_yn, del_yn, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{athrtyComCd}, #{menuId}, #{menuShowYn}, #{inqireYn}, #{rgstYn}, #{mdfcnYn}, #{delYn}, 'Y', #{userId}, NOW())
+    </insert>
+
+    <update id="updateAuthMenuMapping">
+        UPDATE TN_ATH_M001 SET menu_show_yn = #{menuShowYn}, inqire_yn = #{inqireYn}, rgst_yn = #{rgstYn}, mdfcn_yn = #{mdfcnYn}, del_yn = #{delYn}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND athrty_com_cd = #{athrtyComCd} AND menu_id = #{menuId}
+    </update>
+
+</mapper>

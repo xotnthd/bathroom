@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.code.mapper.AdminCodeMapper">
+
+    <select id="selectGroupCodeList" parameterType="String" resultType="java.util.Map">
+        SELECT sys_id AS "sysId", com_cd AS "comCd", cd_nm AS "cdNm", cd_expl AS "cdExpl"
+        FROM TN_COM_C001 WHERE sys_id = #{sysId} ORDER BY com_cd ASC
+    </select>
+
+    <select id="checkGroupCodeExists" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM TN_COM_C001 WHERE sys_id = #{sysId} AND com_cd = #{comCd}
+    </select>
+
+    <insert id="insertGroupCode" parameterType="java.util.Map">
+        INSERT INTO TN_COM_C001 (sys_id, com_cd, cd_nm, cd_expl, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{comCd}, #{cdNm}, #{cdExpl}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateGroupCode" parameterType="java.util.Map">
+        UPDATE TN_COM_C001 SET cd_nm = #{cdNm}, cd_expl = #{cdExpl}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND com_cd = #{comCd}
+    </update>
+
+    <delete id="deleteGroupCode">
+        DELETE FROM TN_COM_C001 WHERE sys_id = #{sysId} AND com_cd = #{comCd}
+    </delete>
+
+    <select id="selectDetailCodeList" resultType="java.util.Map">
+        SELECT sys_id AS "sysId", grp_cd AS "grpCd", upr_com_cd AS "uprComCd", com_cd AS "comCd", cd_nm AS "cdNm", cd_expl AS "cdExpl", sort_ord AS "sortOrd", use_yn AS "useYn"
+        FROM TN_COM_C002 WHERE sys_id = #{sysId} AND grp_cd = #{grpCd} AND upr_com_cd = #{uprComCd}
+        ORDER BY sort_ord ASC, com_cd ASC
+    </select>
+
+    <select id="checkDetailCodeExists" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM TN_COM_C002 WHERE sys_id = #{sysId} AND grp_cd = #{grpCd} AND upr_com_cd = #{uprComCd} AND com_cd = #{comCd}
+    </select>
+
+    <insert id="insertDetailCode" parameterType="java.util.Map">
+        INSERT INTO TN_COM_C002 (sys_id, grp_cd, upr_com_cd, com_cd, cd_nm, cd_expl, sort_ord, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{grpCd}, #{uprComCd}, #{comCd}, #{cdNm}, #{cdExpl}, #{sortOrd}, #{useYn}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateDetailCode" parameterType="java.util.Map">
+        UPDATE TN_COM_C002 SET cd_nm = #{cdNm}, cd_expl = #{cdExpl}, sort_ord = #{sortOrd}, use_yn = #{useYn}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND grp_cd = #{grpCd} AND upr_com_cd = #{uprComCd} AND com_cd = #{comCd}
+    </update>
+
+    <delete id="deleteDetailCode">
+        DELETE FROM TN_COM_C002 WHERE sys_id = #{sysId} AND grp_cd = #{grpCd} AND upr_com_cd = #{uprComCd} AND com_cd = #{comCd}
+    </delete>
+
+    <delete id="deleteDetailCodeByGroup">
+        DELETE FROM TN_COM_C002 WHERE sys_id = #{sysId} AND grp_cd = #{grpCd}
+    </delete>
+
+    <delete id="deleteDetailCodeByParent">
+        DELETE FROM TN_COM_C002 WHERE sys_id = #{sysId} AND grp_cd = #{grpCd} AND upr_com_cd = #{comCd}
+    </delete>
+
+</mapper>

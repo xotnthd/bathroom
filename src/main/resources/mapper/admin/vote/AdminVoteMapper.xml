@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.vote.mapper.AdminVoteMapper">
+
+    <select id="selectVoteList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            idx AS "idx",
+            sys_id AS "sysId",
+            vote_titl AS "voteTitl",
+            target_type AS "targetType",
+            vote_mode AS "voteMode",
+            anonymous_yn AS "anonymousYn",
+            bgng_dt AS "bgngDt",
+            end_dt AS "endDt",
+            winner_opt_idx AS "winnerOptIdx",
+            CASE WHEN CURDATE() &lt; bgng_dt THEN 'READY'
+                 WHEN CURDATE() &gt; end_dt THEN 'CLOSED'
+                 ELSE 'OPEN' END AS "statCd"
+        FROM TN_VOTE_M001
+        WHERE sys_id = #{sysId} AND del_yn = 'N'
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND vote_titl LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        ORDER BY idx DESC
+    </select>
+
+    <select id="selectVoteDetail" resultType="java.util.Map">
+        SELECT
+            idx AS "idx",
+            sys_id AS "sysId",
+            vote_titl AS "voteTitl",
+            vote_expl AS "voteExpl",
+            target_type AS "targetType",
+            target_athrty_cd AS "targetAthrtyCd",
+            vote_mode AS "voteMode",
+            anonymous_yn AS "anonymousYn",
+            bgng_dt AS "bgngDt",
+            end_dt AS "endDt",
+            winner_opt_idx AS "winnerOptIdx"
+        FROM TN_VOTE_M001
+        WHERE sys_id = #{sysId} AND idx = #{voteIdx} AND del_yn = 'N'
+    </select>
+
+    <insert id="insertVote" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_VOTE_M001 (
+            sys_id, vote_titl, vote_expl, target_type, target_athrty_cd, vote_mode, anonymous_yn,
+            bgng_dt, end_dt, use_yn, del_yn, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{sysId}, #{voteTitl}, #{voteExpl}, #{targetType},
+            <choose><when test="targetAthrtyCd != null and targetAthrtyCd != ''">#{targetAthrtyCd}</when><otherwise>NULL</otherwise></choose>,
+            #{voteMode}, #{anonymousYn}, #{bgngDt}, #{endDt}, 'Y', 'N', #{userId}, NOW()
+        )
+    </insert>
+
+    <update id="updateVote" parameterType="java.util.Map">
+        UPDATE TN_VOTE_M001
+        SET vote_titl = #{voteTitl},
+            vote_expl = #{voteExpl},
+            target_type = #{targetType},
+            target_athrty_cd = <choose><when test="targetAthrtyCd != null and targetAthrtyCd != ''">#{targetAthrtyCd}</when><otherwise>NULL</otherwise></choose>,
+            vote_mode = #{voteMode},
+            anonymous_yn = #{anonymousYn},
+            bgng_dt = #{bgngDt},
+            end_dt = #{endDt},
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+        WHERE sys_id = #{sysId} AND idx = #{voteIdx}
+    </update>
+
+    <update id="logicalDeleteVote">
+        UPDATE TN_VOTE_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND idx = #{voteIdx}
+    </update>
+
+    <select id="selectOptions" resultType="java.util.Map">
+        SELECT idx AS "idx", vote_idx AS "voteIdx", opt_nm AS "optNm", sort_ord AS "sortOrd"
+        FROM TN_VOTE_O001
+        WHERE vote_idx = #{voteIdx} AND use_yn = 'Y'
+        ORDER BY sort_ord ASC, idx ASC
+    </select>
+
+    <delete id="deleteOptionsByVoteIdx">
+        DELETE FROM TN_VOTE_O001 WHERE vote_idx = #{voteIdx}
+    </delete>
+
+    <insert id="insertOption" parameterType="java.util.Map">
+        INSERT INTO TN_VOTE_O001 (vote_idx, opt_nm, sort_ord, use_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{voteIdx}, #{optNm}, #{sortOrd}, 'Y', #{userId}, NOW())
+    </insert>
+
+    <select id="selectTargets" resultType="java.util.Map">
+        SELECT T.user_idx AS "userIdx", M.user_id AS "userId", M.user_nm AS "userNm", M.athrty_cd AS "athrtyCd"
+        FROM TN_VOTE_T001 T
+        JOIN TN_MEM_M001 M ON M.idx = T.user_idx
+        WHERE T.vote_idx = #{voteIdx}
+    </select>
+
+    <delete id="deleteTargetsByVoteIdx">
+        DELETE FROM TN_VOTE_T001 WHERE vote_idx = #{voteIdx}
+    </delete>
+
+    <insert id="insertTarget" parameterType="java.util.Map">
+        INSERT INTO TN_VOTE_T001 (vote_idx, user_idx, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{voteIdx}, #{userIdx}, #{userId}, NOW())
+    </insert>
+
+    <select id="selectVoterInfo" resultType="java.util.Map">
+        SELECT idx AS "userIdx", user_nm AS "userNm", athrty_cd AS "athrtyCd"
+        FROM TN_MEM_M001
+        WHERE sys_id = #{sysId} AND user_id = #{userId}
+    </select>
+
+    <select id="checkTargetExists" resultType="int">
+        SELECT COUNT(*) FROM TN_VOTE_T001 WHERE vote_idx = #{voteIdx} AND user_idx = #{userIdx}
+    </select>
+
+    <select id="selectMyVote" resultType="java.util.Map">
+        SELECT opt_idx AS "optIdx", voted_dt AS "votedDt"
+        FROM TN_VOTE_D001
+        WHERE vote_idx = #{voteIdx} AND user_idx = #{userIdx}
+    </select>
+
+    <insert id="upsertVoteRecord" parameterType="java.util.Map">
+        INSERT INTO TN_VOTE_D001 (vote_idx, opt_idx, user_idx, voted_dt)
+        VALUES (#{voteIdx}, #{optIdx}, #{userIdx}, NOW())
+        ON DUPLICATE KEY UPDATE opt_idx = #{optIdx}, voted_dt = NOW()
+    </insert>
+
+    <select id="selectResultCounts" resultType="java.util.Map">
+        SELECT O.idx AS "optIdx", O.opt_nm AS "optNm", O.sort_ord AS "sortOrd",
+               (SELECT COUNT(*) FROM TN_VOTE_D001 D WHERE D.opt_idx = O.idx) AS "voteCnt"
+        FROM TN_VOTE_O001 O
+        WHERE O.vote_idx = #{voteIdx} AND O.use_yn = 'Y'
+        ORDER BY O.sort_ord ASC, O.idx ASC
+    </select>
+
+    <select id="selectVoters" resultType="java.util.Map">
+        SELECT D.opt_idx AS "optIdx", M.user_nm AS "userNm", M.user_id AS "userId"
+        FROM TN_VOTE_D001 D
+        JOIN TN_MEM_M001 M ON M.idx = D.user_idx
+        WHERE D.vote_idx = #{voteIdx}
+        ORDER BY D.voted_dt ASC
+    </select>
+
+    <update id="updateWinner">
+        UPDATE TN_VOTE_M001 SET winner_opt_idx = #{winnerOptIdx} WHERE idx = #{voteIdx}
+    </update>
+
+</mapper>

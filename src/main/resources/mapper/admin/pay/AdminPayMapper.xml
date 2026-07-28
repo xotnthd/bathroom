@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.pay.mapper.AdminPayMapper">
+
+    <!-- ================= 요금제 마스터 ================= -->
+    <select id="selectPayList" resultType="java.util.Map">
+        SELECT P.idx AS "idx", P.pay_plan_cd AS "payPlanCd", P.pay_plan_nm AS "payPlanNm", P.pay_se_cd AS "paySeCd",
+               P.ath_tpl_idx AS "athTplIdx", T.tpl_nm AS "tplNm",
+               P.price AS "price", P.discount_rate AS "discountRate", P.discount_price AS "discountPrice",
+               P.pay_plan_expl AS "payPlanExpl", P.sort_ord AS "sortOrd", P.use_yn AS "useYn"
+        FROM TN_PAY_M001 P
+        LEFT JOIN TN_ATH_TPL_P001 T ON P.ath_tpl_idx = T.idx
+        ORDER BY P.sort_ord ASC, P.pay_plan_cd ASC
+    </select>
+
+    <select id="checkPayExists" resultType="int">
+        SELECT COUNT(*) FROM TN_PAY_M001 WHERE pay_plan_cd = #{payPlanCd}
+    </select>
+
+    <insert id="insertPay">
+        INSERT INTO TN_PAY_M001 (
+            pay_plan_cd, pay_plan_nm, pay_se_cd, ath_tpl_idx, price, discount_rate, discount_price,
+            pay_plan_expl, sort_ord, use_yn, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+            #{payPlanCd}, #{payPlanNm}, #{paySeCd}, #{athTplIdx}, #{price}, #{discountRate}, #{discountPrice},
+            #{payPlanExpl}, #{sortOrd}, #{useYn}, #{userId}, NOW()
+        )
+    </insert>
+
+    <update id="updatePay">
+        UPDATE TN_PAY_M001
+        SET pay_plan_nm = #{payPlanNm}, pay_se_cd = #{paySeCd}, ath_tpl_idx = #{athTplIdx},
+            price = #{price}, discount_rate = #{discountRate}, discount_price = #{discountPrice},
+            pay_plan_expl = #{payPlanExpl}, sort_ord = #{sortOrd}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE pay_plan_cd = #{payPlanCd}
+    </update>
+
+    <select id="selectPayByCd" resultType="java.util.Map">
+        SELECT idx AS "idx", ath_tpl_idx AS "athTplIdx" FROM TN_PAY_M001 WHERE pay_plan_cd = #{payPlanCd}
+    </select>
+
+    <select id="selectPayDetailByCd" resultType="java.util.Map">
+        SELECT P.idx AS "idx", P.pay_plan_cd AS "payPlanCd", P.pay_plan_nm AS "payPlanNm", P.pay_se_cd AS "paySeCd",
+               P.ath_tpl_idx AS "athTplIdx", T.tpl_nm AS "tplNm",
+               P.price AS "price", P.discount_rate AS "discountRate", P.discount_price AS "discountPrice",
+               P.pay_plan_expl AS "payPlanExpl", P.sort_ord AS "sortOrd", P.use_yn AS "useYn"
+        FROM TN_PAY_M001 P
+        LEFT JOIN TN_ATH_TPL_P001 T ON P.ath_tpl_idx = T.idx
+        WHERE P.pay_plan_cd = #{payPlanCd}
+    </select>
+
+    <delete id="deletePayRow">
+        DELETE FROM TN_PAY_M001 WHERE pay_plan_cd = #{payPlanCd}
+    </delete>
+
+    <select id="selectPayForProvision" resultType="java.util.Map">
+        SELECT P.idx AS "idx", P.ath_tpl_idx AS "athTplIdx", T.tpl_cd AS "tplCd"
+        FROM TN_PAY_M001 P
+        LEFT JOIN TN_ATH_TPL_P001 T ON P.ath_tpl_idx = T.idx
+        WHERE P.idx = #{payIdx}
+    </select>
+
+    <!-- ================= 업체별 요금제 적용 이력 ================= -->
+    <select id="selectPayHistory" resultType="java.util.Map">
+        SELECT H.idx AS "idx", H.sys_id AS "sysId", H.pay_idx AS "payIdx", P.pay_plan_nm AS "payPlanNm",
+               P.price AS "price", P.discount_rate AS "discountRate", P.discount_price AS "discountPrice",
+               H.applied_start_dt AS "appliedStartDt", H.applied_end_dt AS "appliedEndDt", H.chg_rsn AS "chgRsn"
+        FROM TN_PAY_H001 H
+        LEFT JOIN TN_PAY_M001 P ON H.pay_idx = P.idx
+        WHERE H.sys_id = #{sysId}
+        ORDER BY H.applied_start_dt DESC
+    </select>
+
+    <select id="checkPayHistoryExists" resultType="int">
+        SELECT COUNT(*) FROM TN_PAY_H001 WHERE pay_idx = #{payIdx}
+    </select>
+
+    <update id="closeActivePayHistory">
+        UPDATE TN_PAY_H001 SET applied_end_dt = NOW() WHERE sys_id = #{sysId} AND applied_end_dt IS NULL
+    </update>
+
+    <insert id="insertPayHistory">
+        INSERT INTO TN_PAY_H001 (sys_id, pay_idx, applied_start_dt, applied_end_dt, chg_rsn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{payIdx}, NOW(), NULL, #{chgRsn}, #{userId}, NOW())
+    </insert>
+
+    <update id="updateSystemCurrentPay">
+        UPDATE TN_SYS_M001 SET current_pay_idx = #{payIdx} WHERE sys_id = #{sysId}
+    </update>
+
+</mapper>

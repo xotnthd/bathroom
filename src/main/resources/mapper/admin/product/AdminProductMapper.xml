@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.product.mapper.AdminProductMapper">
+
+    <!-- ================= 제품 마스터 ================= -->
+    <sql id="productListWhere">
+        WHERE P.sys_id = #{sysId} AND P.del_yn = 'N'
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (P.prd_nm LIKE CONCAT('%', #{searchKeyword}, '%') OR P.prd_cd LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+        <if test="cteIdx != null">
+            AND P.cte_idx = #{cteIdx}
+        </if>
+    </sql>
+
+    <select id="selectProductList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT P.idx AS "idx", P.sys_id AS "sysId", P.prd_cd AS "prdCd", P.prd_nm AS "prdNm",
+               P.cte_idx AS "cteIdx", C.cte_nm AS "cteNm", P.prd_expl AS "prdExpl", P.use_yn AS "useYn",
+               (SELECT COUNT(*) FROM TN_PRD_SKU_M001 S WHERE S.prd_idx = P.idx AND S.del_yn = 'N') AS "skuCount"
+        FROM TN_PRD_M001 P
+        LEFT JOIN TN_PRD_CTE_M001 C ON P.cte_idx = C.idx
+        <include refid="productListWhere" />
+        ORDER BY P.idx DESC
+        <if test="pageSize != null">
+            LIMIT #{offset}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectProductCount" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*)
+        FROM TN_PRD_M001 P
+        <include refid="productListWhere" />
+    </select>
+
+    <select id="selectProductByIdx" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT P.idx AS "idx", P.sys_id AS "sysId", P.prd_cd AS "prdCd", P.prd_nm AS "prdNm",
+               P.cte_idx AS "cteIdx", C.cte_nm AS "cteNm", P.prd_expl AS "prdExpl", P.use_yn AS "useYn"
+        FROM TN_PRD_M001 P
+        LEFT JOIN TN_PRD_CTE_M001 C ON P.cte_idx = C.idx
+        WHERE P.sys_id = #{sysId} AND P.idx = #{idx} AND P.del_yn = 'N'
+    </select>
+
+    <select id="checkProductCdExists" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM TN_PRD_M001 WHERE sys_id = #{sysId} AND prd_cd = #{prdCd}
+    </select>
+
+    <insert id="insertProduct" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_PRD_M001 (sys_id, prd_cd, prd_nm, cte_idx, prd_expl, img_file_grp_id, use_yn, del_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{sysId}, #{prdCd}, #{prdNm}, #{cteIdx}, #{prdExpl}, #{imgFileGrpId}, #{useYn}, 'N', #{userId}, NOW())
+    </insert>
+
+    <update id="updateProduct" parameterType="java.util.Map">
+        UPDATE TN_PRD_M001
+        SET prd_nm = #{prdNm}, cte_idx = #{cteIdx}, prd_expl = #{prdExpl}, use_yn = #{useYn},
+            last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx} AND sys_id = #{sysId}
+    </update>
+
+    <update id="logicalDeleteProduct">
+        UPDATE TN_PRD_M001 SET del_yn = 'Y' WHERE sys_id = #{sysId} AND idx = #{idx}
+    </update>
+
+    <!-- ================= 제품-옵션그룹 매핑 ================= -->
+    <select id="selectProductOptGroups" resultType="java.util.Map">
+        SELECT M.opt_grp_idx AS "optGrpIdx", G.opt_grp_nm AS "optGrpNm", M.sort_ord AS "sortOrd"
+        FROM TN_PRD_OPT_MAP001 M
+        JOIN TN_PRD_OPT_G001 G ON M.opt_grp_idx = G.idx
+        WHERE M.prd_idx = #{prdIdx}
+        ORDER BY M.sort_ord ASC
+    </select>
+
+    <delete id="deleteProductOptGroups">
+        DELETE FROM TN_PRD_OPT_MAP001 WHERE prd_idx = #{prdIdx}
+    </delete>
+
+    <insert id="insertProductOptGroup" parameterType="java.util.Map">
+        INSERT INTO TN_PRD_OPT_MAP001 (prd_idx, opt_grp_idx, sort_ord) VALUES (#{prdIdx}, #{optGrpIdx}, #{sortOrd})
+    </insert>
+
+    <!-- ================= SKU ================= -->
+    <select id="selectSkuList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT idx AS "idx", prd_idx AS "prdIdx", sku_cd AS "skuCd", price AS "price",
+               discount_rate AS "discountRate", discount_price AS "discountPrice", barcode AS "barcode", use_yn AS "useYn"
+        FROM TN_PRD_SKU_M001 WHERE prd_idx = #{prdIdx} AND del_yn = 'N' ORDER BY idx ASC
+    </select>
+
+    <select id="selectSkuOptValueNames" resultType="java.util.Map">
+        SELECT M.sku_idx AS "skuIdx", D.opt_val_nm AS "optValNm", G.opt_grp_nm AS "optGrpNm"
+        FROM TN_PRD_SKU_OPT_MAP001 M
+        JOIN TN_PRD_OPT_D001 D ON M.opt_val_idx = D.idx
+        JOIN TN_PRD_OPT_G001 G ON D.opt_grp_idx = G.idx
+        WHERE M.sku_idx IN
+        <foreach collection="skuIdxList" item="skuIdx" open="(" separator="," close=")">#{skuIdx}</foreach>
+    </select>
+
+    <select id="checkSkuCdExists" resultType="int">
+        SELECT COUNT(*) FROM TN_PRD_SKU_M001 WHERE sku_cd = #{skuCd}
+    </select>
+
+    <insert id="insertSku" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO TN_PRD_SKU_M001 (prd_idx, sku_cd, price, discount_rate, discount_price, barcode, use_yn, del_yn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{prdIdx}, #{skuCd}, #{price}, #{discountRate}, #{discountPrice}, #{barcode}, #{useYn}, 'N', #{userId}, NOW())
+    </insert>
+
+    <update id="updateSku" parameterType="java.util.Map">
+        UPDATE TN_PRD_SKU_M001
+        SET price = #{price}, discount_rate = #{discountRate}, discount_price = #{discountPrice},
+            barcode = #{barcode}, use_yn = #{useYn}, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+        WHERE idx = #{idx}
+    </update>
+
+    <delete id="deleteSkuOptMap">
+        DELETE FROM TN_PRD_SKU_OPT_MAP001 WHERE sku_idx = #{skuIdx}
+    </delete>
+
+    <insert id="insertSkuOptMap" parameterType="java.util.Map">
+        INSERT INTO TN_PRD_SKU_OPT_MAP001 (sku_idx, opt_val_idx) VALUES (#{skuIdx}, #{optValIdx})
+    </insert>
+
+    <!-- ================= 재고 ================= -->
+    <select id="selectStockByProduct" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT K.idx AS "skuIdx", K.sku_cd AS "skuCd", L.idx AS "locIdx", L.loc_nm AS "locNm",
+               COALESCE(M.cur_qty, 0) AS "curQty"
+        FROM TN_PRD_SKU_M001 K
+        CROSS JOIN TN_PRD_LOC_M001 L
+        LEFT JOIN TN_PRD_STK_M001 M ON M.sku_idx = K.idx AND M.loc_idx = L.idx
+        WHERE K.prd_idx = #{prdIdx} AND K.del_yn = 'N' AND L.sys_id = #{sysId} AND L.del_yn = 'N'
+        ORDER BY K.idx ASC, L.idx ASC
+    </select>
+
+    <select id="selectStockSummaryByProduct" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT K.idx AS "skuIdx", K.sku_cd AS "skuCd", COALESCE(SUM(M.cur_qty), 0) AS "totalQty"
+        FROM TN_PRD_SKU_M001 K
+        LEFT JOIN TN_PRD_STK_M001 M ON M.sku_idx = K.idx
+        WHERE K.prd_idx = #{prdIdx} AND K.del_yn = 'N'
+        GROUP BY K.idx, K.sku_cd
+    </select>
+
+    <insert id="upsertStockMaster" parameterType="java.util.Map">
+        INSERT INTO TN_PRD_STK_M001 (sku_idx, loc_idx, cur_qty, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{skuIdx}, #{locIdx}, #{qty}, #{userId}, NOW()) AS new_row
+        ON DUPLICATE KEY UPDATE cur_qty = TN_PRD_STK_M001.cur_qty + new_row.cur_qty, last_mdfr_id = #{userId}, last_mdfcn_dt = NOW()
+    </insert>
+
+    <insert id="insertStockHistory" parameterType="java.util.Map">
+        INSERT INTO TN_PRD_STK_H001 (sku_idx, loc_idx, move_type_cd, qty, sup_idx, unit_cost, mv_rsn, frst_rgstr_id, frst_reg_dt)
+        VALUES (#{skuIdx}, #{locIdx}, #{moveTypeCd}, #{qty}, #{supIdx}, #{unitCost}, #{mvRsn}, #{userId}, NOW())
+    </insert>
+
+    <select id="selectStockHistory" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT H.idx AS "idx", H.sku_idx AS "skuIdx", K.sku_cd AS "skuCd", L.loc_nm AS "locNm",
+               H.move_type_cd AS "moveTypeCd", H.qty AS "qty", S.sup_nm AS "supNm", H.unit_cost AS "unitCost",
+               H.mv_rsn AS "mvRsn", H.frst_rgstr_id AS "frstRgstrId", H.frst_reg_dt AS "frstRegDt"
+        FROM TN_PRD_STK_H001 H
+        JOIN TN_PRD_SKU_M001 K ON H.sku_idx = K.idx
+        JOIN TN_PRD_LOC_M001 L ON H.loc_idx = L.idx
+        LEFT JOIN TN_PRD_SUP_M001 S ON H.sup_idx = S.idx
+        WHERE K.prd_idx = #{prdIdx}
+        ORDER BY H.frst_reg_dt DESC
+    </select>
+
+</mapper>

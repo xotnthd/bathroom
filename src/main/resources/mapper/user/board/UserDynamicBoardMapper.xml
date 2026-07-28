@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.user.board.mapper.UserDynamicBoardMapper">
+
+    <!-- 게시판 설정 정보 조회 -->
+    <select id="selectBoardMasterInfo" resultType="java.util.Map">
+        SELECT
+            m1.sys_id AS "sysId", m1.brd_id AS "brdId",
+            m1.brd_nm AS "brdNm", m1.brd_expl AS "brdExpl", m1.brd_type AS "brdType",
+            m2.user_write_yn AS "userWriteYn", m2.user_reply_yn AS "userReplyYn",
+            m2.atch_file_yn AS "atchFileYn", m2.secret_use_yn AS "secretUseYn",
+            m2.rereply_yn AS "rereplyYn", m2.rereply_depth AS "rereplyDepth",
+            m2.cmt_atch_file_yn AS "cmtAtchFileYn",
+            m1.use_yn AS "useYn", m1.del_yn AS "delYn"
+        FROM TN_BRD_M001 m1
+        LEFT JOIN TN_BRD_M002 m2 ON m1.sys_id = m2.sys_id AND m1.brd_id = m2.brd_id
+        WHERE m1.sys_id = #{sysId} AND m1.brd_id = #{brdId}
+    </select>
+
+    <!-- 동적 검색 조건절 공통 부분 -->
+    <sql id="boardSearchCondition">
+        WHERE sys_id = #{sysId} AND brd_id = #{brdId}
+        AND del_yn = 'N' <!-- 사용자는 삭제 안된 것만 -->
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchType == 'TITLE'">
+                    AND title LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <when test="searchType == 'CONTENT'">
+                    AND content LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <when test="searchType == 'WRITER'">
+                    AND wrtr_nm LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <otherwise>
+                    AND (title LIKE CONCAT('%', #{searchKeyword}, '%') OR content LIKE CONCAT('%', #{searchKeyword}, '%'))
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 게시물 목록 (페이징) -->
+    <select id="selectDynamicBoardList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            p.idx AS "idx", p.post_no AS "postNo", p.title AS "title", p.wrtr_nm AS "wrtrNm",
+            p.inq_cnt AS "inqCnt", p.frst_reg_dt AS "frstRegDt", p.del_yn AS "delYn",
+            p.ntc_yn AS "ntcYn", p.highlight_yn AS "highlightYn",
+            p.atch_file_grp_id AS "atchFileGrpId",
+            p.content AS "content", p.secret_yn AS "secretYn", p.secret_pwd AS "secretPwd",
+            (SELECT file_sn FROM TN_COM_F001 f WHERE f.sys_id = p.sys_id AND f.file_grp_id = p.atch_file_grp_id AND f.del_yn = 'N' ORDER BY file_sn ASC LIMIT 1) AS thumb_sn,
+            (SELECT COUNT(*) FROM TN_BRD_C001 c WHERE c.sys_id = p.sys_id AND c.post_idx = p.idx AND c.del_yn = 'N') AS "cmtCnt"
+        FROM TN_BRD_M003 p
+        <include refid="boardSearchCondition"/>
+        ORDER BY p.ntc_yn DESC, p.idx DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 전체 카운트 -->
+    <select id="selectDynamicBoardCount" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*)
+        FROM TN_BRD_M003 p
+        <include refid="boardSearchCondition"/>
+    </select>
+
+    <!-- 상세 조회 -->
+    <select id="selectDynamicBoardDetail" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            idx AS "idx", post_no AS "postNo", title AS "title", content AS "content", wrtr_nm AS "wrtrNm",
+            inq_cnt AS "inqCnt", frst_reg_dt AS "frstRegDt", del_yn AS "delYn",
+            ntc_yn AS "ntcYn", highlight_yn AS "highlightYn", secret_yn AS "secretYn", secret_pwd AS "secretPwd",
+            atch_file_grp_id AS "atchFileGrpId", brd_id AS "brdId",
+            rls_start_dt AS "rlsStartDt", rls_end_dt AS "rlsEndDt"
+        FROM TN_BRD_M003
+        WHERE sys_id = #{sysId} AND idx = #{idx} AND del_yn = 'N'
+    </select>
+
+    <!-- 조회수 증가 -->
+    <update id="updateBoardViewCount" parameterType="java.util.Map">
+        UPDATE TN_BRD_M003
+        SET inq_cnt = inq_cnt + 1
+        WHERE sys_id = #{sysId} AND idx = #{idx}
+    </update>
+
+</mapper>

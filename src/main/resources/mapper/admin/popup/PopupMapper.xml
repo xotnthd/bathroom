@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.popup.mapper.PopupMapper">
+
+    <!-- 검색 조건이 포함된 팝업 리스트 조회 -->
+    <select id="selectPopupList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        P.pop_idx AS "popIdx", P.sys_se_cd AS "sysSeCd", P.pop_titl AS "popTitl",
+        P.pop_cn AS "popCn", P.bgng_ymd AS "bgngYmd", P.end_ymd AS "endYmd", P.use_yn AS "useYn",
+        P.file_grp_id AS "fileGrpId", P.surv_id AS "survId",
+        P.frst_rgstr_id AS "frstRgstrId", P.frst_reg_dt AS "frstRegDt",
+        S.surv_nm AS "survNm"
+        FROM tn_pop_m001 P
+        LEFT JOIN tn_survey_m001 S ON P.sys_id = S.sys_id AND P.surv_id = S.surv_id
+        WHERE P.sys_id = #{sysId}
+
+        <!-- 시스템 영역 검색 조건 -->
+        <if test="searchSysSeCd != null and searchSysSeCd != ''">
+            AND P.sys_se_cd = #{searchSysSeCd}
+        </if>
+
+        <!-- 기간 겹침 조건: 검색 시작일 <= 팝업 종료일 AND 검색 종료일 >= 팝업 시작일 -->
+        <if test="searchStDate != null and searchStDate != '' and searchEdDate != null and searchEdDate != ''">
+            AND (P.bgng_ymd &lt;= #{searchEdDate} AND P.end_ymd &gt;= #{searchStDate})
+        </if>
+
+        AND P.del_yn = 'N'
+        ORDER BY P.pop_idx DESC
+    </select>
+
+    <select id="selectActivePopups" resultType="java.util.Map">
+        SELECT
+            P.pop_idx AS "popIdx", P.sys_se_cd AS "sysSeCd",
+            P.pop_titl AS "popTitl", P.pop_cn AS "popCn",
+            P.file_grp_id AS "fileGrpId", P.surv_id AS "survId",
+            F.file_sn AS "fileSn", F.file_orgnl_nm AS "fileOrgnlNm"
+        FROM tn_pop_m001 P
+                 LEFT JOIN tn_com_f001 F ON P.file_grp_id = F.file_grp_id AND F.del_yn = 'N'
+        WHERE P.sys_id = #{sysId}
+          AND P.sys_se_cd = #{sysSeCd}
+          AND P.use_yn = 'Y'
+          AND P.del_yn = 'N'
+          AND DATE_FORMAT(NOW(), '%Y-%m-%d') BETWEEN P.bgng_ymd AND P.end_ymd
+    </select>
+
+    <select id="selectPopupByIdx" resultType="java.util.Map">
+        SELECT
+        P.pop_idx AS "popIdx", P.sys_id AS "sysId", P.sys_se_cd AS "sysSeCd", P.pop_titl AS "popTitl",
+        P.pop_cn AS "popCn", P.bgng_ymd AS "bgngYmd", P.end_ymd AS "endYmd", P.use_yn AS "useYn",
+        P.file_grp_id AS "fileGrpId", P.surv_id AS "survId",
+        S.surv_nm AS "survNm"
+        FROM tn_pop_m001 P
+        LEFT JOIN tn_survey_m001 S ON P.sys_id = S.sys_id AND P.surv_id = S.surv_id
+        WHERE P.sys_id = #{sysId} AND P.pop_idx = #{popIdx} AND P.del_yn = 'N'
+    </select>
+
+    <insert id="insertPopup" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="popIdx">
+        INSERT INTO tn_pop_m001 (
+            sys_id, sys_se_cd, pop_titl, pop_cn, bgng_ymd, end_ymd, file_grp_id, surv_id, use_yn, del_yn, frst_rgstr_id, frst_reg_dt
+        ) VALUES (
+                     #{sysId}, #{sysSeCd}, #{popTitl}, #{popCn}, #{bgngYmd}, #{endYmd}, #{fileGrpId}, #{survId}, #{useYn}, 'N', #{userId}, NOW()
+                 )
+    </insert>
+
+    <update id="updatePopup" parameterType="java.util.Map">
+        UPDATE tn_pop_m001
+        SET pop_titl = #{popTitl},
+            pop_cn = #{popCn},
+            bgng_ymd = #{bgngYmd},
+            end_ymd = #{endYmd},
+            use_yn = #{useYn},
+            file_grp_id = #{fileGrpId},
+            surv_id = #{survId},
+            sys_se_cd = #{sysSeCd},
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+        WHERE pop_idx = #{popIdx}
+    </update>
+
+    <update id="deletePopup">
+        UPDATE tn_pop_m001
+        SET del_yn = 'Y',
+            last_mdfcn_dt = NOW()
+        WHERE pop_idx = #{popIdx}
+    </update>
+
+</mapper>

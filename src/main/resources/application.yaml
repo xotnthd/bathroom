@@ -1,0 +1,51 @@
+server:
+  servlet:
+    session:
+      timeout: 30m # 기본 세션 만료 시간 (30분)
+      cookie:
+        http-only: true # XSS 공격 방지 (JS에서 쿠키 탈취 불가)
+        secure: false   # 로컬 테스트용 (운영 환경 HTTPS 적용 시 true로 필수 변경)
+        name: BATH_SESSION_ID # 기본 JSESSIONID 대신 고유 식별명 사용 권장
+  port: 8080 # 백엔드 서버 포트
+  error:
+    include-message: always # 컨트롤러/서비스에서 던진 RuntimeException 메시지를 응답 바디에 그대로 노출 (프론트 alert(errorMsg)용)
+
+spring:
+  application:
+    name: bathRoom
+  datasource:
+    # MySQL 로컬 DB 정보 (bathroom 이라는 스키마를 미리 생성해두셔야 합니다)
+    url: jdbc:mysql://localhost:3306/bathroom?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:root}   # 본인의 MySQL 계정명
+    password: ${DB_PASSWORD}        # 환경변수로만 주입 (IntelliJ 실행 구성의 Environment variables에 DB_PASSWORD 추가, .idea는 git에서 제외되어 있어 안전함)
+
+# MyBatis 설정 (추후 XML Mapper 사용 시 경로 지정)
+mybatis:
+  # XML 파일들의 물리적 위치를 매핑합니다. (classpath는 src/main/resources를 의미)
+  # classpath 뒤에 * 를 붙이면 빌드된 모든 리소스 폴더를 더 깊게 탐색합니다.
+  mapper-locations: classpath*:mapper/**/*.xml
+  # XML에서 resultType에 패키지명을 생략할 수 있도록 허용하는 설정 (선택사항)
+  type-aliases-package: com.community.bathroom
+  configuration:
+    map-underscore-to-camel-case: true # DB의 snake_case를 Java의 camelCase로 자동 매핑
+
+app:
+  file:
+    upload-dir: C:/uploads
+
+# 로깅 설정 (일자별 롤링 및 yml/Docker Compose에서 경로 제어 가능)
+logging:
+  file:
+    path: ${LOG_PATH:./logs}
+    name: ${logging.file.path}/bathroom.log
+  logback:
+    rollingpolicy:
+      max-history: 30
+      file-name-pattern: ${logging.file.path}/bathroom.%d{yyyy.MM.dd}.log
+  level:
+    root: INFO
+    com.community.bathroom: DEBUG
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n%wEx"
