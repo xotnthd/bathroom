@@ -22,6 +22,7 @@ const SurveyResultDetail = () => {
         fetchSurveyDetail();
         fetchRespondents();
         fetchStatistics();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [survId]);
 
     useEffect(() => {
@@ -30,6 +31,7 @@ const SurveyResultDetail = () => {
         } else {
             setAnswers([]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedRespId]);
 
     const fetchSurveyDetail = async () => {

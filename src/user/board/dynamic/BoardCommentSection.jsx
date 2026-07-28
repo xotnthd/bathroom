@@ -6,6 +6,7 @@ const CommentFileList = ({ grpId, sysId }) => {
 
     useEffect(() => {
         if (grpId) fetchFiles();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [grpId]);
 
     const fetchFiles = async () => {
@@ -60,6 +61,7 @@ const BoardCommentSection = ({ sysId, brdId, postId, boardMaster, isAdmin, menuA
 
     useEffect(() => {
         fetchComments();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [postId]);
 
     const fetchComments = async () => {

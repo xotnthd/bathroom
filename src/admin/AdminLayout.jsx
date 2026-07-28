@@ -11,7 +11,7 @@ const AdminLayout = () => {
     const location = useLocation();
 
     // 1. 현재 세션의 sysId (기본은 CORE, 교차 관리시 변경됨)
-    const [currentSysId, setCurrentSysId] = useState(sessionStorage.getItem('currentSysId') || 'CORE');
+    const [currentSysId] = useState(sessionStorage.getItem('currentSysId') || 'CORE');
 
     const [menuTree, setMenuTree] = useState([]);
     const [menuAuths, setMenuAuths] = useState([]);
@@ -76,6 +76,7 @@ const AdminLayout = () => {
         };
 
         checkAuthAndInit();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentSysId]);
 
     const fetchSystemListForSwitch = async () => {

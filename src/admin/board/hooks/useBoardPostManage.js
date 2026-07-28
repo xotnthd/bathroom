@@ -34,6 +34,7 @@ export const useBoardPostManage = (defaultSysId, inqireYn, rgstYn, mdfcnYn, delY
             fetchCodes('BOARD_SE_CD', 'ROOT', 'TYPE');
             fetchBoardMasterGrid(searchForm);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inqireYn]);
 
     const fetchCodes = async (grpCd, uprComCd, type) => {

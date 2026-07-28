@@ -30,6 +30,7 @@ export const useUserManage = (defaultSysId, sysSectCd, inqireYn) => {
         if (inqireYn === 'Y') {
             fetchRoleList();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inqireYn, sysSectCd]);
 
     const fetchRoleList = async () => {

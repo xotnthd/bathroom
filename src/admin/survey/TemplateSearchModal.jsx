@@ -9,6 +9,7 @@ const TemplateSearchModal = ({ onClose, onSelect }) => {
 
     useEffect(() => {
         fetchTemplates();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchTemplates = async () => {
@@ -21,10 +22,6 @@ const TemplateSearchModal = ({ onClose, onSelect }) => {
             const data = await res.json();
             setTemplateList(data.list);
         }
-    };
-
-    const handleSearch = () => {
-        // 등�라등�언확인�이확인�터�?(간단삭제
     };
 
     const filteredList = templateList.filter(t => t.survNm.includes(searchKeyword));

@@ -10,6 +10,7 @@ const SurveySearchModal = ({ onClose, onSelect, sysSeCd }) => {
 
     useEffect(() => {
         fetchSurveys();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchSurveys = async () => {

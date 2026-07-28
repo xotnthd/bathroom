@@ -38,6 +38,7 @@ const MenuManage = () => {
             fetchMainMenu(sysSectCd); 
             fnFetchUseYnCodes();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sysSectCd, inqireYn, fetchMainMenu]);
 
     const fnFetchUseYnCodes = async () => {

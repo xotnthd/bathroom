@@ -23,12 +23,14 @@ const UserDynamicBoardList = () => {
 
     useEffect(() => {
         fetchBoardMaster();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [brdId]);
 
     useEffect(() => {
         if (boardMaster) {
             fetchPostList();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [boardMaster, page, pageSize]);
 
     const fetchBoardMaster = async () => {

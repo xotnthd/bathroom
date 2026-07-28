@@ -9,6 +9,7 @@ const UserSurvey = () => {
 
     useEffect(() => {
         fetchSurveyDetail();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [survId]);
 
     const fetchSurveyDetail = async () => {

@@ -23,6 +23,7 @@ const UserDynamicBoardWrite = () => {
         if (postId) {
             fetchPostDetail();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [brdId, postId]);
 
     const fetchBoardMaster = async () => {

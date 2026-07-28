@@ -21,6 +21,7 @@ const AdminDynamicBoardDetail = () => {
         } else if (inqireYn === 'N') {
             alert('조회 권한이 없습니다. 관리자에게 문의하세요.');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [brdId, postId, inqireYn]);
 
     const fetchBoardMaster = async () => {

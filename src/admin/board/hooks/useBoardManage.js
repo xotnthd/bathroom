@@ -50,6 +50,7 @@ export const useBoardManage = (defaultSysId, inqireYn) => {
         } else if (inqireYn === 'N') {
             alert('조회 권한이 없습니다. 관리자에게 문의하세요.');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inqireYn]);
 
     const fetchBoardDetail = async (brdId) => {
@@ -107,6 +108,7 @@ export const useBoardManage = (defaultSysId, inqireYn) => {
         searchParams,
         setSearchParams,
         handleSearch,
+        handleResetSearch,
         fetchBoardDetail,
         saveBoard,
         deleteBoard
