@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useVoteManage } from './hooks/useVoteManage';
 
 const TARGET_TYPE_NM = { ALL: '전체 직원', DEPT: '부서(권한)', SELECTED: '지정 인원' };
@@ -19,7 +20,7 @@ const Badge = ({ children, color, bg }) => (
 const VoteResultList = () => {
     const navigate = useNavigate();
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn } = useMenuAuth();
+    const { inqireYn } = useMenuAuth(MENU_IDS.VOTE_RESULT);
     const { voteList, fetchVoteListForResult } = useVoteManage(defaultSysId);
     const [searchKeyword, setSearchKeyword] = useState('');
 

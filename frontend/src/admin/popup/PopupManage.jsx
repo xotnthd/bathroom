@@ -2,12 +2,13 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { usePopupManage } from './hooks/usePopupManage';
 
 const PopupManage = () => {
     const navigate = useNavigate();
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn } = useMenuAuth();
+    const { inqireYn, rgstYn } = useMenuAuth(MENU_IDS.POPUP);
 
     const {
         searchForm, setSearchForm, initialSearch,

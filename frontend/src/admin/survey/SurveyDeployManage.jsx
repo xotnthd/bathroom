@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import Pagination from '../../components/common/Pagination';
 
 const SurveyDeployManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
     const navigate = useNavigate();
-    const { inqireYn, rgstYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, delYn } = useMenuAuth(MENU_IDS.SURVEY_DEPLOY);
 
     const [list, setList] = useState([]);
     const [total, setTotal] = useState(0);

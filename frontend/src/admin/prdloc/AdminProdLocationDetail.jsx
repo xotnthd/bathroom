@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminPrdLocManage } from './hooks/useAdminPrdLocManage';
 
 const AdminProdLocationDetail = () => {
@@ -10,7 +11,7 @@ const AdminProdLocationDetail = () => {
     const mode = idx ? 'UPDATE' : 'INSERT';
 
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.PRD_LOCATION);
     const { fetchLocationInfo, saveLocation } = useAdminPrdLocManage(defaultSysId);
 
     const [form, setForm] = useState({ locNm: '', useYn: 'Y' });

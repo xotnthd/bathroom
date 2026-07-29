@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import { apiClient } from '../../utils/apiClient';
 import { useMenuManage } from './hooks/useMenuManage';
@@ -31,7 +32,7 @@ const MenuManage = () => {
         menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N'
     });
 
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.MENU);
 
     useEffect(() => { 
         if (inqireYn === 'Y') {

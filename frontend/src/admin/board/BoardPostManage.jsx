@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useBoardPostManage } from './hooks/useBoardPostManage';
 import BoardMasterList from './components/BoardMasterList';
 import BoardPostList from './components/BoardPostList';
@@ -8,7 +9,7 @@ import '../../assets/css/admin-board-post.css';
 
 const BoardPostManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const menuAuth = useMenuAuth();
+    const menuAuth = useMenuAuth(MENU_IDS.BOARD_POST);
     const { inqireYn, rgstYn, mdfcnYn, delYn, menuNm } = menuAuth;
 
     const boardManageData = useBoardPostManage(defaultSysId, inqireYn, rgstYn, mdfcnYn, delYn);

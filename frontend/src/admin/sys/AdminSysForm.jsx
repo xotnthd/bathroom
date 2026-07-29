@@ -4,6 +4,7 @@ import { apiClient } from '../../utils/apiClient';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import CommonCodePreview from '../../components/CommonCodePreview';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 
 const AdminSysForm = () => {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ const AdminSysForm = () => {
     const mode = sysId ? 'EDIT' : 'CREATE';
     const today = new Date().toISOString().split('T')[0];
 
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.SYS);
     const canEdit = mode === 'CREATE' ? rgstYn === 'Y' : mdfcnYn === 'Y';
 
     const [formData, setFormData] = useState({

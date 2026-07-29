@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminPrdSupManage } from './hooks/useAdminPrdSupManage';
 
 const AdminProdSupplierDetail = () => {
@@ -10,7 +11,7 @@ const AdminProdSupplierDetail = () => {
     const mode = idx ? 'UPDATE' : 'INSERT';
 
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.PRD_SUPPLIER);
     const { fetchSupplierInfo, saveSupplier } = useAdminPrdSupManage(defaultSysId);
 
     const [form, setForm] = useState({ supNm: '', bizNo: '', mgrNm: '', telno: '', addr: '', rmrk: '', useYn: 'Y' });

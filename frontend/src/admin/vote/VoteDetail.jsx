@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useVoteManage } from './hooks/useVoteManage';
 import StaffPickerModal from '../../components/common/StaffPickerModal';
 
@@ -33,7 +34,7 @@ const VoteDetail = () => {
     const mode = voteIdx ? 'UPDATE' : 'INSERT';
 
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.VOTE);
     const {
         roleList, fetchRoleList,
         fetchVoteDetail, saveVote

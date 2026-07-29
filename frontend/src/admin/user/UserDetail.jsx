@@ -4,6 +4,7 @@ import CommonCodePicker from '../../components/CommonCodePicker';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useUserManage } from './hooks/useUserManage';
 
 const UserDetail = () => {
@@ -16,7 +17,7 @@ const UserDetail = () => {
     const isStaff = sysSectCd === 'MG';
 
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.USER);
     const { sysConfig } = useOutletContext();
 
     const {

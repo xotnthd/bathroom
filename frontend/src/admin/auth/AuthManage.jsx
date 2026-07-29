@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAuthManage } from './hooks/useAuthManage';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import DataTable from '../../components/common/DataTable';
@@ -28,7 +29,7 @@ const AuthManage = () => {
         saveRoleLevels
     } = useAuthManage(defaultSysId);
 
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.AUTH);
 
     useEffect(() => {
         if (inqireYn === 'Y') {

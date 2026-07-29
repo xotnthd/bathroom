@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminPayManage } from './hooks/useAdminPayManage';
 
 const AdminPayManage = () => {
     const navigate = useNavigate();
-    const { inqireYn, rgstYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, delYn } = useMenuAuth(MENU_IDS.PAY);
     const { payList, fetchPayList, deletePay } = useAdminPayManage();
 
     const [searchKeyword, setSearchKeyword] = useState('');

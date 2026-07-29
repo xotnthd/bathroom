@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useBoardManage } from './hooks/useBoardManage';
 
 const BoardManage = () => {
     const navigate = useNavigate();
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, delYn } = useMenuAuth(MENU_IDS.BOARD);
 
     const {
         managingList,

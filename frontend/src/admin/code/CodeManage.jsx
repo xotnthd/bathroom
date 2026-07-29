@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useCodeManage } from './hooks/useCodeManage';
 import CodeModal from './components/CodeModal';
 
 const CodeManage = () => {
     // 공통코드는 업체별로 복제/관리하지 않고 항상 CORE 코드만 다룸 - 업체 컨텍스트로 전환되어 있어도 고정
     const defaultSysId = 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.CODE);
 
     const {
         groupList, midList, detailList,

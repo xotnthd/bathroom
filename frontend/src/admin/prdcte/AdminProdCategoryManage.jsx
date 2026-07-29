@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminPrdCteManage } from './hooks/useAdminPrdCteManage';
 import CategoryModal from './components/CategoryModal';
 
 const AdminProdCategoryManage = () => {
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.PRD_CATEGORY);
     const {
         mainList, midList, subList, selMainIdx, setSelMainIdx, selMidIdx, setSelMidIdx,
         setMidList, setSubList,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import TemplateSearchModal from './TemplateSearchModal';
 import SurveyBasicInfo from './components/SurveyBasicInfo';
 import DeployQuestionList from './components/deploy/DeployQuestionList';
@@ -12,7 +13,7 @@ const SurveyDeployForm = () => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const survId = queryParams.get('survId');
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.SURVEY_DEPLOY);
 
     const [form, setForm] = useState({
         survNm: '',

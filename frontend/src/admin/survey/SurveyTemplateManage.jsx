@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import Pagination from '../../components/common/Pagination';
 
 const SurveyTemplateManage = () => {
@@ -11,7 +12,7 @@ const SurveyTemplateManage = () => {
     const [page, setPage] = useState(1);
     const limit = 10;
     const navigate = useNavigate();
-    const { inqireYn, rgstYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, delYn } = useMenuAuth(MENU_IDS.SURVEY_TEMPLATE);
 
     // 검색 상태
     const [searchForm, setSearchForm] = useState({ survIdSearch: '', survNm: '' });

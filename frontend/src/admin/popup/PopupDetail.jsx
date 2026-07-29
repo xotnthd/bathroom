@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import SurveySearchModal from './SurveySearchModal';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { usePopupManage } from './hooks/usePopupManage';
 import { apiClient } from '../../utils/apiClient';
 
@@ -13,7 +14,7 @@ const PopupDetail = () => {
     const mode = popIdx ? 'UPDATE' : 'INSERT';
 
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.POPUP);
     const { today, fetchPopupInfo, savePopup, deletePopup, handleFileDelete, handleFileDownload } = usePopupManage(defaultSysId);
 
     const initialForm = {

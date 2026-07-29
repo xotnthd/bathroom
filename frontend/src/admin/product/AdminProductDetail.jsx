@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminProductManage } from './hooks/useAdminProductManage';
 import ProductFormPanel from './components/ProductFormPanel';
 import SkuPanel from './components/SkuPanel';
@@ -14,7 +15,7 @@ const AdminProductDetail = () => {
     const mode = prdIdx ? 'UPDATE' : 'INSERT';
 
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.PRODUCT);
     const {
         optGroupMasterList, categoryLeafList, locationList, supplierList,
         productOptGroups, skuList, stockList, stockSummary, stockHistory,

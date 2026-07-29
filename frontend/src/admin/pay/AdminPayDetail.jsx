@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminPayManage } from './hooks/useAdminPayManage';
 import CommonCodePicker from '../../components/CommonCodePicker';
 
@@ -10,7 +11,7 @@ const AdminPayDetail = () => {
     const payPlanCd = new URLSearchParams(routerLocation.search).get('payPlanCd');
     const mode = payPlanCd ? 'UPDATE' : 'INSERT';
 
-    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn } = useMenuAuth(MENU_IDS.PAY);
     const { tplList, fetchTplList, fetchPayInfo, savePay } = useAdminPayManage();
 
     const [form, setForm] = useState({ payPlanCd: '', payPlanNm: '', paySeCd: '', athTplIdx: null, price: 0, discountRate: 0, payPlanExpl: '', sortOrd: 0, useYn: 'Y' });

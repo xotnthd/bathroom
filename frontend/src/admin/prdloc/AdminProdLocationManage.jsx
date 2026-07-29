@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAdminPrdLocManage } from './hooks/useAdminPrdLocManage';
 
 const AdminProdLocationManage = () => {
     const navigate = useNavigate();
     const defaultSysId = sessionStorage.getItem('currentSysId') || 'CORE';
-    const { inqireYn, rgstYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, delYn } = useMenuAuth(MENU_IDS.PRD_LOCATION);
     const { locationList, fetchLocationList, deleteLocation } = useAdminPrdLocManage(defaultSysId);
 
     const [searchKeyword, setSearchKeyword] = useState('');
