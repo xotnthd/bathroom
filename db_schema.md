@@ -50,6 +50,23 @@
 
 새 시스템 생성 시(`copyBoards`, `copyAdminMenus` 등) `sys_id = 'CORE'` 데이터를 템플릿으로 복제합니다. **공통코드(`TN_COM_C001`/`C002`)는 2026-07-25부로 더 이상 업체별로 복제하지 않음** — 아래 "공통코드" 섹션 참고. `copyAdminMenus`도 `core_only_yn='Y'`인 CORE 전용 메뉴는 복제 대상에서 제외한다.
 
+#### `TN_CORP_D001` — 업체(고객사) 상세정보 (2026-07-29 추가, `TN_SYS_M001`과 1:1)
+`sys_id`(PK, FK→`TN_SYS_M001.sys_id`) 하나에 사업자/담당자 정보를 담는다. `TN_SYS_M001`은 시스템 설정(테마·요금제 등)에 집중되어 있어, "업체 자체"에 대한 정보(사업자등록번호, 대표자, 담당자 연락처 등)는 이 테이블로 분리했다. `AdminSysForm.jsx`의 "업체 상세 정보" 카드에서만 조회/저장하며(`/admin/api/corp/detail/{sysId}`, `/admin/api/corp/save`, `AdminCorpController` — `SUPER_ADMIN_ONLY`), 아직 값이 없는 테넌트는 행 자체가 없다(`selectCorpDetail`이 빈 Map 반환).
+
+| 컬럼 | 설명 |
+|---|---|
+| biz_reg_no / corp_reg_no | 사업자등록번호 / 법인등록번호(선택) |
+| ceo_nm | 대표자명 |
+| induty_cd | 업종 — 공통코드 `INDUTY_CD` 그룹 |
+| corp_stat_cd | 영업/계약 상태 — 공통코드 `CORP_STAT_CD` 그룹(리드/계약중/활성/휴면/해지) |
+| zip_cd / base_addr / dtl_addr | 사업장 주소 |
+| corp_telno / homepage_url | 대표 전화번호 / 홈페이지 |
+| mgr1_nm / mgr1_position / mgr1_dept / mgr1_mbl_telno / mgr1_email | 정담당자 |
+| mgr2_nm / mgr2_position / mgr2_dept / mgr2_mbl_telno / mgr2_email | 부담당자 (둘 다 선택 항목, 1:N 담당자 테이블은 만들지 않고 정/부 2명으로 고정 — 그 이상은 `rmrk`에 자유 기록) |
+| rmrk | 비고 |
+
+담당자 직급(`mgr1_position`/`mgr2_position`)과 부서(`mgr1_dept`/`mgr2_dept`)는 자유 텍스트다 — `TN_MEM_M002`의 `position_cd`/`dept_cd`(내부 직원용 공통코드 체계)를 재사용하지 않는데, 외부 업체 담당자의 직급/부서 표현은 회사마다 제각각이라 코드화가 맞지 않기 때문이다.
+
 ### 회원 / 권한
 
 #### `TN_MEM_M001` — 통합 회원 마스터 (관리자 + 일반회원 겸용)

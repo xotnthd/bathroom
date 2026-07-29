@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.corp.mapper.AdminCorpMapper">
+
+    <select id="selectCorpDetail" resultType="java.util.Map">
+        SELECT
+            sys_id AS "sysId",
+            biz_reg_no AS "bizRegNo",
+            corp_reg_no AS "corpRegNo",
+            ceo_nm AS "ceoNm",
+            induty_cd AS "indutyCd",
+            corp_stat_cd AS "corpStatCd",
+            zip_cd AS "zipCd",
+            base_addr AS "baseAddr",
+            dtl_addr AS "dtlAddr",
+            corp_telno AS "corpTelno",
+            homepage_url AS "homepageUrl",
+            mgr1_nm AS "mgr1Nm",
+            mgr1_position AS "mgr1Position",
+            mgr1_dept AS "mgr1Dept",
+            mgr1_mbl_telno AS "mgr1MblTelno",
+            mgr1_email AS "mgr1Email",
+            mgr2_nm AS "mgr2Nm",
+            mgr2_position AS "mgr2Position",
+            mgr2_dept AS "mgr2Dept",
+            mgr2_mbl_telno AS "mgr2MblTelno",
+            mgr2_email AS "mgr2Email",
+            rmrk AS "rmrk"
+        FROM TN_CORP_D001
+        WHERE sys_id = #{sysId}
+    </select>
+
+    <insert id="upsertCorpDetail" parameterType="java.util.Map">
+        INSERT INTO TN_CORP_D001 (
+            sys_id, biz_reg_no, corp_reg_no, ceo_nm, induty_cd, corp_stat_cd,
+            zip_cd, base_addr, dtl_addr, corp_telno, homepage_url,
+            mgr1_nm, mgr1_position, mgr1_dept, mgr1_mbl_telno, mgr1_email,
+            mgr2_nm, mgr2_position, mgr2_dept, mgr2_mbl_telno, mgr2_email,
+            rmrk, frst_rgstr_id, frst_reg_dt, last_mdfr_id, last_mdfcn_dt
+        ) VALUES (
+            #{sysId}, #{bizRegNo}, #{corpRegNo}, #{ceoNm}, #{indutyCd}, #{corpStatCd},
+            #{zipCd}, #{baseAddr}, #{dtlAddr}, #{corpTelno}, #{homepageUrl},
+            #{mgr1Nm}, #{mgr1Position}, #{mgr1Dept}, #{mgr1MblTelno}, #{mgr1Email},
+            #{mgr2Nm}, #{mgr2Position}, #{mgr2Dept}, #{mgr2MblTelno}, #{mgr2Email},
+            #{rmrk}, #{userId}, NOW(), #{userId}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            biz_reg_no = #{bizRegNo},
+            corp_reg_no = #{corpRegNo},
+            ceo_nm = #{ceoNm},
+            induty_cd = #{indutyCd},
+            corp_stat_cd = #{corpStatCd},
+            zip_cd = #{zipCd},
+            base_addr = #{baseAddr},
+            dtl_addr = #{dtlAddr},
+            corp_telno = #{corpTelno},
+            homepage_url = #{homepageUrl},
+            mgr1_nm = #{mgr1Nm},
+            mgr1_position = #{mgr1Position},
+            mgr1_dept = #{mgr1Dept},
+            mgr1_mbl_telno = #{mgr1MblTelno},
+            mgr1_email = #{mgr1Email},
+            mgr2_nm = #{mgr2Nm},
+            mgr2_position = #{mgr2Position},
+            mgr2_dept = #{mgr2Dept},
+            mgr2_mbl_telno = #{mgr2MblTelno},
+            mgr2_email = #{mgr2Email},
+            rmrk = #{rmrk},
+            last_mdfr_id = #{userId},
+            last_mdfcn_dt = NOW()
+    </insert>
+
+</mapper>

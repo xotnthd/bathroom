@@ -26,6 +26,14 @@ const AdminSysForm = () => {
     const [existingLogo, setExistingLogo] = useState(null);
     const [idCheckStatus, setIdCheckStatus] = useState('NONE'); // NONE, SUCCESS, FAIL
 
+    const [corpData, setCorpData] = useState({
+        bizRegNo: '', corpRegNo: '', ceoNm: '', indutyCd: '', corpStatCd: '',
+        zipCd: '', baseAddr: '', dtlAddr: '', corpTelno: '', homepageUrl: '',
+        mgr1Nm: '', mgr1Position: '', mgr1Dept: '', mgr1MblTelno: '', mgr1Email: '',
+        mgr2Nm: '', mgr2Position: '', mgr2Dept: '', mgr2MblTelno: '', mgr2Email: '',
+        rmrk: ''
+    });
+
     const [payPlanList, setPayPlanList] = useState([]);
     const [payHistory, setPayHistory] = useState([]);
     const [assignForm, setAssignForm] = useState({ payIdx: '', chgRsn: '' });
@@ -38,6 +46,7 @@ const AdminSysForm = () => {
         if (mode === 'EDIT' && sysId) {
             fetchSystemDetail(sysId);
             fetchPayHistory(sysId);
+            fetchCorpDetail(sysId);
         } else {
             // 초기화
             setLogoFiles(null);
@@ -81,6 +90,40 @@ const AdminSysForm = () => {
             } else {
                 setExistingLogo(null);
             }
+        }
+    };
+
+    const fetchCorpDetail = async (id) => {
+        const res = await apiClient(`/admin/api/corp/detail/${id}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.sysId) {
+                setCorpData({
+                    bizRegNo: data.bizRegNo || '', corpRegNo: data.corpRegNo || '', ceoNm: data.ceoNm || '',
+                    indutyCd: data.indutyCd || '', corpStatCd: data.corpStatCd || '',
+                    zipCd: data.zipCd || '', baseAddr: data.baseAddr || '', dtlAddr: data.dtlAddr || '',
+                    corpTelno: data.corpTelno || '', homepageUrl: data.homepageUrl || '',
+                    mgr1Nm: data.mgr1Nm || '', mgr1Position: data.mgr1Position || '', mgr1Dept: data.mgr1Dept || '',
+                    mgr1MblTelno: data.mgr1MblTelno || '', mgr1Email: data.mgr1Email || '',
+                    mgr2Nm: data.mgr2Nm || '', mgr2Position: data.mgr2Position || '', mgr2Dept: data.mgr2Dept || '',
+                    mgr2MblTelno: data.mgr2MblTelno || '', mgr2Email: data.mgr2Email || '',
+                    rmrk: data.rmrk || ''
+                });
+            }
+        }
+    };
+
+    const handleCorpSave = async (e) => {
+        e.preventDefault();
+        const res = await apiClient('/admin/api/corp/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sysId, ...corpData })
+        });
+        if (res.ok) {
+            alert('업체 상세 정보가 저장되었습니다.');
+        } else {
+            alert('업체 상세 정보 저장에 실패했습니다.');
         }
     };
 
@@ -273,6 +316,111 @@ const AdminSysForm = () => {
                     </div>
                 </div>
             </div>
+
+            {mode === 'EDIT' && (
+                <div className="admin-card" style={{ marginTop: '16px' }}>
+                    <div className="admin-card-header">
+                        <span className="admin-card-title">업체 상세 정보</span>
+                        {mdfcnYn === 'Y' && <button type="submit" form="corpForm" className="admin-btn admin-btn-primary">저장</button>}
+                    </div>
+                    <div className="admin-card-body">
+                        <form id="corpForm" onSubmit={handleCorpSave}>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">사업자등록번호</label>
+                                <div className="admin-form-control">
+                                    <input type="text" className="admin-input" value={corpData.bizRegNo} onChange={e => setCorpData({ ...corpData, bizRegNo: e.target.value })} placeholder="000-00-00000" disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">법인등록번호</label>
+                                <div className="admin-form-control">
+                                    <input type="text" className="admin-input" value={corpData.corpRegNo} onChange={e => setCorpData({ ...corpData, corpRegNo: e.target.value })} disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">대표자명</label>
+                                <div className="admin-form-control">
+                                    <input type="text" className="admin-input" value={corpData.ceoNm} onChange={e => setCorpData({ ...corpData, ceoNm: e.target.value })} disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">업종</label>
+                                <div className="admin-form-control">
+                                    <CommonCodePicker
+                                        grpCd="INDUTY_CD"
+                                        type="select"
+                                        value={corpData.indutyCd}
+                                        onChange={e => setCorpData({ ...corpData, indutyCd: e.target.value })}
+                                        defaultOption="업종 선택"
+                                        disabled={mdfcnYn !== 'Y'}
+                                    />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">업체 상태</label>
+                                <div className="admin-form-control">
+                                    <CommonCodePicker
+                                        grpCd="CORP_STAT_CD"
+                                        type="select"
+                                        value={corpData.corpStatCd}
+                                        onChange={e => setCorpData({ ...corpData, corpStatCd: e.target.value })}
+                                        defaultOption="상태 선택"
+                                        disabled={mdfcnYn !== 'Y'}
+                                    />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">사업장 주소</label>
+                                <div className="admin-form-control" style={{ flexWrap: 'wrap', gap: '8px' }}>
+                                    <input type="text" className="admin-input" style={{ width: '120px' }} value={corpData.zipCd} onChange={e => setCorpData({ ...corpData, zipCd: e.target.value })} placeholder="우편번호" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ flex: 1, minWidth: '200px' }} value={corpData.baseAddr} onChange={e => setCorpData({ ...corpData, baseAddr: e.target.value })} placeholder="기본주소" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ flex: 1, minWidth: '200px' }} value={corpData.dtlAddr} onChange={e => setCorpData({ ...corpData, dtlAddr: e.target.value })} placeholder="상세주소" disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">대표 전화번호</label>
+                                <div className="admin-form-control">
+                                    <input type="text" className="admin-input" value={corpData.corpTelno} onChange={e => setCorpData({ ...corpData, corpTelno: e.target.value })} disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">홈페이지</label>
+                                <div className="admin-form-control">
+                                    <input type="text" className="admin-input" value={corpData.homepageUrl} onChange={e => setCorpData({ ...corpData, homepageUrl: e.target.value })} placeholder="https://" disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">정담당자</label>
+                                <div className="admin-form-control" style={{ flexWrap: 'wrap', gap: '8px' }}>
+                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr1Nm} onChange={e => setCorpData({ ...corpData, mgr1Nm: e.target.value })} placeholder="이름" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr1Position} onChange={e => setCorpData({ ...corpData, mgr1Position: e.target.value })} placeholder="직급" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr1Dept} onChange={e => setCorpData({ ...corpData, mgr1Dept: e.target.value })} placeholder="부서" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ width: '140px' }} value={corpData.mgr1MblTelno} onChange={e => setCorpData({ ...corpData, mgr1MblTelno: e.target.value })} placeholder="휴대폰" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="email" className="admin-input" style={{ flex: 1, minWidth: '160px' }} value={corpData.mgr1Email} onChange={e => setCorpData({ ...corpData, mgr1Email: e.target.value })} placeholder="이메일" disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                            <div className="admin-form-row">
+                                <label className="admin-form-label">부담당자</label>
+                                <div className="admin-form-control" style={{ flexWrap: 'wrap', gap: '8px' }}>
+                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr2Nm} onChange={e => setCorpData({ ...corpData, mgr2Nm: e.target.value })} placeholder="이름" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr2Position} onChange={e => setCorpData({ ...corpData, mgr2Position: e.target.value })} placeholder="직급" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr2Dept} onChange={e => setCorpData({ ...corpData, mgr2Dept: e.target.value })} placeholder="부서" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="text" className="admin-input" style={{ width: '140px' }} value={corpData.mgr2MblTelno} onChange={e => setCorpData({ ...corpData, mgr2MblTelno: e.target.value })} placeholder="휴대폰" disabled={mdfcnYn !== 'Y'} />
+                                    <input type="email" className="admin-input" style={{ flex: 1, minWidth: '160px' }} value={corpData.mgr2Email} onChange={e => setCorpData({ ...corpData, mgr2Email: e.target.value })} placeholder="이메일" disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+
+                            <div className="admin-form-row" style={{ alignItems: 'stretch' }}>
+                                <label className="admin-form-label">비고</label>
+                                <div className="admin-form-control">
+                                    <textarea className="admin-textarea" rows="3" value={corpData.rmrk} onChange={e => setCorpData({ ...corpData, rmrk: e.target.value })} placeholder="정/부 담당자 외 추가로 남길 연락처나 특이사항을 자유롭게 기록하세요." disabled={mdfcnYn !== 'Y'} />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <div className="admin-card" style={{ marginTop: '16px' }}>
                 <div className="admin-card-header">
