@@ -20,19 +20,14 @@ const AdminSysForm = () => {
     const [formData, setFormData] = useState({
         sysId: '', sysNm: '', useYn: 'Y', serviceBgnde: today, serviceEndde: '',
         adminThemeCd: 'MODERN', userThemeCd: 'MODERN', logoFileGrpId: '', positionSchemeCd: '', deptSchemeCd: '', payPlanIdx: '',
-        masterId: '', masterPw: '', masterNm: '', masterEmail: ''
+        masterId: '', masterPw: '', masterNm: '', masterEmail: '', corpIdx: ''
     });
     const [logoFiles, setLogoFiles] = useState(null);
     const [existingLogo, setExistingLogo] = useState(null);
     const [idCheckStatus, setIdCheckStatus] = useState('NONE'); // NONE, SUCCESS, FAIL
 
-    const [corpData, setCorpData] = useState({
-        bizRegNo: '', corpRegNo: '', ceoNm: '', indutyCd: '', corpStatCd: '',
-        zipCd: '', baseAddr: '', dtlAddr: '', corpTelno: '', homepageUrl: '',
-        mgr1Nm: '', mgr1Position: '', mgr1Dept: '', mgr1MblTelno: '', mgr1Email: '',
-        mgr2Nm: '', mgr2Position: '', mgr2Dept: '', mgr2MblTelno: '', mgr2Email: '',
-        rmrk: ''
-    });
+    const [corpList, setCorpList] = useState([]); // 업체 매핑 선택지 (업체 관리 화면에서 등록된 업체 목록)
+    const [mappedCorp, setMappedCorp] = useState(null); // 매핑된 업체의 상세정보 (읽기 전용 노출용)
 
     const [payPlanList, setPayPlanList] = useState([]);
     const [payHistory, setPayHistory] = useState([]);
@@ -42,11 +37,11 @@ const AdminSysForm = () => {
 
     useEffect(() => {
         fetchPayPlanList();
+        fetchCorpList();
 
         if (mode === 'EDIT' && sysId) {
             fetchSystemDetail(sysId);
             fetchPayHistory(sysId);
-            fetchCorpDetail(sysId);
         } else {
             // 초기화
             setLogoFiles(null);
@@ -55,6 +50,16 @@ const AdminSysForm = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode, sysId]);
+
+    // 업체 매핑이 선택/로드되면 그 업체의 상세정보를 읽기 전용으로 가져와 노출한다.
+    useEffect(() => {
+        if (formData.corpIdx) {
+            fetchMappedCorpDetail(formData.corpIdx);
+        } else {
+            setMappedCorp(null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formData.corpIdx]);
 
     // 요금제 목록과 현재 시스템의 요금제 정보가 둘 다 준비되면(비동기 로딩 순서 무관) 결제 구분 필터를 현재 요금제에 맞춰 채운다.
     useEffect(() => {
@@ -93,37 +98,20 @@ const AdminSysForm = () => {
         }
     };
 
-    const fetchCorpDetail = async (id) => {
-        const res = await apiClient(`/admin/api/corp/detail/${id}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.sysId) {
-                setCorpData({
-                    bizRegNo: data.bizRegNo || '', corpRegNo: data.corpRegNo || '', ceoNm: data.ceoNm || '',
-                    indutyCd: data.indutyCd || '', corpStatCd: data.corpStatCd || '',
-                    zipCd: data.zipCd || '', baseAddr: data.baseAddr || '', dtlAddr: data.dtlAddr || '',
-                    corpTelno: data.corpTelno || '', homepageUrl: data.homepageUrl || '',
-                    mgr1Nm: data.mgr1Nm || '', mgr1Position: data.mgr1Position || '', mgr1Dept: data.mgr1Dept || '',
-                    mgr1MblTelno: data.mgr1MblTelno || '', mgr1Email: data.mgr1Email || '',
-                    mgr2Nm: data.mgr2Nm || '', mgr2Position: data.mgr2Position || '', mgr2Dept: data.mgr2Dept || '',
-                    mgr2MblTelno: data.mgr2MblTelno || '', mgr2Email: data.mgr2Email || '',
-                    rmrk: data.rmrk || ''
-                });
-            }
-        }
-    };
-
-    const handleCorpSave = async (e) => {
-        e.preventDefault();
-        const res = await apiClient('/admin/api/corp/save', {
+    const fetchCorpList = async () => {
+        const res = await apiClient('/admin/api/corp/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sysId, ...corpData })
+            body: JSON.stringify({ corpNm: '' })
         });
+        if (res.ok) setCorpList((await res.json()).filter(c => c.useYn === 'Y'));
+    };
+
+    const fetchMappedCorpDetail = async (idx) => {
+        const res = await apiClient(`/admin/api/corp/detail/${idx}`);
         if (res.ok) {
-            alert('업체 상세 정보가 저장되었습니다.');
-        } else {
-            alert('업체 상세 정보 저장에 실패했습니다.');
+            const data = await res.json();
+            setMappedCorp(data && data.idx ? data : null);
         }
     };
 
@@ -320,104 +308,62 @@ const AdminSysForm = () => {
             {mode === 'EDIT' && (
                 <div className="admin-card" style={{ marginTop: '16px' }}>
                     <div className="admin-card-header">
-                        <span className="admin-card-title">업체 상세 정보</span>
-                        {mdfcnYn === 'Y' && <button type="submit" form="corpForm" className="admin-btn admin-btn-primary">저장</button>}
+                        <span className="admin-card-title">업체 매핑</span>
                     </div>
                     <div className="admin-card-body">
-                        <form id="corpForm" onSubmit={handleCorpSave}>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">사업자등록번호</label>
-                                <div className="admin-form-control">
-                                    <input type="text" className="admin-input" value={corpData.bizRegNo} onChange={e => setCorpData({ ...corpData, bizRegNo: e.target.value })} placeholder="000-00-00000" disabled={mdfcnYn !== 'Y'} />
-                                </div>
+                        <div className="admin-form-row">
+                            <label className="admin-form-label">매핑된 업체</label>
+                            <div className="admin-form-control">
+                                <select form="sysForm" className="admin-input" value={formData.corpIdx || ''} onChange={e => setFormData({ ...formData, corpIdx: e.target.value ? Number(e.target.value) : '' })} disabled={!canEdit}>
+                                    <option value="">매핑 안 함</option>
+                                    {corpList.map(c => (
+                                        <option key={c.idx} value={c.idx}>{c.corpNm}{c.bizRegNo ? ` (${c.bizRegNo})` : ''}</option>
+                                    ))}
+                                </select>
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '5px 0 0 0' }}>
+                                    * "업체 관리" 화면에 등록된 업체 중 이 시스템에 해당하는 업체를 선택하세요. 선택 후 위쪽 "수정" 버튼으로 저장해야 반영됩니다. 업체 정보 자체(사업자등록번호, 담당자 등)의 등록/수정은 "업체 관리" 화면에서 합니다.
+                                </p>
                             </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">법인등록번호</label>
-                                <div className="admin-form-control">
-                                    <input type="text" className="admin-input" value={corpData.corpRegNo} onChange={e => setCorpData({ ...corpData, corpRegNo: e.target.value })} disabled={mdfcnYn !== 'Y'} />
-                                </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">대표자명</label>
-                                <div className="admin-form-control">
-                                    <input type="text" className="admin-input" value={corpData.ceoNm} onChange={e => setCorpData({ ...corpData, ceoNm: e.target.value })} disabled={mdfcnYn !== 'Y'} />
-                                </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">업종</label>
-                                <div className="admin-form-control">
-                                    <CommonCodePicker
-                                        grpCd="INDUTY_CD"
-                                        type="select"
-                                        value={corpData.indutyCd}
-                                        onChange={e => setCorpData({ ...corpData, indutyCd: e.target.value })}
-                                        defaultOption="업종 선택"
-                                        disabled={mdfcnYn !== 'Y'}
-                                    />
-                                </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">업체 상태</label>
-                                <div className="admin-form-control">
-                                    <CommonCodePicker
-                                        grpCd="CORP_STAT_CD"
-                                        type="select"
-                                        value={corpData.corpStatCd}
-                                        onChange={e => setCorpData({ ...corpData, corpStatCd: e.target.value })}
-                                        defaultOption="상태 선택"
-                                        disabled={mdfcnYn !== 'Y'}
-                                    />
-                                </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">사업장 주소</label>
-                                <div className="admin-form-control" style={{ flexWrap: 'wrap', gap: '8px' }}>
-                                    <input type="text" className="admin-input" style={{ width: '120px' }} value={corpData.zipCd} onChange={e => setCorpData({ ...corpData, zipCd: e.target.value })} placeholder="우편번호" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ flex: 1, minWidth: '200px' }} value={corpData.baseAddr} onChange={e => setCorpData({ ...corpData, baseAddr: e.target.value })} placeholder="기본주소" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ flex: 1, minWidth: '200px' }} value={corpData.dtlAddr} onChange={e => setCorpData({ ...corpData, dtlAddr: e.target.value })} placeholder="상세주소" disabled={mdfcnYn !== 'Y'} />
-                                </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">대표 전화번호</label>
-                                <div className="admin-form-control">
-                                    <input type="text" className="admin-input" value={corpData.corpTelno} onChange={e => setCorpData({ ...corpData, corpTelno: e.target.value })} disabled={mdfcnYn !== 'Y'} />
-                                </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">홈페이지</label>
-                                <div className="admin-form-control">
-                                    <input type="text" className="admin-input" value={corpData.homepageUrl} onChange={e => setCorpData({ ...corpData, homepageUrl: e.target.value })} placeholder="https://" disabled={mdfcnYn !== 'Y'} />
-                                </div>
-                            </div>
+                        </div>
 
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">정담당자</label>
-                                <div className="admin-form-control" style={{ flexWrap: 'wrap', gap: '8px' }}>
-                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr1Nm} onChange={e => setCorpData({ ...corpData, mgr1Nm: e.target.value })} placeholder="이름" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr1Position} onChange={e => setCorpData({ ...corpData, mgr1Position: e.target.value })} placeholder="직급" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr1Dept} onChange={e => setCorpData({ ...corpData, mgr1Dept: e.target.value })} placeholder="부서" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ width: '140px' }} value={corpData.mgr1MblTelno} onChange={e => setCorpData({ ...corpData, mgr1MblTelno: e.target.value })} placeholder="휴대폰" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="email" className="admin-input" style={{ flex: 1, minWidth: '160px' }} value={corpData.mgr1Email} onChange={e => setCorpData({ ...corpData, mgr1Email: e.target.value })} placeholder="이메일" disabled={mdfcnYn !== 'Y'} />
+                        {mappedCorp && (
+                            <>
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">사업자등록번호</label>
+                                    <div className="admin-form-control">{mappedCorp.bizRegNo || '-'}</div>
                                 </div>
-                            </div>
-                            <div className="admin-form-row">
-                                <label className="admin-form-label">부담당자</label>
-                                <div className="admin-form-control" style={{ flexWrap: 'wrap', gap: '8px' }}>
-                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr2Nm} onChange={e => setCorpData({ ...corpData, mgr2Nm: e.target.value })} placeholder="이름" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr2Position} onChange={e => setCorpData({ ...corpData, mgr2Position: e.target.value })} placeholder="직급" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ width: '110px' }} value={corpData.mgr2Dept} onChange={e => setCorpData({ ...corpData, mgr2Dept: e.target.value })} placeholder="부서" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="text" className="admin-input" style={{ width: '140px' }} value={corpData.mgr2MblTelno} onChange={e => setCorpData({ ...corpData, mgr2MblTelno: e.target.value })} placeholder="휴대폰" disabled={mdfcnYn !== 'Y'} />
-                                    <input type="email" className="admin-input" style={{ flex: 1, minWidth: '160px' }} value={corpData.mgr2Email} onChange={e => setCorpData({ ...corpData, mgr2Email: e.target.value })} placeholder="이메일" disabled={mdfcnYn !== 'Y'} />
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">대표자명</label>
+                                    <div className="admin-form-control">{mappedCorp.ceoNm || '-'}</div>
                                 </div>
-                            </div>
-
-                            <div className="admin-form-row" style={{ alignItems: 'stretch' }}>
-                                <label className="admin-form-label">비고</label>
-                                <div className="admin-form-control">
-                                    <textarea className="admin-textarea" rows="3" value={corpData.rmrk} onChange={e => setCorpData({ ...corpData, rmrk: e.target.value })} placeholder="정/부 담당자 외 추가로 남길 연락처나 특이사항을 자유롭게 기록하세요." disabled={mdfcnYn !== 'Y'} />
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">사업장 주소</label>
+                                    <div className="admin-form-control">
+                                        {mappedCorp.baseAddr ? `${mappedCorp.baseAddr} ${mappedCorp.dtlAddr || ''}`.trim() : '-'}
+                                    </div>
                                 </div>
-                            </div>
-                        </form>
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">대표 전화번호</label>
+                                    <div className="admin-form-control">{mappedCorp.corpTelno || '-'}</div>
+                                </div>
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">정담당자</label>
+                                    <div className="admin-form-control">
+                                        {mappedCorp.mgr1Nm ? `${mappedCorp.mgr1Nm} ${mappedCorp.mgr1Position || ''} (${mappedCorp.mgr1Dept || '-'}) · ${mappedCorp.mgr1MblTelno || '-'} · ${mappedCorp.mgr1Email || '-'}` : '-'}
+                                    </div>
+                                </div>
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">부담당자</label>
+                                    <div className="admin-form-control">
+                                        {mappedCorp.mgr2Nm ? `${mappedCorp.mgr2Nm} ${mappedCorp.mgr2Position || ''} (${mappedCorp.mgr2Dept || '-'}) · ${mappedCorp.mgr2MblTelno || '-'} · ${mappedCorp.mgr2Email || '-'}` : '-'}
+                                    </div>
+                                </div>
+                                <div className="admin-form-row">
+                                    <label className="admin-form-label">비고</label>
+                                    <div className="admin-form-control">{mappedCorp.rmrk || '-'}</div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

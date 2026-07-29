@@ -47,14 +47,18 @@
 | position_scheme_cd | 이 테넌트가 선택한 직급 체계 (`TN_COM_C002` `POSITION_CD` 그룹의 2뎁스 `com_cd`, 예: `GENERAL`/`RESEARCH`) — 직원 등록 화면의 3뎁스 직급 드롭다운이 이 값으로 필터링됨 |
 | dept_scheme_cd | 이 테넌트가 선택한 부서 체계 (`TN_COM_C002` `DEPT_CD` 그룹의 2뎁스 `com_cd`, 예: `STANDARD`/`DIVISION`) — 직원 등록 화면의 3뎁스 부서 드롭다운이 이 값으로 필터링됨 |
 | current_pay_idx | (2026-07-25 추가) 현재 적용 중인 요금제 (`TN_PAY_M001.idx` FK, nullable) — 빠른 조회용 캐시. 정본은 `TN_PAY_H001`(적용 이력, `applied_end_dt IS NULL`인 행이 현재 적용중) |
+| corp_idx | (2026-07-29 추가) 매핑된 업체 (`TN_CORP_D001.idx` FK, nullable) — 이 시스템(테넌트)이 실제로 어느 업체의 것인지 연결. 매핑되면 "시스템 이용관리"(`AdminSysForm.jsx`) 화면이 그 업체의 상세정보를 읽기 전용으로 노출한다 |
 
 새 시스템 생성 시(`copyBoards`, `copyAdminMenus` 등) `sys_id = 'CORE'` 데이터를 템플릿으로 복제합니다. **공통코드(`TN_COM_C001`/`C002`)는 2026-07-25부로 더 이상 업체별로 복제하지 않음** — 아래 "공통코드" 섹션 참고. `copyAdminMenus`도 `core_only_yn='Y'`인 CORE 전용 메뉴는 복제 대상에서 제외한다.
 
-#### `TN_CORP_D001` — 업체(고객사) 상세정보 (2026-07-29 추가, `TN_SYS_M001`과 1:1)
-`sys_id`(PK, FK→`TN_SYS_M001.sys_id`) 하나에 사업자/담당자 정보를 담는다. `TN_SYS_M001`은 시스템 설정(테마·요금제 등)에 집중되어 있어, "업체 자체"에 대한 정보(사업자등록번호, 대표자, 담당자 연락처 등)는 이 테이블로 분리했다. `AdminSysForm.jsx`의 "업체 상세 정보" 카드에서만 조회/저장하며(`/admin/api/corp/detail/{sysId}`, `/admin/api/corp/save`, `AdminCorpController` — `SUPER_ADMIN_ONLY`), 아직 값이 없는 테넌트는 행 자체가 없다(`selectCorpDetail`이 빈 Map 반환).
+> **"업체 관리" 메뉴는 "시스템 이용관리"로 개명됨 (2026-07-29)**: `TN_SYS_M001` CRUD 화면(`AdminSysManage.jsx`/`AdminSysForm.jsx`, `MNU_SYS_01`)은 원래 이름이 "업체 관리"였으나, 실제로 관리하는 건 시스템/테넌트 프로비저닝(테마·요금제·마스터 계정)이라 "시스템 이용관리"로 이름을 바꿨다. "업체 관리"라는 이름은 아래 `TN_CORP_D001` 전용 화면(`MNU_CORP_01`)이 새로 가져갔다.
+
+#### `TN_CORP_D001` — 업체(고객사) 마스터 (2026-07-29 추가/재구성)
+`idx`(PK, auto) 기반의 **독립 마스터**다. 처음엔 `TN_SYS_M001`과 1:1(PK=sys_id)로 설계했었으나, "업체는 시스템 없이도 존재할 수 있어야 하고(리드 단계 등) 여러 시스템이 같은 업체를 참조할 수도 있어야 한다"는 요구로 `TN_PAY_M001`(요금제)과 같은 독립 전역 마스터 형태로 재구성했다. `TN_SYS_M001.corp_idx`로 원하는 시스템에 매핑(연결)한다. 전용 CRUD 화면은 `AdminCorpManage.jsx`(목록)/`AdminCorpDetail.jsx`(등록/상세, `admin/corp`)이고 API는 `/admin/api/corp/**`(`AdminCorpController` — `TN_PAY_M001`과 동일하게 `SUPER_ADMIN_ONLY`).
 
 | 컬럼 | 설명 |
 |---|---|
+| corp_nm | 업체명 |
 | biz_reg_no / corp_reg_no | 사업자등록번호 / 법인등록번호(선택) |
 | ceo_nm | 대표자명 |
 | induty_cd | 업종 — 공통코드 `INDUTY_CD` 그룹 |
@@ -64,6 +68,7 @@
 | mgr1_nm / mgr1_position / mgr1_dept / mgr1_mbl_telno / mgr1_email | 정담당자 |
 | mgr2_nm / mgr2_position / mgr2_dept / mgr2_mbl_telno / mgr2_email | 부담당자 (둘 다 선택 항목, 1:N 담당자 테이블은 만들지 않고 정/부 2명으로 고정 — 그 이상은 `rmrk`에 자유 기록) |
 | rmrk | 비고 |
+| use_yn / del_yn | 사용 여부 / 논리 삭제 |
 
 담당자 직급(`mgr1_position`/`mgr2_position`)과 부서(`mgr1_dept`/`mgr2_dept`)는 자유 텍스트다 — `TN_MEM_M002`의 `position_cd`/`dept_cd`(내부 직원용 공통코드 체계)를 재사용하지 않는데, 외부 업체 담당자의 직급/부서 표현은 회사마다 제각각이라 코드화가 맞지 않기 때문이다.
 

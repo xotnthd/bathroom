@@ -2,9 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.community.bathroom.admin.corp.mapper.AdminCorpMapper">
 
+    <select id="selectCorpList" resultType="java.util.Map">
+        SELECT idx AS "idx", corp_nm AS "corpNm", biz_reg_no AS "bizRegNo", ceo_nm AS "ceoNm",
+               induty_cd AS "indutyCd", corp_stat_cd AS "corpStatCd", corp_telno AS "corpTelno", use_yn AS "useYn"
+        FROM TN_CORP_D001
+        WHERE del_yn = 'N'
+        <if test="corpNm != null and corpNm != ''">
+            AND corp_nm LIKE CONCAT('%', #{corpNm}, '%')
+        </if>
+        ORDER BY idx DESC
+    </select>
+
     <select id="selectCorpDetail" resultType="java.util.Map">
         SELECT
-            sys_id AS "sysId",
+            idx AS "idx",
+            corp_nm AS "corpNm",
             biz_reg_no AS "bizRegNo",
             corp_reg_no AS "corpRegNo",
             ceo_nm AS "ceoNm",
@@ -25,26 +37,31 @@
             mgr2_dept AS "mgr2Dept",
             mgr2_mbl_telno AS "mgr2MblTelno",
             mgr2_email AS "mgr2Email",
-            rmrk AS "rmrk"
+            rmrk AS "rmrk",
+            use_yn AS "useYn"
         FROM TN_CORP_D001
-        WHERE sys_id = #{sysId}
+        WHERE idx = #{idx} AND del_yn = 'N'
     </select>
 
-    <insert id="upsertCorpDetail" parameterType="java.util.Map">
+    <insert id="insertCorp" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="idx">
         INSERT INTO TN_CORP_D001 (
-            sys_id, biz_reg_no, corp_reg_no, ceo_nm, induty_cd, corp_stat_cd,
+            corp_nm, biz_reg_no, corp_reg_no, ceo_nm, induty_cd, corp_stat_cd,
             zip_cd, base_addr, dtl_addr, corp_telno, homepage_url,
             mgr1_nm, mgr1_position, mgr1_dept, mgr1_mbl_telno, mgr1_email,
             mgr2_nm, mgr2_position, mgr2_dept, mgr2_mbl_telno, mgr2_email,
-            rmrk, frst_rgstr_id, frst_reg_dt, last_mdfr_id, last_mdfcn_dt
+            rmrk, use_yn, del_yn, frst_rgstr_id, frst_reg_dt, last_mdfr_id, last_mdfcn_dt
         ) VALUES (
-            #{sysId}, #{bizRegNo}, #{corpRegNo}, #{ceoNm}, #{indutyCd}, #{corpStatCd},
+            #{corpNm}, #{bizRegNo}, #{corpRegNo}, #{ceoNm}, #{indutyCd}, #{corpStatCd},
             #{zipCd}, #{baseAddr}, #{dtlAddr}, #{corpTelno}, #{homepageUrl},
             #{mgr1Nm}, #{mgr1Position}, #{mgr1Dept}, #{mgr1MblTelno}, #{mgr1Email},
             #{mgr2Nm}, #{mgr2Position}, #{mgr2Dept}, #{mgr2MblTelno}, #{mgr2Email},
-            #{rmrk}, #{userId}, NOW(), #{userId}, NOW()
+            #{rmrk}, COALESCE(#{useYn}, 'Y'), 'N', #{userId}, NOW(), #{userId}, NOW()
         )
-        ON DUPLICATE KEY UPDATE
+    </insert>
+
+    <update id="updateCorp" parameterType="java.util.Map">
+        UPDATE TN_CORP_D001 SET
+            corp_nm = #{corpNm},
             biz_reg_no = #{bizRegNo},
             corp_reg_no = #{corpRegNo},
             ceo_nm = #{ceoNm},
@@ -66,8 +83,14 @@
             mgr2_mbl_telno = #{mgr2MblTelno},
             mgr2_email = #{mgr2Email},
             rmrk = #{rmrk},
+            use_yn = #{useYn},
             last_mdfr_id = #{userId},
             last_mdfcn_dt = NOW()
-    </insert>
+        WHERE idx = #{idx}
+    </update>
+
+    <update id="logicalDeleteCorp">
+        UPDATE TN_CORP_D001 SET del_yn = 'Y' WHERE idx = #{idx}
+    </update>
 
 </mapper>

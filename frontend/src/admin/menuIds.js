@@ -4,6 +4,7 @@
 export const MENU_IDS = {
     AUTH: 'MNU_AUTH_01',
     AUTH_TEMPLATE: 'MNU_AUTHTPL_01',
+    CORP: 'MNU_CORP_01',
     BOARD: 'MNU_BOARD_01',
     BOARD_POST: 'MNU_BOARD_POST',
     CODE: 'MNU_CODE_01',

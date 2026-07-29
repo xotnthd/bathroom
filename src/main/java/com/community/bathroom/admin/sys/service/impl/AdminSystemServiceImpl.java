@@ -65,6 +65,12 @@ public class AdminSystemServiceImpl implements AdminSystemService {
         
         String atchFileGrpId = (String) param.get("logoFileGrpId");
 
+        // 업체 매핑 해제 시 프론트가 빈 문자열을 보낼 수 있어 NULL로 정규화 (corp_idx는 nullable FK)
+        Object corpIdx = param.get("corpIdx");
+        if (corpIdx == null || String.valueOf(corpIdx).trim().isEmpty()) {
+            param.put("corpIdx", null);
+        }
+
         if (logoFiles != null && logoFiles.length > 0) {
             // "SYS_LOGO" is the file category
             String newGrpId = commonFileService.uploadFiles(logoFiles, sysId, atchFileGrpId, "SYS_LOGO", userId);

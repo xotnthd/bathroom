@@ -9,12 +9,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * TN_CORP_D001(업체 상세정보) - TN_SYS_M001과 1:1(sys_id). AdminSysForm.jsx의 "업체 상세 정보" 카드에서만 쓰인다.
- * AdminSystemController.getSystemDetail()과 달리 모든 테넌트의 부트스트랩 호출(AdminLayout)이 아니라
- * CORE 전용 업체 관리 화면에서만 쓰이므로 SUPER_ADMIN_ONLY로 막는다.
+ * TN_CORP_D001(업체 마스터) - 어느 시스템(테넌트)에도 종속되지 않는 독립 마스터다.
+ * "시스템 이용관리"(AdminSysForm.jsx) 화면에서 TN_SYS_M001.corp_idx로 매핑해서 읽기 전용으로 가져다 쓴다.
+ * TN_PAY_M001(요금제)과 동일하게 CORE에서만 관리하는 전역 마스터라 SUPER_ADMIN_ONLY로 막는다
+ * (AdminPayController와 동일한 컨벤션).
  */
 @RestController
 @RequestMapping("/admin/api/corp")
@@ -32,16 +34,29 @@ public class AdminCorpController {
     }
 
     @TenantGuard(action = TenantGuard.Action.SUPER_ADMIN_ONLY)
-    @GetMapping("/detail/{sysId}")
-    public ResponseEntity<Map<String, Object>> getCorpDetail(@PathVariable String sysId) {
-        return ResponseEntity.ok(adminCorpService.getCorpDetail(sysId));
+    @PostMapping("/list")
+    public ResponseEntity<List<Map<String, Object>>> getCorpList(@RequestBody Map<String, Object> param) {
+        return ResponseEntity.ok(adminCorpService.getCorpList(param));
+    }
+
+    @TenantGuard(action = TenantGuard.Action.SUPER_ADMIN_ONLY)
+    @GetMapping("/detail/{idx}")
+    public ResponseEntity<Map<String, Object>> getCorpDetail(@PathVariable Long idx) {
+        return ResponseEntity.ok(adminCorpService.getCorpDetail(idx));
     }
 
     @TenantGuard(action = TenantGuard.Action.SUPER_ADMIN_ONLY)
     @PostMapping("/save")
-    public ResponseEntity<?> saveCorpDetail(@RequestBody Map<String, Object> param) {
+    public ResponseEntity<?> saveCorp(@RequestBody Map<String, Object> param) {
         param.put("userId", getLoginUserId());
-        adminCorpService.saveCorpDetail(param);
+        adminCorpService.saveCorp(param);
+        return ResponseEntity.ok().build();
+    }
+
+    @TenantGuard(action = TenantGuard.Action.SUPER_ADMIN_ONLY)
+    @DeleteMapping("/delete/{idx}")
+    public ResponseEntity<?> deleteCorp(@PathVariable Long idx) {
+        adminCorpService.deleteCorp(idx);
         return ResponseEntity.ok().build();
     }
 }

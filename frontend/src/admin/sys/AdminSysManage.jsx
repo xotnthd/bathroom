@@ -90,7 +90,7 @@ const AdminSysManage = () => {
             {/* 상단 검색 섹션 (게시판 관리 화면 스타일 통일) */}
             <div className="admin-card">
                 <div className="admin-card-header" style={{ padding: '12px 20px', flexWrap: 'wrap', justifyContent: 'flex-start', gap: '10px 24px' }}>
-                    <span className="admin-card-title">업체 관리</span>
+                    <span className="admin-card-title">시스템 이용관리</span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', margin: 0 }}>
                         <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>시스템 명칭:</span>
                         <input
@@ -128,7 +128,7 @@ const AdminSysManage = () => {
             {/* 리스트 영역 */}
             <div className="admin-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className="admin-card-title">업체 목록</span>
+                    <span className="admin-card-title">시스템 목록</span>
                     <button onClick={handleCreateNew} className="admin-btn admin-btn-primary" style={{ padding: '6px 16px', flexShrink: 0, whiteSpace: 'nowrap' }}>+ 신규 시스템</button>
                 </div>
                 <div className="admin-card-body" style={{ flex: 1, overflowY: 'auto', padding: '0' }}>

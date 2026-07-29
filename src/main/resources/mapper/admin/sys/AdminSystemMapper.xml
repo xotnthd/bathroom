@@ -45,12 +45,15 @@
             A.dept_scheme_cd AS "deptSchemeCd",
             A.current_pay_idx AS "currentPayIdx",
             P.pay_plan_nm AS "currentPayPlanNm",
+            A.corp_idx AS "corpIdx",
+            C.corp_nm AS "corpNm",
             (SELECT file_sn FROM TN_COM_F001 WHERE file_grp_id = A.logo_file_grp_id AND del_yn = 'N' ORDER BY file_sn DESC LIMIT 1) AS "logoFileSn",
             (SELECT user_id FROM TN_MEM_M001 WHERE sys_id = A.sys_id AND athrty_cd = 'A001' ORDER BY idx ASC LIMIT 1) AS "masterId",
             (SELECT user_nm FROM TN_MEM_M001 WHERE sys_id = A.sys_id AND athrty_cd = 'A001' ORDER BY idx ASC LIMIT 1) AS "masterNm",
             (SELECT M2.email FROM TN_MEM_M001 M1 JOIN TN_MEM_M002 M2 ON M1.idx = M2.user_idx WHERE M1.sys_id = A.sys_id AND M1.athrty_cd = 'A001' ORDER BY M1.idx ASC LIMIT 1) AS "masterEmail"
         FROM TN_SYS_M001 A
         LEFT JOIN TN_PAY_M001 P ON A.current_pay_idx = P.idx
+        LEFT JOIN TN_CORP_D001 C ON A.corp_idx = C.idx
         WHERE A.sys_id = #{sysId}
     </select>
 
@@ -78,6 +81,7 @@
             <if test="deptSchemeCd != null and deptSchemeCd != ''">
                 dept_scheme_cd = #{deptSchemeCd},
             </if>
+            corp_idx = #{corpIdx},
             last_mdfr_id = #{userId},
             last_mdfcn_dt = NOW()
         WHERE sys_id = #{sysId}
