@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMenuAuth } from '../hooks/useMenuAuth';
+import { MENU_IDS } from '../menuIds';
 import { useAuthTplManage } from './hooks/useAuthTplManage';
 import PlanTplModal from './components/PlanTplModal';
 import DeptTplModal from './components/DeptTplModal';
@@ -7,7 +8,7 @@ import RoleTplModal from './components/RoleTplModal';
 import MenuMapModal from './components/MenuMapModal';
 
 const AdminAuthTemplateManage = () => {
-    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth();
+    const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.AUTH_TEMPLATE);
 
     const {
         tplList, deptList, roleList, menuMapList,
