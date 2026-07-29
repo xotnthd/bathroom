@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import CommonCodePicker from '../../components/CommonCodePicker';
 import CommonCodePreview from '../../components/CommonCodePreview';
+import CorpPickerModal from '../../components/common/CorpPickerModal';
 import { useMenuAuth } from '../hooks/useMenuAuth';
 import { MENU_IDS } from '../menuIds';
 
@@ -26,8 +27,8 @@ const AdminSysForm = () => {
     const [existingLogo, setExistingLogo] = useState(null);
     const [idCheckStatus, setIdCheckStatus] = useState('NONE'); // NONE, SUCCESS, FAIL
 
-    const [corpList, setCorpList] = useState([]); // 업체 매핑 선택지 (업체 관리 화면에서 등록된 업체 목록)
     const [mappedCorp, setMappedCorp] = useState(null); // 매핑된 업체의 상세정보 (읽기 전용 노출용)
+    const [showCorpPicker, setShowCorpPicker] = useState(false);
 
     const [payPlanList, setPayPlanList] = useState([]);
     const [payHistory, setPayHistory] = useState([]);
@@ -37,7 +38,6 @@ const AdminSysForm = () => {
 
     useEffect(() => {
         fetchPayPlanList();
-        fetchCorpList();
 
         if (mode === 'EDIT' && sysId) {
             fetchSystemDetail(sysId);
@@ -96,15 +96,6 @@ const AdminSysForm = () => {
                 setExistingLogo(null);
             }
         }
-    };
-
-    const fetchCorpList = async () => {
-        const res = await apiClient('/admin/api/corp/list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ corpNm: '' })
-        });
-        if (res.ok) setCorpList((await res.json()).filter(c => c.useYn === 'Y'));
     };
 
     const fetchMappedCorpDetail = async (idx) => {
@@ -308,20 +299,18 @@ const AdminSysForm = () => {
             {mode === 'EDIT' && (
                 <div className="admin-card" style={{ marginTop: '16px' }}>
                     <div className="admin-card-header">
-                        <span className="admin-card-title">업체 매핑</span>
+                        <span className="admin-card-title">업체 정보</span>
                     </div>
                     <div className="admin-card-body">
                         <div className="admin-form-row">
-                            <label className="admin-form-label">매핑된 업체</label>
+                            <label className="admin-form-label">업체 정보</label>
                             <div className="admin-form-control">
-                                <select form="sysForm" className="admin-input" value={formData.corpIdx || ''} onChange={e => setFormData({ ...formData, corpIdx: e.target.value ? Number(e.target.value) : '' })} disabled={!canEdit}>
-                                    <option value="">매핑 안 함</option>
-                                    {corpList.map(c => (
-                                        <option key={c.idx} value={c.idx}>{c.corpNm}{c.bizRegNo ? ` (${c.bizRegNo})` : ''}</option>
-                                    ))}
-                                </select>
-                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '5px 0 0 0' }}>
-                                    * "업체 관리" 화면에 등록된 업체 중 이 시스템에 해당하는 업체를 선택하세요. 선택 후 위쪽 "수정" 버튼으로 저장해야 반영됩니다. 업체 정보 자체(사업자등록번호, 담당자 등)의 등록/수정은 "업체 관리" 화면에서 합니다.
+                                <span>{mappedCorp ? mappedCorp.corpNm : '매핑 안 함'}</span>
+                                {canEdit && (
+                                    <button type="button" onClick={() => setShowCorpPicker(true)} className="admin-btn admin-btn-secondary" style={{ flexShrink: 0 }}>업체 검색</button>
+                                )}
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '5px 0 0 0', flexBasis: '100%' }}>
+                                    * "업체 검색"으로 이 시스템에 해당하는 업체를 선택하세요. 선택 후 위쪽 "수정" 버튼으로 저장해야 반영됩니다. 업체 정보 자체(사업자등록번호, 담당자 등)의 등록/수정은 "업체 관리" 화면에서 합니다.
                                 </p>
                             </div>
                         </div>
@@ -367,6 +356,13 @@ const AdminSysForm = () => {
                     </div>
                 </div>
             )}
+
+            <CorpPickerModal
+                isOpen={showCorpPicker}
+                onClose={() => setShowCorpPicker(false)}
+                initialSelected={formData.corpIdx || null}
+                onConfirm={(idx) => setFormData({ ...formData, corpIdx: idx || '' })}
+            />
 
             <div className="admin-card" style={{ marginTop: '16px' }}>
                 <div className="admin-card-header">
