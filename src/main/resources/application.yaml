@@ -32,7 +32,7 @@ mybatis:
 
 app:
   file:
-    upload-dir: C:/uploads
+    upload-dir: ${FILE_UPLOAD_DIR:C:/uploads}   # 서버(리눅스)에서는 환경변수로 실제 경로 지정 (예: /opt/bathroom/uploads)
 
 # 로깅 설정 (일자별 롤링 및 yml/Docker Compose에서 경로 제어 가능)
 logging:
