@@ -13,6 +13,7 @@
         SELECT file_sn AS "fileSn", file_grp_id AS "fileGrpId", file_orgnl_nm AS "fileOrgnlNm",
         file_size AS "fileSize", file_extsn AS "fileExtsn", frst_reg_dt AS "frstRegDt"
         FROM TN_COM_F001 WHERE sys_id = #{sysId} AND file_grp_id = #{fileGrpId} AND del_yn = 'N'
+        ORDER BY file_sn DESC
     </select>
 
     <select id="selectFileBySn" resultType="map">
