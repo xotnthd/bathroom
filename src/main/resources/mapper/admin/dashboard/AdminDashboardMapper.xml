@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.admin.dashboard.mapper.AdminDashboardMapper">
+
+    <!-- 요약 통계 카드(A 영역): 회원 수 / 이번 달 신규가입 / 현재 요금제 / 서비스 만료일 -->
+    <select id="selectDashboardStats" resultType="java.util.Map">
+        SELECT
+            (SELECT COUNT(*) FROM TN_MEM_M001 WHERE sys_id = #{sysId}) AS "memberCount",
+            (SELECT COUNT(*) FROM TN_MEM_M001 WHERE sys_id = #{sysId} AND join_ymd LIKE CONCAT(DATE_FORMAT(NOW(), '%Y%m'), '%')) AS "newMembersThisMonth",
+            P.pay_plan_nm AS "currentPayPlanNm",
+            DATE_FORMAT(S.service_endde, '%Y-%m-%d') AS "serviceEndde"
+        FROM TN_SYS_M001 S
+        LEFT JOIN TN_PAY_M001 P ON S.current_pay_idx = P.idx
+        WHERE S.sys_id = #{sysId}
+    </select>
+
+    <!-- 진행중인 투표 (C 영역) - 오늘이 시작일~종료일 사이인 것만 -->
+    <select id="selectActiveVotes" resultType="java.util.Map">
+        SELECT
+            idx AS "idx",
+            vote_titl AS "voteTitl",
+            bgng_dt AS "bgngDt",
+            end_dt AS "endDt"
+        FROM TN_VOTE_M001
+        WHERE sys_id = #{sysId} AND del_yn = 'N'
+          AND CURDATE() BETWEEN bgng_dt AND end_dt
+        ORDER BY end_dt ASC
+        LIMIT 5
+    </select>
+
+    <!-- 진행중인 설문 (C 영역) - 템플릿 제외, 오늘이 시작일~종료일 사이인 것만 -->
+    <select id="selectActiveSurveys" resultType="java.util.Map">
+        SELECT
+            surv_id AS "survId",
+            surv_nm AS "survNm",
+            start_dt AS "startDt",
+            end_dt AS "endDt"
+        FROM TN_SURVEY_M001
+        WHERE sys_id = #{sysId} AND template_yn = 'N' AND del_yn = 'N'
+          AND CURDATE() BETWEEN start_dt AND end_dt
+        ORDER BY end_dt ASC
+        LIMIT 5
+    </select>
+
+    <!-- 최근 활동 로그 (B 영역) -->
+    <select id="selectRecentLogs" resultType="java.util.Map">
+        SELECT
+            user_id AS "userId",
+            fnctn_nm AS "fnctnNm",
+            req_url AS "reqUrl",
+            reg_dt AS "regDt"
+        FROM TN_COM_L001
+        WHERE sys_id = #{sysId}
+        ORDER BY reg_dt DESC
+        LIMIT 10
+    </select>
+
+</mapper>

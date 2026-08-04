@@ -202,9 +202,14 @@ const AdminLayout = () => {
                 <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ background: 'none', border: 'none', color: 'inherit', fontSize: '20px', cursor: 'pointer', padding: '0 10px' }}>☰</button>
                     {sysConfig?.logoFileSn ? (
-                        <img src={`/admin/api/comn/file/download/${sysConfig.logoFileSn}`} alt="logo" style={{ height: '30px' }} />
+                        <img
+                            src={`/admin/api/comn/file/download/${sysConfig.logoFileSn}`}
+                            alt="logo"
+                            style={{ height: '30px', cursor: 'pointer' }}
+                            onClick={() => navigate('/admin/dashboard')}
+                        />
                     ) : (
-                        <h2>{sysConfig?.sysNm || 'Admin System'}</h2>
+                        <h2 style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/dashboard')}>{sysConfig?.sysNm || 'Admin System'}</h2>
                     )}
                 </div>
                 <div className="header-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
