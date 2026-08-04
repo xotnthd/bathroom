@@ -55,7 +55,7 @@ public class AdminSystemController {
             return ResponseEntity.ok(res);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body("시스템 설정 저장 실패");
+            return ResponseEntity.internalServerError().body("시스템 설정 저장 실패: " + e.getMessage());
         }
     }
 

@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -24,6 +25,11 @@ public class CommonFileServiceImpl implements CommonFileService {
 
     @Value("${app.file.upload-dir}")
     private String uploadRootPath; // YAML에서 읽어옴
+
+    // 이미지 전용 필드(로고/배너/프로필 사진 등) - 문서/압축파일 등이 잘못 올라가는 것을 막는다.
+    // 게시판/팝업/댓글 첨부파일처럼 임의 파일 첨부가 정상 용도인 모듈은 여기 포함하지 않는다.
+    private static final Set<String> IMAGE_ONLY_MODULES = Set.of("SYS_LOGO", "SYS_BANNER", "USER");
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp", "bmp");
 
     @Override
     @Transactional
@@ -50,6 +56,15 @@ public class CommonFileServiceImpl implements CommonFileService {
 
             String originalName = file.getOriginalFilename();
             String extension = originalName.substring(originalName.lastIndexOf(".") + 1);
+
+            if (IMAGE_ONLY_MODULES.contains(moduleName)) {
+                boolean extOk = ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase());
+                boolean contentTypeOk = file.getContentType() != null && file.getContentType().startsWith("image/");
+                if (!extOk || !contentTypeOk) {
+                    throw new IllegalArgumentException("이미지 파일만 업로드할 수 있습니다. (jpg, png, gif, webp, bmp)");
+                }
+            }
+
             String savedFileName = UUID.randomUUID().toString() + "." + extension; // 확장자 포함 저장
 
             // 3. 물리적 파일 저장 (0kb 원인 해결: 확장자 포함하여 저장)

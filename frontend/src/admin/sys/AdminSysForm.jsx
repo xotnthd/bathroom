@@ -193,7 +193,8 @@ const AdminSysForm = () => {
             alert(mode === 'CREATE' ? '시스템이 성공적으로 생성되었습니다.' : '수정되었습니다.');
             navigate('/admin/sys');
         } else {
-            alert('요청에 실패했습니다.');
+            const errMsg = await res.text().catch(() => '');
+            alert(errMsg || '요청에 실패했습니다.');
         }
     };
 
