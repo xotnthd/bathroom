@@ -3,7 +3,7 @@
 <mapper namespace="com.community.bathroom.comn.log.mapper.AuditLogMapper">
 
     <insert id="insertAuditLog" parameterType="java.util.Map">
-        INSERT INTO tn_com_l001 (
+        INSERT INTO TN_COM_L001 (
             sys_id, user_id, fnctn_nm, req_url, oprtn_ip, log_cn, reg_dt
         ) VALUES (
                      #{sysId}, #{userId}, #{fnctnNm}, #{reqUrl}, #{oprtnIp}, #{logCn}, NOW()

@@ -10,8 +10,8 @@
         P.file_grp_id AS "fileGrpId", P.surv_id AS "survId",
         P.frst_rgstr_id AS "frstRgstrId", P.frst_reg_dt AS "frstRegDt",
         S.surv_nm AS "survNm"
-        FROM tn_pop_m001 P
-        LEFT JOIN tn_survey_m001 S ON P.sys_id = S.sys_id AND P.surv_id = S.surv_id
+        FROM TN_POP_M001 P
+        LEFT JOIN TN_SURVEY_M001 S ON P.sys_id = S.sys_id AND P.surv_id = S.surv_id
         WHERE P.sys_id = #{sysId}
 
         <!-- 시스템 영역 검색 조건 -->
@@ -34,8 +34,8 @@
             P.pop_titl AS "popTitl", P.pop_cn AS "popCn",
             P.file_grp_id AS "fileGrpId", P.surv_id AS "survId",
             F.file_sn AS "fileSn", F.file_orgnl_nm AS "fileOrgnlNm"
-        FROM tn_pop_m001 P
-                 LEFT JOIN tn_com_f001 F ON P.file_grp_id = F.file_grp_id AND F.del_yn = 'N'
+        FROM TN_POP_M001 P
+                 LEFT JOIN TN_COM_F001 F ON P.file_grp_id = F.file_grp_id AND F.del_yn = 'N'
         WHERE P.sys_id = #{sysId}
           AND P.sys_se_cd = #{sysSeCd}
           AND P.use_yn = 'Y'
@@ -49,13 +49,13 @@
         P.pop_cn AS "popCn", P.bgng_ymd AS "bgngYmd", P.end_ymd AS "endYmd", P.use_yn AS "useYn",
         P.file_grp_id AS "fileGrpId", P.surv_id AS "survId",
         S.surv_nm AS "survNm"
-        FROM tn_pop_m001 P
-        LEFT JOIN tn_survey_m001 S ON P.sys_id = S.sys_id AND P.surv_id = S.surv_id
+        FROM TN_POP_M001 P
+        LEFT JOIN TN_SURVEY_M001 S ON P.sys_id = S.sys_id AND P.surv_id = S.surv_id
         WHERE P.sys_id = #{sysId} AND P.pop_idx = #{popIdx} AND P.del_yn = 'N'
     </select>
 
     <insert id="insertPopup" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="popIdx">
-        INSERT INTO tn_pop_m001 (
+        INSERT INTO TN_POP_M001 (
             sys_id, sys_se_cd, pop_titl, pop_cn, bgng_ymd, end_ymd, file_grp_id, surv_id, use_yn, del_yn, frst_rgstr_id, frst_reg_dt
         ) VALUES (
                      #{sysId}, #{sysSeCd}, #{popTitl}, #{popCn}, #{bgngYmd}, #{endYmd}, #{fileGrpId}, #{survId}, #{useYn}, 'N', #{userId}, NOW()
@@ -63,7 +63,7 @@
     </insert>
 
     <update id="updatePopup" parameterType="java.util.Map">
-        UPDATE tn_pop_m001
+        UPDATE TN_POP_M001
         SET pop_titl = #{popTitl},
             pop_cn = #{popCn},
             bgng_ymd = #{bgngYmd},
@@ -78,7 +78,7 @@
     </update>
 
     <update id="deletePopup">
-        UPDATE tn_pop_m001
+        UPDATE TN_POP_M001
         SET del_yn = 'Y',
             last_mdfcn_dt = NOW()
         WHERE pop_idx = #{popIdx}
