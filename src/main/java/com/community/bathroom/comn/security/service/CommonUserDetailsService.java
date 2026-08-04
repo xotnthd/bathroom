@@ -2,8 +2,8 @@ package com.community.bathroom.comn.security.service;
 
 import com.community.bathroom.comn.security.mapper.SecurityMapper;
 import com.community.bathroom.comn.security.model.AdminPrincipal;
+import com.community.bathroom.comn.security.model.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -51,19 +51,21 @@ public class CommonUserDetailsService implements UserDetailsService {
             );
         }
 
-        // 2. 관리자가 아니라면 일반 회원 테이블에서 조회 (테이블 분리 구조 가정)
+        // 2. 관리자가 아니라면 일반 회원(공개 홈페이지, TN_USR_M001) 테이블에서 조회
         userData = securityMapper.selectUserById(loginId);
         if (userData == null) {
             throw new UsernameNotFoundException("계정을 찾을 수 없습니다: " + loginId);
         }
-        String role = (String) userData.get("role");
-        if (role == null || role.isEmpty()) role = "ROLE_USER";
 
-        // 주의: .roles(role)을 사용하면 'ROLE_' 접두사가 강제 부착되므로, DB에 있는 그대로 넣기 위해 .authorities(role) 사용
-        return User.builder()
-                .username((String) userData.get("loginId"))
-                .password((String) userData.get("loginPw")) // DB의 암호화된 비밀번호
-                .authorities(role)
-                .build();
+        Object sortOrdObj = userData.get("userGradeSortOrd");
+        int userGradeSortOrd = sortOrdObj instanceof Number ? ((Number) sortOrdObj).intValue() : 0;
+
+        return new UserPrincipal(
+                (String) userData.get("loginId"),
+                (String) userData.get("loginPw"),
+                (String) userData.get("sysId"),
+                (String) userData.get("userGradeCd"),
+                userGradeSortOrd
+        );
     }
 }

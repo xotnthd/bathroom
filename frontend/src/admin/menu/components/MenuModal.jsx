@@ -1,4 +1,5 @@
 import React from 'react';
+import CommonCodePicker from '../../../components/CommonCodePicker';
 
 const MenuModal = ({
     modal,
@@ -84,6 +85,31 @@ const MenuModal = ({
                             )}
                         </select>
                     </div>
+
+                    {sysSectCd === 'US' && (
+                        <div style={{ background: '#f5fbf6', padding: '12px', borderRadius: '6px', border: '1px solid #b7e3c0', marginTop: '5px' }}>
+                            <label style={{ fontWeight: 'bold', color: '#27ae60', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={menuForm.loginRequiredYn === 'Y'}
+                                    onChange={(e) => setMenuForm({ ...menuForm, loginRequiredYn: e.target.checked ? 'Y' : 'N', requiredGradeCd: e.target.checked ? menuForm.requiredGradeCd : '' })}
+                                /> 로그인 필요 (비로그인 방문자에게는 이 메뉴가 노출되지 않습니다)
+                            </label>
+
+                            {menuForm.loginRequiredYn === 'Y' && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <CommonCodePicker
+                                        grpCd="USR_GRADE_CD"
+                                        type="select"
+                                        name="requiredGradeCd"
+                                        value={menuForm.requiredGradeCd || ''}
+                                        onChange={e => setMenuForm({ ...menuForm, requiredGradeCd: e.target.value })}
+                                        defaultOption="등급 제한 없음 (로그인만 하면 노출)"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {isTrueSuperAdmin && (
                         <div style={{ background: '#fff5f5', padding: '10px 12px', borderRadius: '6px', border: '1px solid #f5b7b1', marginTop: '5px' }}>

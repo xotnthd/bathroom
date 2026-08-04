@@ -225,7 +225,7 @@ const AdminLayout = () => {
                             </select>
                         </div>
                     )}
-                    <a href="/user/board/view/NOTICE_01" target="_blank" rel="noreferrer" style={{ color: '#3498db', background: '#fff', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>사용자 화면 테스트</a>
+                    <a href="/user" target="_blank" rel="noreferrer" style={{ color: '#3498db', background: '#fff', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>사용자 화면 테스트</a>
                     <span>접속자 <strong>{loginId}</strong> 님</span>
                     <button onClick={handleLogout}>로그아웃</button>
                 </div>

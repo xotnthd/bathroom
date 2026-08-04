@@ -20,11 +20,13 @@ const AdminSysForm = () => {
 
     const [formData, setFormData] = useState({
         sysId: '', sysNm: '', useYn: 'Y', serviceBgnde: today, serviceEndde: '',
-        adminThemeCd: 'MODERN', userThemeCd: 'MODERN', logoFileGrpId: '', positionSchemeCd: '', deptSchemeCd: '', payPlanIdx: '',
+        adminThemeCd: 'MODERN', userThemeCd: 'MODERN', userMenuLayoutCd: 'HEADER', logoFileGrpId: '', bannerFileGrpId: '', positionSchemeCd: '', deptSchemeCd: '', payPlanIdx: '',
         masterId: '', masterPw: '', masterNm: '', masterEmail: '', corpIdx: ''
     });
     const [logoFiles, setLogoFiles] = useState(null);
     const [existingLogo, setExistingLogo] = useState(null);
+    const [bannerFiles, setBannerFiles] = useState(null);
+    const [existingBanner, setExistingBanner] = useState(null);
     const [idCheckStatus, setIdCheckStatus] = useState('NONE'); // NONE, SUCCESS, FAIL
 
     const [mappedCorp, setMappedCorp] = useState(null); // 매핑된 업체의 상세정보 (읽기 전용 노출용)
@@ -46,6 +48,8 @@ const AdminSysForm = () => {
             // 초기화
             setLogoFiles(null);
             setExistingLogo(null);
+            setBannerFiles(null);
+            setExistingBanner(null);
             setIdCheckStatus('NONE');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,6 +98,16 @@ const AdminSysForm = () => {
                 }
             } else {
                 setExistingLogo(null);
+            }
+
+            if (data.bannerFileGrpId) {
+                const bRes = await apiClient(`/admin/api/comn/file/list/${data.bannerFileGrpId}?sysId=${id}`);
+                if (bRes.ok) {
+                    const files = await bRes.json();
+                    setExistingBanner(files.length > 0 ? files[0] : null);
+                }
+            } else {
+                setExistingBanner(null);
             }
         }
     };
@@ -163,6 +177,9 @@ const AdminSysForm = () => {
         payload.append('sysData', JSON.stringify(formData));
         if (logoFiles && logoFiles.length > 0) {
             payload.append('logoFiles', logoFiles[0]);
+        }
+        if (bannerFiles && bannerFiles.length > 0) {
+            payload.append('bannerFiles', bannerFiles[0]);
         }
 
         const url = mode === 'CREATE' ? '/admin/api/sys/create' : '/admin/api/sys/save';
@@ -450,6 +467,78 @@ const AdminSysForm = () => {
                             )}
                             {canEdit && (
                                 <input type="file" accept="image/*" onChange={e => setLogoFiles(e.target.files)} />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="admin-card" style={{ marginTop: '16px' }}>
+                <div className="admin-card-header">
+                    <span className="admin-card-title">사용자 화면 구성</span>
+                </div>
+                <div className="admin-card-body">
+                    <div className="admin-form-row" style={{ alignItems: 'stretch' }}>
+                        <label className="admin-form-label">메뉴 레이아웃</label>
+                        <div className="admin-form-control" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                {[
+                                    { cd: 'HEADER', title: '상단메뉴형', desc: '배너 - 상단메뉴 - 콘텐츠 - 푸터' },
+                                    { cd: 'SIDEBAR', title: '좌측메뉴형', desc: '배너 - (좌측메뉴 + 콘텐츠) - 푸터' }
+                                ].map(opt => {
+                                    const selected = (formData.userMenuLayoutCd || 'HEADER') === opt.cd;
+                                    return (
+                                        <div
+                                            key={opt.cd}
+                                            onClick={() => canEdit && setFormData({ ...formData, userMenuLayoutCd: opt.cd })}
+                                            style={{
+                                                border: selected ? '2px solid var(--primary-color, #3498db)' : '1px solid var(--border-color)',
+                                                borderRadius: '8px',
+                                                padding: '12px',
+                                                width: '180px',
+                                                cursor: canEdit ? 'pointer' : 'default',
+                                                background: selected ? 'rgba(52, 152, 219, 0.06)' : 'transparent'
+                                            }}
+                                        >
+                                            {opt.cd === 'HEADER' ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', height: '110px' }}>
+                                                    <div style={{ flex: '0 0 22px', background: '#f39c12', borderRadius: '3px', fontSize: '10px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>배너/홍보</div>
+                                                    <div style={{ flex: '0 0 16px', background: '#3498db', borderRadius: '3px', fontSize: '9px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>상단메뉴</div>
+                                                    <div style={{ flex: 1, background: 'var(--bg-color, #ecf0f1)', borderRadius: '3px', fontSize: '9px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>콘텐츠</div>
+                                                    <div style={{ flex: '0 0 14px', background: '#2c3e50', borderRadius: '3px', fontSize: '9px', color: '#bdc3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>푸터</div>
+                                                </div>
+                                            ) : (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', height: '110px' }}>
+                                                    <div style={{ flex: '0 0 22px', background: '#f39c12', borderRadius: '3px', fontSize: '10px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>배너/홍보</div>
+                                                    <div style={{ flex: 1, display: 'flex', gap: '3px' }}>
+                                                        <div style={{ flex: '0 0 34px', background: '#3498db', borderRadius: '3px', fontSize: '9px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', writingMode: 'vertical-rl' }}>메뉴</div>
+                                                        <div style={{ flex: 1, background: 'var(--bg-color, #ecf0f1)', borderRadius: '3px', fontSize: '9px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>콘텐츠</div>
+                                                    </div>
+                                                    <div style={{ flex: '0 0 14px', background: '#2c3e50', borderRadius: '3px', fontSize: '9px', color: '#bdc3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>푸터</div>
+                                                </div>
+                                            )}
+                                            <div style={{ marginTop: '8px', fontWeight: 'bold', fontSize: '13px' }}>{opt.title}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{opt.desc}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '10px 0 0 0' }}>
+                                * 사용자(공개 홈페이지) 화면 상단에는 항상 배너/홍보 영역이 노출되며, 그 아래 메뉴 배치를 상단(가로) 또는 좌측(세로) 중에서 선택할 수 있습니다.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="admin-form-row" style={{ alignItems: 'stretch' }}>
+                        <label className="admin-form-label">배너/홍보 이미지</label>
+                        <div className="admin-form-control" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                            {existingBanner && mode === 'EDIT' && (
+                                <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <img src={`/admin/api/comn/file/download/${existingBanner.fileSn}`} alt="banner" style={{ maxHeight: '80px', maxWidth: '100%', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px' }} />
+                                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>현재 등록된 배너</span>
+                                </div>
+                            )}
+                            {canEdit && (
+                                <input type="file" accept="image/*" onChange={e => setBannerFiles(e.target.files)} />
                             )}
                         </div>
                     </div>

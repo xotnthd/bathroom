@@ -19,7 +19,7 @@
             C.cd_nm AS "currentPaySeCdNm"
         FROM TN_SYS_M001 S
         LEFT JOIN TN_PAY_M001 P ON S.current_pay_idx = P.idx
-        LEFT JOIN tn_com_c002 C ON C.sys_id = 'CORE' AND C.grp_cd = 'PAY_SE_CD' AND C.com_cd = P.pay_se_cd
+        LEFT JOIN TN_COM_C002 C ON C.sys_id = 'CORE' AND C.grp_cd = 'PAY_SE_CD' AND C.com_cd = P.pay_se_cd
         <where>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND S.sys_nm LIKE CONCAT('%', #{searchKeyword}, '%')
@@ -39,8 +39,10 @@
             DATE_FORMAT(A.service_bgnde, '%Y-%m-%d') AS "serviceBgnde",
             DATE_FORMAT(A.service_endde, '%Y-%m-%d') AS "serviceEndde",
             A.logo_file_grp_id AS "logoFileGrpId",
+            A.banner_file_grp_id AS "bannerFileGrpId",
             A.admin_theme_cd AS "adminThemeCd",
             A.user_theme_cd AS "userThemeCd",
+            A.user_menu_layout_cd AS "userMenuLayoutCd",
             A.position_scheme_cd AS "positionSchemeCd",
             A.dept_scheme_cd AS "deptSchemeCd",
             A.current_pay_idx AS "currentPayIdx",
@@ -48,6 +50,7 @@
             A.corp_idx AS "corpIdx",
             C.corp_nm AS "corpNm",
             (SELECT file_sn FROM TN_COM_F001 WHERE file_grp_id = A.logo_file_grp_id AND del_yn = 'N' ORDER BY file_sn DESC LIMIT 1) AS "logoFileSn",
+            (SELECT file_sn FROM TN_COM_F001 WHERE file_grp_id = A.banner_file_grp_id AND del_yn = 'N' ORDER BY file_sn DESC LIMIT 1) AS "bannerFileSn",
             (SELECT user_id FROM TN_MEM_M001 WHERE sys_id = A.sys_id AND athrty_cd = 'A001' ORDER BY idx ASC LIMIT 1) AS "masterId",
             (SELECT user_nm FROM TN_MEM_M001 WHERE sys_id = A.sys_id AND athrty_cd = 'A001' ORDER BY idx ASC LIMIT 1) AS "masterNm",
             (SELECT M2.email FROM TN_MEM_M001 M1 JOIN TN_MEM_M002 M2 ON M1.idx = M2.user_idx WHERE M1.sys_id = A.sys_id AND M1.athrty_cd = 'A001' ORDER BY M1.idx ASC LIMIT 1) AS "masterEmail"
@@ -73,8 +76,14 @@
             <if test="logoFileGrpId != null and logoFileGrpId != ''">
                 logo_file_grp_id = #{logoFileGrpId},
             </if>
+            <if test="bannerFileGrpId != null and bannerFileGrpId != ''">
+                banner_file_grp_id = #{bannerFileGrpId},
+            </if>
             admin_theme_cd = #{adminThemeCd},
             user_theme_cd = #{userThemeCd},
+            <if test="userMenuLayoutCd != null and userMenuLayoutCd != ''">
+                user_menu_layout_cd = #{userMenuLayoutCd},
+            </if>
             <if test="positionSchemeCd != null and positionSchemeCd != ''">
                 position_scheme_cd = #{positionSchemeCd},
             </if>
@@ -121,10 +130,11 @@
     <insert id="insertSystem">
         INSERT INTO TN_SYS_M001 (
             sys_id, sys_nm, use_yn, service_bgnde, service_endde,
-            admin_theme_cd, user_theme_cd, position_scheme_cd, dept_scheme_cd, frst_rgstr_id, frst_reg_dt
+            admin_theme_cd, user_theme_cd, user_menu_layout_cd, position_scheme_cd, dept_scheme_cd, frst_rgstr_id, frst_reg_dt
         ) VALUES (
             #{sysId}, #{sysNm}, #{useYn}, #{serviceBgnde}, #{serviceEndde},
             #{adminThemeCd}, #{userThemeCd},
+            <choose><when test="userMenuLayoutCd != null and userMenuLayoutCd != ''">#{userMenuLayoutCd}</when><otherwise>'HEADER'</otherwise></choose>,
             <choose><when test="positionSchemeCd != null and positionSchemeCd != ''">#{positionSchemeCd}</when><otherwise>'GENERAL'</otherwise></choose>,
             <choose><when test="deptSchemeCd != null and deptSchemeCd != ''">#{deptSchemeCd}</when><otherwise>'STANDARD'</otherwise></choose>,
             #{creatorId}, NOW()

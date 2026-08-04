@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.community.bathroom.user.site.mapper.UserSiteMapper">
+
+    <!-- 공개 홈페이지(비로그인) 방문자용 - 화면 구성 설정만 노출. 관리자 상세 API(/admin/api/sys/detail)와 달리
+         인증 없이도 호출 가능해야 하므로 별도 공개 조회 전용 쿼리로 분리한다. -->
+    <select id="selectSiteConfig" resultType="java.util.Map">
+        SELECT
+            A.sys_id AS "sysId",
+            A.sys_nm AS "sysNm",
+            A.user_theme_cd AS "userThemeCd",
+            A.user_menu_layout_cd AS "userMenuLayoutCd",
+            (SELECT file_sn FROM TN_COM_F001 WHERE file_grp_id = A.logo_file_grp_id AND del_yn = 'N' ORDER BY file_sn DESC LIMIT 1) AS "logoFileSn",
+            (SELECT file_sn FROM TN_COM_F001 WHERE file_grp_id = A.banner_file_grp_id AND del_yn = 'N' ORDER BY file_sn DESC LIMIT 1) AS "bannerFileSn"
+        FROM TN_SYS_M001 A
+        WHERE A.sys_id = #{sysId} AND A.use_yn = 'Y'
+    </select>
+
+    <!-- 사용자(US) 섹션 메뉴 전체 평면 목록 - upr_menu_id로 트리 구성은 프론트에서, 게이팅 여부 판정은 컨트롤러에서 처리 -->
+    <select id="selectUsMenuList" resultType="java.util.Map">
+        SELECT
+            M.menu_id AS "menuId",
+            M.upr_menu_id AS "uprMenuId",
+            M.menu_nm AS "menuNm",
+            M.menu_url AS "menuUrl",
+            M.sort_ord AS "sortOrd",
+            M.login_required_yn AS "loginRequiredYn",
+            M.required_grade_cd AS "requiredGradeCd",
+            IFNULL(G.sort_ord, 0) AS "requiredGradeSortOrd"
+        FROM TN_MNU_M001 M
+        LEFT JOIN TN_COM_C002 G ON G.sys_id = 'CORE' AND G.grp_cd = 'USR_GRADE_CD' AND G.com_cd = M.required_grade_cd
+        WHERE M.sys_id = #{sysId}
+          AND M.sys_sect_cd = 'US'
+          AND M.use_yn = 'Y'
+          AND M.del_yn = 'N'
+        ORDER BY M.upr_menu_id ASC, M.sort_ord ASC
+    </select>
+
+    <select id="countSiteFile" resultType="int">
+        SELECT COUNT(*)
+        FROM TN_COM_F001 F
+        JOIN TN_SYS_M001 S ON S.sys_id = #{sysId} AND (F.file_grp_id = S.logo_file_grp_id OR F.file_grp_id = S.banner_file_grp_id)
+        WHERE F.file_sn = #{fileSn} AND F.del_yn = 'N'
+    </select>
+
+</mapper>

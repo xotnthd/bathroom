@@ -11,19 +11,23 @@
             M.sys_id AS "sysId",
             IFNULL(A.athrty_level, 99) AS "athrtyLevel",
             M2.resign_dt AS "resignDt"
-        FROM tn_mem_m001 M
-        LEFT JOIN tn_ath_a001 A ON M.sys_id = A.sys_id AND M.athrty_cd = A.athrty_com_cd
-        LEFT JOIN tn_mem_m002 M2 ON M.idx = M2.user_idx
+        FROM TN_MEM_M001 M
+        LEFT JOIN TN_ATH_A001 A ON M.sys_id = A.sys_id AND M.athrty_cd = A.athrty_com_cd
+        LEFT JOIN TN_MEM_M002 M2 ON M.idx = M2.user_idx
         WHERE M.user_id = #{loginId}
     </select>
 
-    <!-- 일반 유저 로그인 검증용 데이터 풀링 -->
+    <!-- 일반 유저(공개 홈페이지 회원) 로그인 검증용 데이터 풀링 -->
     <select id="selectUserById" resultType="java.util.Map">
         SELECT
-            user_id AS "loginId",
-            user_pw AS "loginPw"
-        FROM TN_USR_M001
-        WHERE user_id = #{loginId} AND use_yn = 'Y' AND del_yn = 'N'
+            U.user_id AS "loginId",
+            U.pswd AS "loginPw",
+            U.sys_id AS "sysId",
+            U.user_grade_cd AS "userGradeCd",
+            IFNULL(G.sort_ord, 0) AS "userGradeSortOrd"
+        FROM TN_USR_M001 U
+        LEFT JOIN TN_COM_C002 G ON G.sys_id = 'CORE' AND G.grp_cd = 'USR_GRADE_CD' AND G.com_cd = U.user_grade_cd
+        WHERE U.user_id = #{loginId} AND U.use_yn = 'Y' AND U.del_yn = 'N'
     </select>
 
     <!-- 권한 코드가 관리자(MG) 메뉴에 매핑되어 있는지 확인 -->

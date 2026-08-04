@@ -7,7 +7,7 @@
             sys_id AS "sysId", menu_id AS "menuId", upr_menu_id AS "uprMenuId", sys_sect_cd AS "sysSectCd",
             menu_nm AS "menuNm", menu_url AS "menuUrl", comp_path AS "compPath", brd_id AS "brdId",
             menu_icon AS "menuIcon", menu_kwd AS "menuKwd", sort_ord AS "sortOrd", use_yn AS "useYn", del_yn AS "delYn",
-            sensitive_yn AS "sensitiveYn"
+            sensitive_yn AS "sensitiveYn", login_required_yn AS "loginRequiredYn", required_grade_cd AS "requiredGradeCd"
         FROM TN_MNU_M001
         WHERE sys_id = #{sysId}
           AND sys_sect_cd = #{sysSectCd}
@@ -29,9 +29,12 @@
 
     <insert id="insertMenu" parameterType="java.util.Map">
         INSERT INTO TN_MNU_M001 (
-            sys_id, menu_id, upr_menu_id, sys_sect_cd, menu_nm, menu_url, comp_path, brd_id, menu_icon, menu_kwd, sort_ord, use_yn, del_yn, sensitive_yn, frst_rgstr_id, frst_reg_dt
+            sys_id, menu_id, upr_menu_id, sys_sect_cd, menu_nm, menu_url, comp_path, brd_id, menu_icon, menu_kwd, sort_ord, use_yn, del_yn, sensitive_yn, login_required_yn, required_grade_cd, frst_rgstr_id, frst_reg_dt
         ) VALUES (
-                     #{sysId}, #{menuId}, #{uprMenuId}, #{sysSectCd}, #{menuNm}, #{menuUrl}, #{compPath}, #{brdId}, #{menuIcon}, #{menuKwd}, #{sortOrd}, #{useYn}, 'N', #{sensitiveYn}, #{userId}, NOW()
+                     #{sysId}, #{menuId}, #{uprMenuId}, #{sysSectCd}, #{menuNm}, #{menuUrl}, #{compPath}, #{brdId}, #{menuIcon}, #{menuKwd}, #{sortOrd}, #{useYn}, 'N', #{sensitiveYn},
+                     <choose><when test="loginRequiredYn != null and loginRequiredYn != ''">#{loginRequiredYn}</when><otherwise>'N'</otherwise></choose>,
+                     <choose><when test="requiredGradeCd != null and requiredGradeCd != ''">#{requiredGradeCd}</when><otherwise>NULL</otherwise></choose>,
+                     #{userId}, NOW()
                  )
     </insert>
 
@@ -47,6 +50,8 @@
             sort_ord = #{sortOrd},
             use_yn = #{useYn},
             sensitive_yn = #{sensitiveYn},
+            login_required_yn = <choose><when test="loginRequiredYn != null and loginRequiredYn != ''">#{loginRequiredYn}</when><otherwise>'N'</otherwise></choose>,
+            required_grade_cd = <choose><when test="requiredGradeCd != null and requiredGradeCd != ''">#{requiredGradeCd}</when><otherwise>NULL</otherwise></choose>,
             last_mdfr_id = #{userId},
             last_mdfcn_dt = NOW()
         WHERE sys_id = #{sysId} AND menu_id = #{menuId}

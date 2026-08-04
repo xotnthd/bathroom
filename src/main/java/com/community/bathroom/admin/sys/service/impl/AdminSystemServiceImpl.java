@@ -59,11 +59,12 @@ public class AdminSystemServiceImpl implements AdminSystemService {
 
     @Override
     @Transactional
-    public void saveSystemConfig(Map<String, Object> param, MultipartFile[] logoFiles) {
+    public void saveSystemConfig(Map<String, Object> param, MultipartFile[] logoFiles, MultipartFile[] bannerFiles) {
         String sysId = (String) param.get("sysId");
         String userId = "admin"; // In a real scenario, fetch from SecurityContextHolder
-        
+
         String atchFileGrpId = (String) param.get("logoFileGrpId");
+        String bannerAtchFileGrpId = (String) param.get("bannerFileGrpId");
 
         // 업체 매핑 해제 시 프론트가 빈 문자열을 보낼 수 있어 NULL로 정규화 (corp_idx는 nullable FK)
         Object corpIdx = param.get("corpIdx");
@@ -75,6 +76,11 @@ public class AdminSystemServiceImpl implements AdminSystemService {
             // "SYS_LOGO" is the file category
             String newGrpId = commonFileService.uploadFiles(logoFiles, sysId, atchFileGrpId, "SYS_LOGO", userId);
             param.put("logoFileGrpId", newGrpId);
+        }
+
+        if (bannerFiles != null && bannerFiles.length > 0) {
+            String newBannerGrpId = commonFileService.uploadFiles(bannerFiles, sysId, bannerAtchFileGrpId, "SYS_BANNER", userId);
+            param.put("bannerFileGrpId", newBannerGrpId);
         }
 
         param.put("userId", userId);
@@ -104,18 +110,27 @@ public class AdminSystemServiceImpl implements AdminSystemService {
 
     @Override
     @Transactional
-    public void createSystem(Map<String, Object> param, MultipartFile[] logoFiles) throws Exception {
+    public void createSystem(Map<String, Object> param, MultipartFile[] logoFiles, MultipartFile[] bannerFiles) throws Exception {
         String sysId = (String) param.get("sysId");
         String creatorId = "admin"; // Fetch from SecurityContext in reality
-        
+
         // 1. Insert System Master
         param.put("creatorId", creatorId);
         adminSystemMapper.insertSystem(param);
 
-        // Upload logo if any
+        // Upload logo/banner if any
+        boolean needsUpdate = false;
         if (logoFiles != null && logoFiles.length > 0) {
             String newGrpId = commonFileService.uploadFiles(logoFiles, sysId, null, "SYS_LOGO", creatorId);
             param.put("logoFileGrpId", newGrpId);
+            needsUpdate = true;
+        }
+        if (bannerFiles != null && bannerFiles.length > 0) {
+            String newBannerGrpId = commonFileService.uploadFiles(bannerFiles, sysId, null, "SYS_BANNER", creatorId);
+            param.put("bannerFileGrpId", newBannerGrpId);
+            needsUpdate = true;
+        }
+        if (needsUpdate) {
             adminSystemMapper.updateSystemConfig(param);
         }
 

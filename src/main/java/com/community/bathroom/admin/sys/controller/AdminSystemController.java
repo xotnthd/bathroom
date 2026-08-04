@@ -42,12 +42,13 @@ public class AdminSystemController {
     @PostMapping("/save")
     public ResponseEntity<?> saveSystemConfig(
             @RequestParam(value = "logoFiles", required = false) MultipartFile[] logoFiles,
+            @RequestParam(value = "bannerFiles", required = false) MultipartFile[] bannerFiles,
             @RequestParam("sysData") String sysDataJson) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> param = mapper.readValue(sysDataJson, new TypeReference<Map<String, Object>>() {});
-            
-            adminSystemService.saveSystemConfig(param, logoFiles);
+
+            adminSystemService.saveSystemConfig(param, logoFiles, bannerFiles);
             
             Map<String, Object> res = new HashMap<>();
             res.put("status", "SUCCESS");
@@ -71,12 +72,13 @@ public class AdminSystemController {
     @PostMapping("/create")
     public ResponseEntity<?> createSystem(
             @RequestParam(value = "logoFiles", required = false) MultipartFile[] logoFiles,
+            @RequestParam(value = "bannerFiles", required = false) MultipartFile[] bannerFiles,
             @RequestParam("sysData") String sysDataJson) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> param = mapper.readValue(sysDataJson, new TypeReference<Map<String, Object>>() {});
-            
-            adminSystemService.createSystem(param, logoFiles);
+
+            adminSystemService.createSystem(param, logoFiles, bannerFiles);
             
             Map<String, Object> res = new HashMap<>();
             res.put("status", "SUCCESS");

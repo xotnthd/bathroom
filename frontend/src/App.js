@@ -12,6 +12,7 @@ import AdminDynamicBoardDetail from './admin/board/dynamic/AdminDynamicBoardDeta
 import AdminDynamicBoardWrite from './admin/board/dynamic/AdminDynamicBoardWrite';
 
 import UserLayout from './user/layout/UserLayout';
+import UserMain from './user/home/UserMain';
 import UserDynamicBoardList from './user/board/dynamic/UserDynamicBoardList';
 import UserDynamicBoardDetail from './user/board/dynamic/UserDynamicBoardDetail';
 
@@ -55,6 +56,7 @@ function App() {
 
                 {/* 유저 포털 라우트 */}
                 <Route path="/user" element={<UserLayout />}>
+                    <Route index element={<UserMain />} />
                     <Route path="board/view/:brdId" element={<UserDynamicBoardList />} />
                     <Route path="board/view/:brdId/detail/:postId" element={<UserDynamicBoardDetail />} />
                     <Route path="board/view/:brdId/write" element={<UserDynamicBoardWrite />} />

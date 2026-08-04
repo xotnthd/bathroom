@@ -24,9 +24,6 @@ public class CommonAuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private com.community.bathroom.comn.security.mapper.SecurityMapper securityMapper;
-
     @PostMapping("/login")
     // [수정 1] 파라미터에 HttpServletResponse response 추가
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginData, HttpServletRequest request, HttpServletResponse response) {
@@ -60,11 +57,14 @@ public class CommonAuthController {
             resBody.put("message", "로그인 성공");
             resBody.put("role", role);
 
-            // Fetch extra info
-            Map<String, Object> userData = securityMapper.selectAdminById(loginId);
-            if (userData != null) {
-                resBody.put("sysId", userData.get("sysId"));
-                resBody.put("athrtyLevel", userData.get("athrtyLevel"));
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof com.community.bathroom.comn.security.model.AdminPrincipal admin) {
+                resBody.put("sysId", admin.getSysId());
+                resBody.put("athrtyLevel", admin.getAthrtyLevel());
+            } else if (principal instanceof com.community.bathroom.comn.security.model.UserPrincipal user) {
+                resBody.put("sysId", user.getSysId());
+                resBody.put("userGradeCd", user.getUserGradeCd());
+                resBody.put("userGradeSortOrd", user.getUserGradeSortOrd());
             }
 
             return ResponseEntity.ok(resBody);
@@ -109,16 +109,16 @@ public class CommonAuthController {
         response.put("status", "authenticated");
         response.put("loginId", loginId); // 확실하게 프론트엔드로 전달
         response.put("role", role);
-        
-        // sysId와 athrtyLevel도 추가로 내려준다. (교차 관리 스위칭 등 프론트엔드에서 활용)
-        try {
-            Map<String, Object> userData = securityMapper.selectAdminById(loginId);
-            if (userData != null) {
-                response.put("sysId", userData.get("sysId"));
-                response.put("athrtyLevel", userData.get("athrtyLevel"));
-            }
-        } catch (Exception e) {
-            System.err.println("추가 유저 정보 조회 실패: " + e.getMessage());
+
+        // sysId 등 부가 정보는 인증 시점에 이미 principal에 실려있으므로 재조회 없이 그대로 사용
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.community.bathroom.comn.security.model.AdminPrincipal admin) {
+            response.put("sysId", admin.getSysId());
+            response.put("athrtyLevel", admin.getAthrtyLevel());
+        } else if (principal instanceof com.community.bathroom.comn.security.model.UserPrincipal user) {
+            response.put("sysId", user.getSysId());
+            response.put("userGradeCd", user.getUserGradeCd());
+            response.put("userGradeSortOrd", user.getUserGradeSortOrd());
         }
 
         return ResponseEntity.ok(response);

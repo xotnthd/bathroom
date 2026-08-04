@@ -29,7 +29,8 @@ const MenuManage = () => {
     const [isBrdMapping, setIsBrdMapping] = useState(false);
     const [menuForm, setMenuForm] = useState({
         sysId: defaultSysId, menuId: '', uprMenuId: 'ROOT', sysSectCd: 'MG',
-        menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N'
+        menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N',
+        loginRequiredYn: 'N', requiredGradeCd: ''
     });
 
     const { inqireYn, rgstYn, mdfcnYn, delYn } = useMenuAuth(MENU_IDS.MENU);
@@ -78,7 +79,8 @@ const MenuManage = () => {
         setMenuForm({
             sysId: defaultSysId, menuId: '',
             uprMenuId: targetType === 'MAIN' ? 'ROOT' : (targetType === 'MID' ? selMainId : selMidId),
-            sysSectCd: sysSectCd, menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N'
+            sysSectCd: sysSectCd, menuNm: '', menuUrl: '', compPath: '', brdId: '', menuIcon: '', menuKwd: '', sortOrd: 0, useYn: 'Y', sensitiveYn: 'N',
+            loginRequiredYn: 'N', requiredGradeCd: ''
         });
     };
 
