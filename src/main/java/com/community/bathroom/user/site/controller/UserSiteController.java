@@ -80,7 +80,9 @@ public class UserSiteController {
         if (userSiteMapper.countSiteFile(sysId, fileSn) == 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        commonFileService.downloadFile(fileSn, response);
+        if (!commonFileService.downloadFile(fileSn, response)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         return ResponseEntity.ok().build();
     }
 }

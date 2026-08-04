@@ -27,8 +27,10 @@ public class CommonFileController {
 
     // 2. 파일 다운로드 (0kb 버그 완벽 해결)
     @GetMapping("/download/{fileSn}")
-    public void downloadFile(@PathVariable Long fileSn, HttpServletResponse response) {
-        commonFileService.downloadFile(fileSn, response);
+    public void downloadFile(@PathVariable Long fileSn, HttpServletResponse response) throws java.io.IOException {
+        if (!commonFileService.downloadFile(fileSn, response)) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "파일을 찾을 수 없습니다.");
+        }
     }
 
     // 3. 파일 논리 삭제

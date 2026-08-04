@@ -81,14 +81,16 @@ public class CommonFileServiceImpl implements CommonFileService {
     }
 
     @Override
-    public void downloadFile(Long fileSn, HttpServletResponse response) {
+    public boolean downloadFile(Long fileSn, HttpServletResponse response) {
         Map<String, Object> fileInfo = commonFileMapper.selectFileBySn(fileSn);
-        if (fileInfo == null) return;
+        if (fileInfo == null) return false;
 
         // DB에 저장된 상대경로와 루트경로 조합
         File file = new File(uploadRootPath + "/" + fileInfo.get("filePath"));
         if (!file.exists()) {
-            throw new RuntimeException("물리 파일이 존재하지 않습니다.");
+            // DB 레코드는 있지만 물리 파일이 없는 경우 (서버 이전/복원 시 파일 미이관 등) - 500으로 터뜨리지 않고
+            // "없음"으로 취급해 컨트롤러가 404를 내려주게 한다. 이미지 태그는 자연스럽게 깨진 아이콘으로 표시됨.
+            return false;
         }
 
         try {
@@ -104,8 +106,10 @@ public class CommonFileServiceImpl implements CommonFileService {
                  java.io.OutputStream os = response.getOutputStream()) {
                 org.springframework.util.FileCopyUtils.copy(fis, os);
             }
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
